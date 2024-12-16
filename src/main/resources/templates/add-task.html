@@ -1,0 +1,222 @@
+<th:block layout:replace="fragments/htmlhead"></th:block>
+<body class="g-sidenav-show  bg-gray-200">
+  <th:block layout:replace="fragments/sidebar"></th:block>
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    <th:block layout:replace="fragments/header"></th:block>
+    <div class="container-fluid py-2">
+      <div class="row  p-3 pt-0">
+        <div class="card col-lg-12">
+        	<div class="card-header  d-block pb-0 px-3">
+        	 	<div class="float-right text-dark cursor-pointer cd-popup-trigger4"><i class="material-icons opacity-10">upload</i></div>
+              	<h6 class="mb-0 text-center">Add Lead</h6>
+            </div>
+        	<div class="d-block d-md-flex ">
+		            <form role="form" class="col-12 col-md-6  p-3 mt-3 me-2 left-form" id="leadDataForm">
+		            <div class="card-header pt-0 pb-2 d-block pb-0 px-3 position-relative">
+		              <h6 class="mb-0 text-center">Lead Details
+		              	<i class="material-icons opacity-10 btn btn-primary px-0 add-field-data-btn position-absolute" >add</i>
+		              </h6>
+		            </div>
+	                	<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label field-data-label col-3"  name="name">Name <span class="text-primary">*</span></label>
+							<input type="text" id="leadName" class="p-2 ms-1 form-control2 field-data-input col-8" style="border: 1px solid #d2d6da;" required=true>
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label field-data-label col-3" name="phone_number">Phone <span class="text-primary">*</span></label>
+							<input type="text" id="phoneNumber" class="p-2 ms-1 form-control2 field-data-input col-8" style="border: 1px solid #d2d6da;">
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label col-3" name="phone_number2">Parent's Phone</label>
+							<input type="text" id="phoneNumber2" class="p-2 ms-1 form-control2  col-8" style="border: 1px solid #d2d6da;">
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label field-data-label col-3" name="email">Email</label>
+							<input type="email" id="formId" class="p-2 ms-1 form-control2 field-data-input col-8" style="border: 1px solid #d2d6da;">
+						</div>
+						
+						
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label  col-3"  name="name">College</label>
+							<input type="text" id="college" class="p-2 ms-1 form-control2  col-8" style="border: 1px solid #d2d6da;">
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label col-3" name="phone">Course</label>
+							<select  id="course" class="p-2 ms-1   col-8" style="border: 1px solid #d2d6da;">
+								<option value="0">Select Course</option>
+								<option th:each="course:${courses}" th:value="${course.courseName}" th:text="${course.courseName}">D.PHARM</option>
+								
+								
+							</select>
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label col-3" name="area">Area</label>
+							<input type="text" id="area" class="p-2 ms-1 form-control2  col-8" style="border: 1px solid #d2d6da;">
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label col-3 " name="10th Marks">10th Marks</label>
+							<input type="number" id="10thPercent" class="p-2 ms-1 form-control2  col-8" style="border: 1px solid #d2d6da;">
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label col-3 " name="12th Marks">12th Marks</label>
+							<input type="number" id="12thPercent" class="p-2 ms-1 form-control2  col-8" style="border: 1px solid #d2d6da;">
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label col-3 " name="NEET Marks">NEET Marks</label>
+							<input type="number" id="neetPercent" class="p-2 ms-1 form-control2 col-8" style="border: 1px solid #d2d6da;">
+						</div>
+						
+	                </form>
+	                <form role="form" class="col-12 col-md-6  p-3 mt-3">
+		            <div class="card-header pt-0 pb-2 d-block pb-0 px-3">
+		              <h6 class="mb-0 text-center">Campaign Details</h6>
+		            </div>
+	                	<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label col-3">Name</label>
+							
+							<select id="campaignName" class="col-8 ms-1" style="height: 40px;">
+								<option value="">Select Campaign
+								</option>
+								<option th:each="campaign:${campaigns}" th:value="${campaign.campaignName}" th:text="${campaign.campaignName}">
+								</option>
+							</select>
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+						<label class="form-label col-3">Platform</label>
+							<select id="platform" class="col-8 ms-1" style="height: 40px;">
+								<option value="0" id="0">Platform</option>
+								<option th:each="platform:${platforms}"  th:value="${platform.name}" th:text="${platform.name}">Manager
+	        					</option>
+							</select>
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label col-3">Refference Name</label>
+							<input type="text" id="refferenceName" class="p-2 ms-1 form-control2 col-8" style="border: 1px solid #d2d6da;">
+						</div>
+						
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label col-3">Refference No.</label>
+							<input type="text" id="refferenceNo" class="p-2 ms-1 form-control2 col-8" style="border: 1px solid #d2d6da;">
+						</div>
+	                </form>
+	                
+	                
+	         </div>
+	         <div class="d-block d-md-flex" th:if="${role == 'admin'}">
+		            <form role="form" class="col-12 col-md-6  p-3 mt-3 me- left-form">
+		            <div class="card-header pt-0 pb-2 d-block pb-0 px-3">
+		              <h6 class="mb-0 text-center">Assignee Details  
+		              <!--<span><input type="checkbox" id="assign_to_me"> assign to me
+		              </span>-->
+		              </h6>
+		            </div>
+	                	<div class="d-flex mb-3 w-90 justify-content-center">
+						<label class="form-label col-3">Role</label>
+							<select class="role-select col-8 ms-1">
+								<option value="0" id="0">Select Role</option>
+								<option th:each="nextRole:${nextRoles}" th:value="${nextRole}" th:text="${nextRole}">
+								</option>
+							</select>
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+						<label class="form-label col-3 user-select-label d-none">User</label>
+							<select th:each="nextUser,istat:${nextUsers}" class="user-select col-8 ms-1 d-none" th:id="${nextRoles[istat.index]}" >
+								<option value="0" id="0">Select User</option>
+								<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="${user.get('username')}">
+								</option>
+							</select>
+						</div>
+						
+	                </form>
+	                <form role="form" class="col-12 col-md-6  p-3 mt-3" th:if="${role == 'admin'}">
+		            <div class="card-header pt-0 pb-2 d-block pb-0 px-3">
+		              <h6 class="mb-0 text-center">Scheduler Details</h6>
+		            </div>
+	                	<div class="d-flex mb-3 w-90  justify-content-center">
+							<label class="form-label col-3">Date & Time</label>
+							<input type="datetime-local" id="scheduler" class="p-2 ms-1 form-control2 col-8" style="border: 1px solid #d2d6da;">
+						</div>
+						<div class="d-flex mb-3 w-90 justify-content-center">
+							<label class="form-label col-3">Remark</label>
+							<input type="text" id="remark" class="p-2 form-control2 ms-1 col-8" style="border: 1px solid #d2d6da;">
+						</div>
+	                </form>
+	                
+	               
+	         </div>
+	          <div class="d-flex justify-content-center mt-3">
+	                	<button class="btn btn-primary save-lead">Save</button>
+	                </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <button class="btn btn-primary cd-popup-trigger2 d-none"></button>
+  <div class="cd-popup2 " role="alert">
+	<div class="cd-popup-container2 d-none text-dark" id="closing-popup" style="min-width: 300px;">
+		<div class="card-header text-lg py-2" style="background: #e3e3e3;border-radius: 5px 5px 0px 0px;">Task Added</div>
+			<p id="ticked-creation-ack">Task created with id : <span id="ticket-creation-ack-id"></span></p>
+			<ul class="cd-buttons2 ps-0">
+				<li class="w-100"><a  class="cd-popup-close2_2">Okay</a></li>
+			</ul>
+			<a href="#0" class="cd-popup-close_2 img-replace">Close</a>
+		</div>
+		
+		<div class="cd-popup-container2 d-none text-dark" id="fileupload-popup" style="min-width: 300px;">
+		<div class="card-header text-lg py-2" style="background: #e3e3e3;border-radius: 5px 5px 0px 0px;">Upload File</div>
+			<form id="excel-form">
+				<p id="excel-file-input-p">
+				<input class="" id="excel-file-input" type="file">
+				</p>
+				<p id="excel-ack" class="d-none"></p>
+				<ul class="cd-buttons2 ps-0" id="cd-main-buttons">
+					<li class=""><a  class="cd-popup-close2_2">Cancel</a></li>
+					<li class=""><a  class=" upload-excel">Submit</a></li>
+				</ul>
+				<ul class="cd-buttons2 d-none  ps-0" id="task-creation-ack-buttons">
+					<li class="w-100"><a  class="cd-popup-close2_2 w-100">Okay</a></li>
+					
+				</ul>
+			</form>
+			<a href="#0" class="cd-popup-close_2 img-replace">Close</a>
+		</div>
+	
+  </div>
+  <script src="/js/core/popper.min.js"></script>
+  <script src="/js/core/bootstrap.min.js"></script>
+  <script src="/js/perfect-scrollbar.min.js"></script>
+  <script src="/js/smooth-scrollbar.min.js"></script>
+  <script src="/js/custom-sidebar.js"></script>
+  <script src="/js/add-task.js"></script>
+  <script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = {
+        damping: '0.5'
+      }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+  </script>
+  <!-- Github buttons -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+  <script src="/js/material-dashboard.min.js?v=3.0.4"></script>
+  <script th:inline="javascript">
+		var userEmail=/*[[${userEmail}]]*/''
+		var userName=/*[[${userName}]]*/''
+		var userId=/*[[${userId}]]*/''
+		var taskId=/*[[${taskId}]]*/''
+		var isClosed=/*[[${isClosed}]]*/''
+		var cuurentRole =/*[[${role}]]*/''
+		$('body').on('click','.cd-popup-trigger4', function(event){
+		event.preventDefault();
+		$("#fileupload-popup").removeClass("d-none")
+		$(".closing-popup").addClass('d-none')
+		$('.cd-popup2').addClass('is-visible');
+	});
+</script>
+  
+  
+</body>
+  </html>
+  

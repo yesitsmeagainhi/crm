@@ -1,0 +1,358 @@
+
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="cursor-pointer sort  text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="createdOn">Date & Time</th>
+                      <!-- <th class="cursor-pointer sort px-1 text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2" th:name="${taskType}" id="id">Task Id</th> -->
+                      <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="leadPlatform" >Platform</th>
+                      <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="leadName">Lead Name</th>
+                      <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="area">Area</th>
+                      <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="requirement">Requirement</th>
+                      <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="status">Current User</th>
+                      <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="assignee">Assignee</th>
+                      <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="remark">Remark</th>
+                      <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="campaign" th:if="${role=='admin'}">Campaign</th>
+                    </tr>
+                  </thead>
+                  <tbody th:if="!${isClosedTask}">
+                    <tr  th:each="activeTask,iStat:${tasks.content}" class="open-detail" th:classappend="${activeTask.isDuplicate!=null && activeTask.isDuplicate?'duplicate-task':activeTask.isCounsellingDone!=null && activeTask.isCounsellingDone==true? 'counselled-task': activeTask.isClaimed==null || activeTask.isClaimed==false?'unclaimed-task': activeTask.isCounsellingDone!=null && activeTask.isCounsellingDone==false?'uncounselled-task':'' }" th:id="${activeTask.id}">
+                      <td class="ps-2">
+                     	 <i th:if="${activeTask.isScheduled}" class="material-icons opacity-10 me-2"  style="color: orange;">timer</i>
+                     	 <i th:if="${activeTask.assignedTime < (#temporals.createNow().minusHours('1')) && (activeTask.isClaimed!=null && activeTask.isClaimed==false)}" class="material-icons opacity-10 me-2"  style="color: #f03131;">priority_high</i>
+                         <span class="text-secondary text-sm font-weight-bold" th:text="${#temporals.format(activeTask.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yy HH:mm')}">23/04/18</span>
+                      </td>
+                      
+                      <!--<td class="px-1">
+                        <p class="text-sm font-weight-bold mb-0" th:text="${activeTask.id}">Manager</p>
+                      </td>-->
+                      <td class="align-middle text-center text-sm px-1" >
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.leadPlatform}" ></span>
+                      </td>
+                      
+                      <td class="align-middle text-center px-1">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.leadName}">23/04/18</span>
+                      </td>
+                      <td class="align-middle text-center text-sm px-1">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.area}"></span>
+                      </td>
+                      <td class="align-middle text-center text-sm px-1">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.requirement}"></span>
+                      </td>
+                       <td class="align-middle text-center px-1 ">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${#strings.replace(#strings.replace(activeTask.status,'Assigned to ',''),'Assgined to ','')}">Open</span>
+                      </td>
+                      <td class="align-middle text-center px-1">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.assignee}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center px-1">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.remark}">23/04/18</span>
+                      </td>
+                       
+                      
+                      <td class="align-middle text-center text-sm px-1">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.campaign}" th:if="${role=='admin'}"></span>
+                      </td>
+                      <!--<td class="align-middle text-center">
+                        <a href="javascript:;" class="text-secondary font-weight-bold text-sm" data-toggle="tooltip" data-original-title="Edit user">
+                          Open
+                        </a>
+                      </td>-->
+                    </tr>
+                    
+                    <span th:if="${isScheduled && notTodaysshceduledTask!=null}">
+                    <tr  th:each="activeTask,iStat:${notTodaysshceduledTask.content}" class="open-detail" th:classappend="${activeTask.isDuplicate!=null && activeTask.isDuplicate?'duplicate-task':activeTask.isCounsellingDone!=null && activeTask.isCounsellingDone==true? 'counselled-task': activeTask.isClaimed==null || activeTask.isClaimed==false?'unclaimed-task': activeTask.isCounsellingDone!=null && activeTask.isCounsellingDone==false?'uncounselled-task':'' }" th:id="${activeTask.id}">
+                      <td class="ps-2">
+                     	 <i th:if="${activeTask.isScheduled}" class="material-icons opacity-10 me-2"  style="color: orange;">timer</i>
+                     	 <i th:if="${activeTask.assignedTime < (#temporals.createNow().minusHours('1')) && (activeTask.isClaimed!=null && activeTask.isClaimed==false)}" class="material-icons opacity-10 me-2"  style="color: #f03131;">priority_high</i>
+                         <span class="text-secondary text-sm font-weight-bold" th:text="${#temporals.format(activeTask.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yy HH:mm')}">23/04/18</span>
+                      </td>
+                      
+                      <!--<td class="px-1">
+                        <p class="text-sm font-weight-bold mb-0" th:text="${activeTask.id}">Manager</p>
+                      </td>-->
+                      <td class="align-middle text-center text-sm px-1" >
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.leadPlatform}" ></span>
+                      </td>
+                      
+                      <td class="align-middle text-center px-1">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.leadName}">23/04/18</span>
+                      </td>
+                      <td class="align-middle text-center text-sm px-1">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.area}"></span>
+                      </td>
+                      <td class="align-middle text-center text-sm px-1">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.requirement}"></span>
+                      </td>
+                       <td class="align-middle text-center px-1 ">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${#strings.replace(#strings.replace(activeTask.status,'Assigned to ',''),'Assgined to ','')}">Open</span>
+                      </td>
+                      <td class="align-middle text-center px-1">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.assignee}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center px-1">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.remark}">23/04/18</span>
+                      </td>
+                       
+                      
+                      <td class="align-middle text-center text-sm px-1">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.campaign}" th:if="${role=='admin'}"></span>
+                      </td>
+                      <!--<td class="align-middle text-center">
+                        <a href="javascript:;" class="text-secondary font-weight-bold text-sm" data-toggle="tooltip" data-original-title="Edit user">
+                          Open
+                        </a>
+                      </td>-->
+                    </tr>
+                    </span>
+                  </tbody>
+                  <tbody th:if="${isClosedTask}">
+                    <tr th:each="completedTask,iStat:${completedtasks.content}" class="completed-task open-detail" th:id="${completedTask.activeTask.id}">
+                      <td class="ps-4 d-flex justify-content-start align-items-center">
+                      <i th:if="${completedTask.activeTask.isScheduled}" class="material-icons opacity-10 me-2" style="color: #f03131;">timer</i>
+                         <span class="text-secondary text-sm font-weight-bold" th:text="${#temporals.format(completedTask.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yyyy HH:mm')}">23/04/18</span>
+                      </td>
+                      <!--<td>
+                        <p class="text-sm font-weight-bold mb-0" th:text="${completedTask.id}">Manager</p>
+                      </td>-->
+                      <td class="align-middle text-center text-sm" >
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${completedTask.activeTask.leadPlatform}" ></span>
+                      </td>
+                       <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${completedTask.activeTask.leadName}">23/04/18</span>
+                      </td>
+                     
+                       <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${completedTask.activeTask.area}"></span>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${completedTask.activeTask.requirement}"></span>
+                      </td>
+                      <td class="align-middle text-center ">
+                        <span class="text-secondary text-sm  font-weight-bold"  th:text="${#strings.replace(#strings.replace(completedTask.activeTask.status,'Assigned to ',''),'Assgined to ','')}">Open</span>
+                      </td>
+                      
+                       <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${completedTask.activeTask.assignee}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${completedTask.activeTask.remark}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${completedTask.activeTask.campaign}" th:if="${role=='admin'}"></span>
+                      </td>
+                    </tr>
+                    
+                    
+                  </tbody>
+                </table>
+                
+              </div>
+            </div>
+            
+          <div class="pagination">
+			  <ul th:id="|${taskType}Container_page|">  
+			  	
+			  </ul>
+			  
+			</div>
+			
+<script th:inline="javascript">
+	var myTask=/*[[${myTask}]]*/''
+	var allTask=/*[[${allTask}]]*/''
+	var completedtasks=/*[[${completedtasks}]]*/''
+	var taskType=/*[[${taskType}]]*/''
+	var counselledTask=/*[[${counselledTask}]]*/''
+	var shceduledTask=/*[[${shceduledTask}]]*/''
+	var meetingTask=/*[[${meetingTask}]]*/''
+	var selectedPageSize=/*[[${pagesize}]]*/''
+	//totalMyTasks=myTask.totalElements
+	/*if(myTask){
+		var totalMyTasks=myTask.totalElements
+	
+		if(prevMyTasks==-1){
+			prevMyTasks=totalMyTasks
+		}else if(totalMyTasks>prevMyTasks){
+			notifyMe()
+			prevMyTasks=totalMyTasks
+		}
+	}*/
+	
+	
+	
+	
+	if(taskType=='allTask'){
+		task=allTask
+	}else if(taskType=='myTask'){
+		task=myTask
+	}else if(taskType=='counselledTask'){
+		task=counselledTask
+	}else if(taskType=='shceduledTask'){
+		task=shceduledTask
+	}else if(taskType=='meetingTask'){
+		task=meetingTask
+	}else{
+		task=completedtasks
+	}
+	var element = document.querySelector(".pagination #"+taskType+"Container_page");
+	try{
+		if(element)
+		element.innerHTML = createPagination(task.totalPages, task.number+1,element.id);
+	}catch(err){
+		console.log(err)
+	}
+	
+	
+
+	function createPagination(totalPages, page,parentElementId){
+		console.log("toalPage213123s "+totalPages)
+		console.log("cuurPa23213ge "+page)
+		console.log(parentElementId)
+		  totalPagesMain=''
+		 
+		  totalPagesMain=totalPages
+		  let liTag = '';
+		  let active;
+		  
+		  let beforePage = page - 1;
+		  if(page==1)
+		  	beforePage=page-1
+		  else
+		  	beforePage=page
+		  let afterPage = page ;
+		  if((page+1)==totalPages){
+			afterPage+=1
+			
+			}
+		if(page==totalPages)
+			beforePage=page+1
+		  
+		  
+		  if(page > 1){ //show the next button if the page value is greater than 1
+		    liTag += `<li class="btn prev" onclick="calltable(event,false,true)"><span><i class="fas fa-angle-left"></i> Prev</span></li>`;
+		  }
+		
+		  if(page > 2){ //if page value is less than 2 then add 1 after the previous button
+		    liTag += `<li class="first numb" onclick="calltable(event,false,false)"><span>1</span></li>`;
+		    if(page > 3){ //if page value is greater than 3 then add this (...) after the first li or page
+		      liTag += `<li class="dots"><span>...</span></li>`;
+		    }
+		  }
+		
+		  // how many pages or li show before the current li
+		  if (page == totalPages) {
+		    beforePage = beforePage - 2;
+		  } else if (page == totalPages - 1) {
+		    beforePage = beforePage - 1;
+		  }else if (page>2)
+		  	beforePage=beforePage-1
+		  // how many pages or li show after the current li
+		  if (page == 1) {
+		    afterPage = afterPage + 1;
+		  } else if (page == 2) {
+		    afterPage  = afterPage + 1;
+		  }else if(page<=totalPages-2)
+		  	afterPage =afterPage+1;
+		
+		  for (var plength = beforePage; plength <= afterPage; plength++) {
+			console.log("plent "+plength)
+			console.log("beforePage "+beforePage)
+			console.log("afterPage "+afterPage)
+			console.log("totalPages "+totalPages)
+			if(plength>=0){
+				if (plength > totalPages) { //if plength is greater than totalPage length then continue
+			      continue;
+			    }
+		    if (plength == 0) { //if plength is 0 than add +1 in plength value
+		      plength = plength + 1;
+		    }
+		    if(page == plength){ //if page is equal to plength than assign active string in the active variable
+		      active = "active";
+		    }else{ //else leave empty to the active variable
+		      active = "";
+		    }
+		    liTag += `<li class="numb ${active}" onclick="calltable(event,false,false)"><span>${plength}</span></li>`;
+			console.log(liTag)
+			}
+		    
+		  }
+		
+		  if(page < totalPages - 1){ //if page value is less than totalPage value by -1 then show the last li or page
+		    
+		    if(page < totalPages - 2){ //if page value is less than totalPage value by -2 then add this (...) before the last li or page
+		      liTag += `<li class="dots"><span>...</span></li>`;
+		    }
+		    liTag += `<li class="last numb" onclick="calltable(event,false,false)"><span>${totalPages}</span></li>`;
+		  }
+		
+		  if (page < totalPages) { //show the next button if the page value is less than totalPage(20)
+		    liTag += `<li class="btn next" onclick="calltable(event,true,false)"><span>Next <i class="fas fa-angle-right"></i></span></li>`;
+		  }
+		  document.getElementById(parentElementId).innerHTML = liTag; //add li tag inside ul tag
+		  taskType="myTask"
+		  if(parentElementId=="allTaskContainer_page"){
+				taskType="allTask"
+				allpage=page-1
+		  }else if(parentElementId=="myTaskContainer_page"){
+				taskType="myTask"
+				myTaskPage=page-1
+		  }else if(parentElementId=="completedTaskContainer_page"){
+				taskType="completedTask"
+				completedTaskPage=page-1
+		  }
+		  
+		  // liTag+='<li class="" style="width:105px"><select class="w-90" style="height:90%" id="'+taskType+'pagesize"><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="150">150</option></select></li>'
+		  
+		  return liTag; //reurn the li tag
+		  }
+		  
+		  function calltable(e,isNext,isPrev){
+			debugger;
+			let nextPage=0;
+			if(isNext){
+				nextPage=$(".pagination #"+currTaskType+"Container_page .active span").text()
+				nextPage=+nextPage
+			}else if(isPrev){
+				nextPage=$(".pagination #"+currTaskType+"Container_page .active span").text()
+				nextPage=+nextPage
+				console.log("@131")
+				console.log(nextPage)
+				nextPage=nextPage-2
+				console.log(nextPage)
+			}else{
+				var spanChild
+				if(e.target.lastChild.nodeName=="SPAN"){
+					spanChild=e.target.lastChild
+				}else{
+					spanChild=e.target.lastChild.parentElement
+				}
+				console.log(e.target.lastChild)
+				console.log(spanChild)
+				nextPage=spanChild.innerText
+				nextPage=+nextPage
+				nextPage=nextPage-1
+			}
+			
+			nextPage=+nextPage
+			currPage=nextPage
+			var filterRequests={}
+			  filterRequests['leadPlatform']=$("#leadPlatform").val()
+			   filterRequests['assignee']=$("#assignee").val()
+			   filterRequests['fromDate']=$("#fromDate").val()
+			   filterRequests['toDate']=$("#toDate").val()
+			   filterRequests['isActive']=true
+			  $.ajax({
+				url:'/crmbot/singletasktable?page='+(nextPage)+"&size="+$("#pagesize").val()+"&sorting=createdOn&desc=true&taskType="+currTaskType,
+				type:'PUT',
+				contentType:'application/json',
+				data:JSON.stringify(filterRequests),
+				success:function(data){
+					$("#"+currTaskType+"Container_inner").html(data)
+				}
+			})
+		}
+		
+	
+
+</script>

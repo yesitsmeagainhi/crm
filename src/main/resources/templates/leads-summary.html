@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Your Leads</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        #summaryTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        #summaryTable th, #summaryTable td {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        #summaryTable th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+        }
+
+        #summaryTable td {
+            font-size: 0.9rem;
+        }
+
+        .notification {
+            display: inline-block;
+            min-width: 20px;
+            padding: 5px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+
+        .status-closed {
+            color: red;
+            font-weight: bold;
+        }
+
+        .status-converted, .status-admission-done {
+            color: green;
+            font-weight: bold;
+        }
+
+        .modal-content {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 mt-8">
+        <h1 class="text-3xl text-center mb-6">Review Your Leads</h1>
+         <a href="https://crm.abscareer.com/search.html" style="position:fixed; bottom:20px; right:20px; padding:10px 20px; background-color:#007bff; color:white; text-decoration:none; border:none; border-radius:5px; cursor:pointer; font-size:16px; display:inline-block;">
+        Search Lead
+    </a>
+
+        <div class="mb-8">
+            <label for="year-filter" class="block text-gray-700 text-sm font-bold mb-2">Filter by Date:</label>
+            <div style="display: flex; flex-direction: row; align-items: center;">
+                <select id="year-filter" onchange="updateMonthDropdown()" class="bg-white border border-gray-300 rounded-lg py-2 px-4 block appearance-none leading-normal" style="flex: 1;">
+                    <option value="">All Years</option>
+                </select>
+                <span id="year-counter" style="margin-left: 10px;">0</span>
+            </div>
+            <div style="display: flex; flex-direction: row; align-items: center;">
+                <select id="month-filter" onchange="updateDayDropdown()" class="bg-white border border-gray-300 rounded-lg py-2 px-4 block appearance-none leading-normal" style="flex: 1;">
+                    <option value="">All Months</option>
+                </select>
+                <span id="month-counter" style="margin-left: 10px;">0</span>
+            </div>
+            <div style="display: flex; flex-direction: row; align-items: center;">
+                <select id="day-filter" onchange="filterByHierarchy()" class="bg-white border border-gray-300 rounded-lg py-2 px-4 block appearance-none leading-normal" style="flex: 1;">
+                    <option value="">All Days</option>
+                </select>
+                <span id="day-counter" style="margin-left: 10px;">0</span>
+            </div>
+        </div>
+
+        <table id="summaryTable">
+            <tr><th>Total Leads</th><td id="totalLeads"></td></tr>
+            <tr><th>Counselling Done</th><td id="counsellingDone"></td></tr>
+            <tr><th>Admission Done</th><td id="admissionDone"></td></tr>
+            <tr><th>D.Pharm Admissions</th><td id="dPharmAdmissions"></td></tr>
+            <tr><th>B.Pharm Admissions</th><td id="bPharmAdmissions"></td></tr>
+            <tr><th>Other Admissions</th><td id="otherAdmissions"></td></tr>
+            <tr><th>Total Earnings</th><td id="totalEarnings"></td></tr>
+        </table>
+
+        <div class="mb-8">
+            <label for="course-filter" class="block text-gray-700 text-sm font-bold mb-2">Filter by Course:</label>
+            <select id="course-filter" onchange="filterByCourse()" class="bg-white border border-gray-300 rounded-lg py-2 px-4 block w-full"></select>
+        </div>
+
+        <div class="mb-8">
+            <label for="lead-type-filter" class="block text-gray-700 text-sm font-bold mb-2">Filter by Lead Type:</label>
+            <select id="lead-type-filter" onchange="filterByLeadType()" class="bg-white border border-gray-300 rounded-lg py-2 px-4 block w-full"></select>
+        </div>
+
+        <div class="mb-8">
+            <button id="filter-no-comment" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mb-2">No Comment - 0</button>
+            <button id="todaysLeadsButton" onclick="filterTodaysLeads()" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mb-2">Today's Schedule<span id="todaysLeadsCount" class="notification"></span></button>
+            <button onclick="filterLeadsWithoutSchedule()" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mb-2">Leads Without Schedule <span id="leads-without-schedule-count" class="ml-2 bg-red-500 text-white rounded-full px-2 py-0.5"></span></button>
+            <button onclick="filterCounsellingAssignedNotDone()" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mb-2">Counselling Not Done <span id="counselling-assigned-not-done-count" class="ml-2 bg-red-500 text-white rounded-full px-2 py-0.5"></span></button>
+            <button onclick="filterCounsellingAssigned()" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mb-2">Counselling Done <span id="counselling-assigned-count" class="ml-2 bg-red-500 text-white rounded-full px-2 py-0.5"></span></button>
+            <div class="mt-4">
+                <input type="date" id="scheduled-date-picker" class="bg-white border border-gray-300 rounded-lg py-2 px-4 block w-full">
+                <button onclick="filterByDate()" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mt-2">Apply Date Filter</button>
+            </div>
+        </div>
+
+        <div id="leads-counter" class="text-gray-700 text-xl mb-8">Total Leads: 0</div>
+
+        <div id="leads-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+        <div id="leadModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+            <div class="modal-content bg-white p-8 rounded-md max-w-md w-full">
+                <h2 id="leadName" class="text-2xl font-medium mb-4"></h2>
+                <div id="leadDetails"></div>
+                <button id="closeLeadModal" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md">Close</button>
+            </div>
+        </div>
+
+        <div id="popupModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+            <div class="modal-content bg-white p-8 rounded-md max-w-md w-full">
+                <h2 class="text-2xl font-medium mb-4">Additional Lead Details</h2>
+                <div id="popupDetails"></div>
+                <button id="closePopupModal" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+	<script th:inline="javascript">
+			
+			var userName = /*[[${userName}]]*/''
+        // Initialize globalData variable
+        let globalData = [];
+
+        // Initialize the application by loading data
+        function initialize() {
+			debugger
+            fetch('/crmbot/report-json')
+                .then(response => response.json())
+                .then(data => {
+                        debugger
+                        globalData = data
+
+                        // Filter and initialize data
+                        const targetCaller = userName;
+                        globalData = globalData.filter(lead => lead['telecallerName'] === targetCaller);
+                        globalData = globalData.filter(lead => lead['managerName'] !== 'vikasji7676@gmail.com');
+
+                        // Assign unique ID to each lead
+                        globalData = globalData.map((lead, index) => ({
+                            ...lead,
+                            id: `lead-${index}-${lead['phoneNumber'] || 'unknown'}`
+                        }));
+
+                        const dateMap = processLeadsByDate(globalData);
+                        populateYearDropdown(dateMap); // Initialize by populating years
+                        calculateSummaryInfo(globalData);
+                        updateTodaysLeadsCount(globalData);
+                        populateCourseDropdown();
+                        populateLeadTypeDropdown();
+                        renderLeads(globalData);
+                        updateNoCommentCount();
+                        updateCounsellingButtonCounts(); // Update counselling buttons count
+                        updateLeadsWithoutScheduleCount();
+                    //reader.readAsBinaryString(blob);
+                });
+        }
+
+
+var password = "Darshana@ABS";
+
+// Time period in milliseconds (12 hours = 12 * 60 * 60 * 1000)
+var timePeriod = 12 * 60 * 60 * 1000;
+
+// Function to protect with passcode
+
+
+
+    </script>
+        <script src="/js/script.js"></script>
+
+</body>

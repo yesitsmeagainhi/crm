@@ -1,0 +1,138 @@
+<th:block layout:replace="fragments/htmlhead"></th:block>
+
+<body class="g-sidenav-show  bg-gray-200">
+  <th:block layout:replace="fragments/sidebar"></th:block>	
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    <th:block layout:replace="fragments/header"></th:block>
+    <!-- End Navbar -->
+    
+    <div class="container-fluid pb-4 task-main-container">
+	  <div class="row d-flex justify-content-end">
+	  	<div class="col-3 col-md-1">
+	  	<button class="btn btn-primary cd-popup-trigger2 mt-0 ms-auto"><i  class="material-icons opacity-10 me-2" >add</i></button>
+	  	</div>
+	  </div>
+      <div class="row" id="">
+        <div class="col-12 " th:if="${isAdmin}" id="add-management-table-container">
+          <div class="card mb-4" id="">
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive  p-0">
+              	<table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Sr No.</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Form Id</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Platform</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Campaign Name</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Message</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="facebookLeadConfig,iStat:${facebookLeadConfigs}" >
+                      <td class="ps-4 d-flex justify-content-start align-items-center">
+                         <span class="text-secondary text-sm font-weight-bold" th:text="${iStat.index+1}">23/04/18</span>
+                      </td>
+                      <td>
+                        <p class="text-sm font-weight-bold mb-0" th:id="|leadFormId${facebookLeadConfig.id}|" th:text="${facebookLeadConfig.leadId}">Manager</p>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:id="|leadPlatform${facebookLeadConfig.id}|" th:text="${facebookLeadConfig.platform}">Facebook</span>
+                      </td>
+                      <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:id="|leadCampaignName${facebookLeadConfig.id}|" th:text="${facebookLeadConfig.campaignName}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center ">
+                        <span class="text-secondary text-sm  font-weight-bold" th:id="|leadIsActive${facebookLeadConfig.id}|" th:text="${facebookLeadConfig.isActive}">Open</span>
+                      </td>
+                       <td class="align-middle text-center ">
+                        <span class="text-secondary text-sm  font-weight-bold" th:id="|message${facebookLeadConfig.id}|" th:text="${facebookLeadConfig.message}">Open</span>
+                      </td>
+                      <td class="cursor-pointer">
+                      	<i  th:id="editConfig" th:name="${facebookLeadConfig.id}" class="material-icons m-0 opacity-10 cursor-pointer cd-popup-trigger2">edit</i>
+                      </td>
+                      
+                    </tr>
+                    
+                    
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+   <div class="cd-popup2 " role="alert">
+	<div class="cd-popup-container2 assign-popup text-dark" style="min-width: 300px;">
+	<div class="card-header text-lg py-2" id="configPopupHeader" style="background: #e3e3e3;border-radius: 5px 5px 0px 0px;">Add Campaign</div>
+		<form role="form"  class="mt-3 d-flex flex-column align-items-center justify-content-center">
+			<div class="input-group input-group-outline mb-3 w-80 is-filled	">
+				<label class="form-label">Form Id</label>
+				<input type="text" class="p-2 form-control "  id="formId" >
+			</div>
+			<div class="input-group input-group-outline mb-3 w-80 is-filled">
+				<label class="form-label">Campaign Name</label>
+				<input type="text"  class="p-2 form-control " id="campaignName" >
+			</div>
+			<div class="input-group input-group-outline mb-3 w-80">
+				<select id="platform">
+					<option value="0" id="0">Platform</option>
+					<option value="Facebook">Facebook</option>
+					<option value="Google" >Google</option>
+					<option value="JustDial">Just Dial</option>
+					<option value="Whatsapp" >Whatsapp</option>
+				</select>
+			</div>
+			<div class="input-group input-group-outline mb-3 w-80">
+				<select id="isActive">
+					<option value="0" id="0">Status</option>
+					<option value="true" id="0">Active</option>
+					<option value="false" id="0">In Active</option>
+				</select>
+			</div>
+			<div class="input-group input-group-outline mb-3 w-80 is-filled">
+				<label class="form-label">Message</label>
+				<textarea  class="p-2 form-control " id="message" >
+				</textarea>
+			</div>
+			
+		</form>
+		
+		
+		
+		
+		<ul class="cd-buttons2 ps-0">
+			<li><a  class="cd-popup-close2_2">Cancel</a></li>
+			<li><a  class="add-campaign  cursor-pointer">Add</a></li>
+		</ul>
+		<a href="#0" class="cd-popup-close_2 img-replace">Close</a>
+	</div> <!-- cd-popup-container -->
+	
+</div>
+  <!--   Core JS Files   -->
+  <script src="/js/core/popper.min.js"></script>
+  <script src="/js/core/bootstrap.min.js"></script>
+  <script src="/js/perfect-scrollbar.min.js"></script>
+  <script src="/js/smooth-scrollbar.min.js"></script>
+  <script src="/js/addmanagement.js"></script>
+  <script src="/js/custom-sidebar.js"></script>
+  <script src="/js/tasks.js"></script>
+  <script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = {
+        damping: '0.5'
+      }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+  </script>
+  <!-- Github buttons -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+  <script src="/js/material-dashboard.min.js?v=3.0.4"></script>
+</body>
+</html>

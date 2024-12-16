@@ -1,0 +1,61 @@
+<th:block layout:replace="fragments/htmlhead"></th:block>
+
+<body class="g-sidenav-show  bg-gray-200">
+  <th:block layout:replace="fragments/sidebar"></th:block>
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    <th:block layout:replace="fragments/header"></th:block>
+    <div class="container-fluid py-2">
+      <div class="row d-flex justify-content-end">
+	  	<div class="col-3 col-md-1">
+	  	<button class="btn btn-primary cd-popup-trigger-mail mt-0 ms-auto"><i  class="material-icons opacity-10 me-2" >add</i></button>
+	  	</div>
+	  </div>
+	  <div class="row" id="">
+        <div class="col-12 " th:if="${isAdmin}" id="mail-config-table-container">
+        </div>
+	  </div>
+    </div>
+  </main>
+  
+  
+  
+<div class="cd-popup cd-popup-mail" role="alert">
+	<div class="cd-popup-container text-dark">
+	<div class="card-header text-lg py-2" id="configPopupHeader" style="background: #e3e3e3;border-radius: 5px 5px 0px 0px;">Add Mail</div>
+		<form role="form"  class="mt-3 d-flex flex-column align-items-center justify-content-center">
+			<div class="input-group input-group-outline mb-3 w-80 is-filled	">
+				<label class="form-label">Mail Id</label>
+				<input type="text" class="p-2 form-control "  id="mailId" >
+			</div>
+			<div class="input-group input-group-outline mb-3 w-80 is-filled">
+				<label class="form-label">Password</label>
+				<input type="password"  class="p-2 form-control position-relative" id="password" >
+				 <i class="material-icons opacity-10 " id="pass-visible" style="position: absolute;top: 25%;right:4%;cursor:pointer;z-index: 100;">visibility</i>
+			</div>
+			
+			<div class="input-group input-group-outline mb-3 w-80">
+				<select id="isActive">
+					<option value="0" id="0">Status</option>
+					<option value="true" id="0">Active</option>
+					<option value="false" id="0">In Active</option>
+				</select>
+			</div>
+			
+		</form>
+		<ul class="cd-buttons ps-0">
+			<li><a  class="add-mail-config cd-popup-close2">Add</a></li>
+			<li><a  class="cd-popup-close2">Discard</a></li>
+		</ul>
+		<a href="#0" class="cd-popup-close img-replace">Close</a>
+	</div>
+	</div> <!-- cd-popup-container -->
+</div> <!-- cd-popup -->
+</body>
+<script src="/js/core/popper.min.js"></script>
+  <script src="/js/core/bootstrap.min.js"></script>
+  <script src="/js/perfect-scrollbar.min.js"></script>
+  <script src="/js/smooth-scrollbar.min.js"></script>
+  <script src="/js/add-task.js"></script>
+   <script src="/js/mail-config.js"></script>
+   

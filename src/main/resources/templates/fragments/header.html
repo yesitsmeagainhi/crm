@@ -1,0 +1,136 @@
+<style>
+	.cd-popup-automation {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(85, 89, 96, 0.37);
+  opacity: 0;
+  visibility: hidden;
+  z-index: 99999999;
+  -webkit-transition: opacity 0.3s 0s, visibility 0s 0.3s;
+  -moz-transition: opacity 0.3s 0s, visibility 0s 0.3s;
+  transition: opacity 0.3s 0s, visibility 0s 0.3s;
+}
+.cd-popup-automation.is-visible {
+  opacity: 1;
+  visibility: visible;
+  -webkit-transition: opacity 0.3s 0s, visibility 0s 0s;
+  -moz-transition: opacity 0.3s 0s, visibility 0s 0s;
+  transition: opacity 0.3s 0s, visibility 0s 0s;
+}
+.automated{
+	color:green;
+}
+</style>
+<script>
+
+	$('body').on('click','.cd-popup-trigger-automation', function(event){
+		event.preventDefault();
+		$('.cd-popup-automation').addClass('is-visible');
+	});
+	
+	$('body').on('click','.cd-popup-close-atomation', function(event){
+		event.preventDefault();
+		$('.cd-popup-automation').removeClass('is-visible');
+	});
+	$('body').on('click','.cd-popup-automation', function(event){
+		if( $(event.target).is('.cd-popup-close-atomation') || $(event.target).is('.cd-popup-automation') ||  $(event.target).is('.cd-popup-close2')  ) {
+			
+			$(this).removeClass('is-visible');
+			try{
+				
+					$(".complete-schedule").addClass('logout-btn')
+					$(".complete-schedule").removeClass('complete-schedule')
+					$("#logout-popup-title").text('Are you sure you want to logout')
+				
+			}catch(err){
+				console.log(err)
+			}
+			
+		}
+	});
+	$('body').on('click','.automate_btn', function(event){
+		event.preventDefault();
+		if($(".automation-select").val()!="0"){
+			$.ajax({
+				url:"/automation/automate?parameter="+$(".automation-select").val(),
+				success:function(data){
+					if(data=='stopped'){
+						$(".cd-popup-trigger-automation").removeClass("automated")
+					}else{
+						$(".cd-popup-trigger-automation").addClass("automated")
+					}
+					alert("Automation "+data)
+					
+				},error:function(err){
+					
+				}
+			})
+		}
+	});
+</script>
+<nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl me-0" id="navbarBlur" data-scroll="true">
+      <div class="container-fluid py-1 px-3">
+        <nav aria-label="breadcrumb">
+        <ul class="navbar-nav2 d-flex row mb-0 px-0 hstack justify-content-end">
+            
+            <li class="nav-item2 d-none xl-sidebar d-xl-flex  ps-3  align-items-center">
+              <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav2">
+                <div class="sidenav-toggler-inner2">
+                  <i class="sidenav-toggler-line"></i>
+                  <i class="sidenav-toggler-line"></i>
+                  <i class="sidenav-toggler-line"></i>
+                </div>
+              </a>
+            </li>
+        </ul>
+                  </nav>
+        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+       
+          <div class="ms-md-auto pe-md-0 d-flex align-items-center">
+           
+            <div class="input-group input-group-outline">
+              <label class="form-label">Type here...</label>
+              <input type="text" id="search-box" class="form-control">
+            </div>
+            <div class="mx-2 btn cd-popup-trigger-automation my-0" th:classappend="${isAutomated?'automated':''}" th:if="${role == 'manager' || role=='admin'}">
+       		 automate	
+       	 </div>
+          </div>
+          <ul class="navbar-nav  justify-content-end">
+            
+            <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
+              <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">
+                <div class="sidenav-toggler-inner">
+                  <i class="sidenav-toggler-line"></i>
+                  <i class="sidenav-toggler-line"></i>
+                  <i class="sidenav-toggler-line"></i>
+                </div>
+              </a>
+            </li>
+          
+            
+          </ul>
+        </div>
+      </div>
+      
+      <div class="cd-popup-automation" role="alert">
+	<div class="cd-popup-container text-dark">
+			<div class="card-header text-lg py-2" style="background: #e3e3e3;border-radius: 5px 5px 0px 0px;">Select Parameter</div>
+		<select class="automation-select my-3 w-80" >
+			<option value="0" id="0">Select Paramater</option>
+			<option value="Remove" >Stop Automation
+			</option>
+			<option value="Random" >Start Automation
+			</option>
+		</select>
+		<ul class="cd-buttons ps-0">
+			<li><a  class=" cd-popup-close-atomation">Cancel</a></li>
+			<li><a  class="cd-popup-close-atomation automate_btn">Automate</a></li>
+		</ul>
+		<a href="#0" class="cd-popup-close cd-popup-close-atomation img-replace">Close</a>
+	</div> <!-- cd-popup-container -->
+</div>
+    </nav>

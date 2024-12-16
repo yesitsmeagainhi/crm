@@ -1,0 +1,922 @@
+
+<th:block layout:replace="fragments/htmlhead"></th:block>
+<style>
+	#toDate,#fromDate{
+		border-radius: 5px 5px;
+		padding: 8px;
+	}
+	
+</style>
+
+<body class="g-sidenav-show  bg-gray-200">
+  <th:block layout:replace="fragments/sidebar"></th:block>
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    <th:block layout:replace="fragments/header"></th:block>
+    <!-- End Navbar -->
+    <div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-xl-3 col-sm-5  mb-4 ">
+        	<select class="role-select w-100" autocomplete="off">
+				<option value="" id="0">Select Role</option>
+				<option th:each="nextRole:${nextRoles}" th:value="${nextRole}" th:text="${nextRole}">
+				</option>
+			</select>
+        </div>
+        <div class="col-xl-3 col-sm-5  mb-4 d-none user-select-label" >
+        	<select th:each="nextUser,istat:${nextUsers}" class="user-select w-100 d-none" th:id="${nextRoles[istat.index]}" autocomplete="off">
+				<option value="" id="0">Select User</option>
+				<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="${user.get('username')}">
+				</option>
+			</select>
+        </div>
+        <div class="col-xl-3 col-sm-5  mb-4  owner-select-label" >
+        	<select  class="owner-select w-100 "  autocomplete="off">
+				<option value="" id="0">Is Owner</option>
+				<option value="Yes" id="0">Yes</option>
+				<option value="No" id="0">No</option>
+			</select>
+        </div>
+        <div class="col-xl-3 col-sm-5  mb-4 ">
+        	<select class="w-100" id="platform" autocomplete="off">
+	        	<option value="">select platform
+	        	</option>
+	        	<option th:each="platform:${platforms}"  th:value="${platform.name}" th:text="${platform.name}">Manager
+	        	</option>
+	        	
+        	</select>
+        </div>
+        <div class="col-xl-3 col-sm-5 mb-4 ">
+        	<select class="w-100" id="course" autocomplete="off">
+	        	<option value="">select course
+	        	</option>
+	        	<option th:each="course:${courses}"  th:value="${course.courseName}" th:text="${course.courseName}">Manager
+	        	</option>
+	        	
+        	</select>
+        </div>
+         <div class="col-xl-3 col-sm-5 mb-4 mt-1">
+        	<select class="w-100" id="status" autocomplete="off">
+	        	<option value="">select status
+	        	</option>
+	        	<option value="open">Open
+	        	</option>
+	        	<option value="processed">Processed
+	        	</option>
+	        	<option value="completed">Admission Done
+	        	</option>
+	        	<option value="closed">Task Closed
+	        	</option>
+        	</select>
+        	
+        </div>
+         <div class="col-xl-3 col-sm-5 mb-4 mt-1">
+        	<select class="w-100" id="scheduleStatus" autocomplete="off">
+	        	<option value="">select schedule status
+	        	</option>
+	        	<option value="scheduled">Scheduled
+	        	</option>
+	        	<option value="not scheduled">Not Scheduled
+	        	</option>
+        	</select>
+         </div>
+          <div class="col-xl-3 col-sm-5 mb-4 mt-1">
+        	<select class="w-100" id="counsellingStatus" autocomplete="off">
+	        	<option value="">select counselling status
+	        	</option>
+	        	<option value="counselled">Counselled
+	        	</option>
+	        	<option value="not counselled">Not Counselled
+	        	</option>
+        	</select>
+        	
+         </div>
+          <div class="col-xl-3 col-sm-5 mb-4 mt-1">
+        	<select class="w-100" id="leadType" autocomplete="off">
+	        	<option value="">select Lead Type
+	        	</option>
+	        	<option value="PROSPECT">Prospect
+	        	</option>
+	        	<option value="HOT">Hot
+	        	</option>
+	        	<option value="COLD">Cold
+	        	</option>
+        	</select>
+        	
+         </div>
+         <div class="col-xl-3 col-sm-5 mb-4 mt-1 d-flex">
+         <label class="w-20 mt-2 text-left" style="text-align: left;">From Date :</label>
+			<input type="date" id="fromDate" class="mb-3 w-80 px-2 " autocomplete="off" style="border: 1px solid #c0c6cc;">
+         </div>
+          <div class="col-xl-3 col-sm-5 mb-4  d-flex">
+          	<label class="w-20 mt-2 text-left" style="text-align: left;">To Date :</label>
+			<input type="date" id="toDate" class="mb-3 w-80 px-2 " autocomplete="off"  style="border: 1px solid #c0c6cc;">
+			
+          </div>
+          <div class="col-xl-2 col-sm-5 mb-4  d-flex">
+         	 <button class="btn btn-primary dashboard-sumbit mt-0 col-12 row">Sumbit</button>
+          </div>
+            <div class="col-xl-2 col-sm-5 mb-4  d-flex">
+         	 <button class="btn btn-primary graph_report col-12 row">download
+          </div>
+    </div>
+      <div class="row">
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+          <div class="card">
+            <div class="card-header p-3 pt-2">
+              <div class="icon icon-lg icon-shape bg-gradient-white shadow-dark text-center border-radius-xl mt-n4 position-absolute">
+                <img src="/img/logos/all.png" class="position-absolute dash-logo-img" width="40" />
+              </div>
+              <div class="text-end pt-1">
+                <p class="text-sm mb-0 text-capitalize">Total Leads</p>
+                <h4 class="mb-0" id="totalLeads" th:text="${totalTask}">5,300</h4>
+              </div>
+            </div>
+            <hr class="dark horizontal my-0">
+            <div class="card-footer p-3">
+              <!-- <p class="mb-0"><span class="text-success text-sm font-weight-bolder">+55% </span>than last week</p>-->
+            </div>
+          </div>
+        </div>
+       
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+          <div class="card">
+            <div class="card-header p-3 pt-2">
+              <div class="icon icon-lg icon-shape bg-gradient-white shadow-primary text-center border-radius-xl mt-n4 position-absolute">
+                <img src="/img/logos/present.png" class="position-absolute dash-logo-img" style="top:10%;left:13%" width="50" />
+              </div>
+              <div class="text-end pt-1">
+              	<p class="text-sm mb-0 text-capitalize">Todays Leads</p>
+                <h4 class="mb-0" th:text="${totalTodaysTask}">103,430</h4>
+              </div>
+            </div>
+            <hr class="dark horizontal my-0">
+            <div class="card-footer p-3">
+             <!--  <p class="mb-0"><span class="text-success text-sm font-weight-bolder">+3% </span>than last month</p>-->
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+          <div class="card">
+            <div class="card-header p-3 pt-2">
+              <div class="icon icon-lg icon-shape bg-gradient-white shadow-success text-center border-radius-xl mt-n4 position-absolute" >
+                <img src="/img/logos/processing.png" class="position-absolute dash-logo-img" style="top:8%;left:12%" width="50" />
+              </div>
+              <div class="text-end pt-1">
+              <p class="text-sm mb-0 text-capitalize">In Progess Leads</p>
+                <h4 class="mb-0" th:text="${totalActiveTask}">2,300</h4>
+              </div>
+            </div>
+            <hr class="dark horizontal my-0">
+            <div class="card-footer p-3">
+             <!--  <p class="mb-0"><span class="text-danger text-sm font-weight-bolder">-2%</span> than yesterday</p>-->
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+          <div class="card">
+            <div class="card-header p-3 pt-2">
+              <div class="icon icon-lg icon-shape bg-gradient-white shadow-info text-center border-radius-xl mt-n4 position-absolute">
+                <img src="/img/logos/checked.png" class="position-absolute dash-logo-img" style="top:13%;left:16%" width="45" />
+              </div>
+              <div class="text-end pt-1">
+                <p class="text-sm mb-0 text-capitalize">Converted Leads</p>
+                <h4 class="mb-0" th:text="${totalConvertedTask}">3,462</h4>
+              </div>
+            </div>
+          <hr class="dark horizontal my-0">
+            <div class="card-footer p-3">
+              <!--  <p class="mb-0"><span class="text-success text-sm font-weight-bolder">+5% </span>than yesterday</p>
+            </div>-->
+          </div>
+        </div>
+      </div>
+      <div class="mt-4">
+        <div class=" col-12 mt-4 mb-4">
+          <div class="card z-index-2 p-4">
+           <!-- <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
+              <div class="bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1">
+                <div class="chart">
+                  <canvas id="chart-bars" class="chart-canvas" height="300"></canvas>
+                  
+                </div>
+              </div>
+            </div>-->
+            
+            <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+
+            <div class="card-body text-center">
+              <h6 class="mb-0 ">Total leads by telecallers</h6>
+              <!--	<p class="text-sm ">(+15%) increase in today leads.</p>
+              <hr class="dark horizontal">
+              <div class="d-flex ">
+                <i class="material-icons text-sm my-auto me-1">schedule</i>
+                <p class="mb-0 text-sm"> campaign sent 2 days ago </p>
+              </div>-->
+            </div>
+          </div>
+        </div>
+       <!-- <div class="col-lg-4 col-md-6 mt-4 mb-4">
+          <div class="card z-index-2  ">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
+              <div class="bg-gradient-success shadow-success border-radius-lg py-3 pe-1">
+                <div class="chart">
+                  <canvas id="chart-line" class="chart-canvas" height="170"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <h6 class="mb-0 "> Daily Leads </h6>
+              <p class="text-sm "> (<span class="font-weight-bolder">+15%</span>) increase in today leads. </p>
+              <hr class="dark horizontal">
+              <div class="d-flex ">
+                <i class="material-icons text-sm my-auto me-1">schedule</i>
+                <p class="mb-0 text-sm"> updated 4 min ago </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 mt-4 mb-3">
+          <div class="card z-index-2 ">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
+              <div class="bg-gradient-dark shadow-dark border-radius-lg py-3 pe-1">
+                <div class="chart">
+                  <canvas id="chart-line-tasks" class="chart-canvas" height="170"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <h6 class="mb-0 ">Completed Tasks</h6>
+              <p class="text-sm ">Last Campaign Performance</p>
+              <hr class="dark horizontal">
+              <div class="d-flex ">
+                <i class="material-icons text-sm my-auto me-1">schedule</i>
+                <p class="mb-0 text-sm">just updated</p>
+              </div>
+            </div>
+          </div>
+        </div>-->
+      </div>
+      <!--<div class="row mb-4">
+        <div class="col-12 mb-md-0 mb-4">
+          <div class="card">
+            <div class="card-header pb-0">
+              <div class="row">
+                <div class="col-lg-6 col-7">
+                  <h6>Projects</h6>
+                  <p class="text-sm mb-0">
+                    <i class="fa fa-check text-info" aria-hidden="true"></i>
+                    <span class="font-weight-bold ms-1">30 done</span> this month
+                  </p>
+                </div>
+                <div class="col-lg-6 col-5 my-auto text-end">
+                  <div class="dropdown float-lg-end pe-4">
+                    <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="fa fa-ellipsis-v text-secondary"></i>
+                    </a>
+                    <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
+                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Action</a></li>
+                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Another action</a></li>
+                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Something else here</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Companies</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Members</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Budget</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Completion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div>
+                            <img src="/img/small-logos/logo-xd.svg" class="avatar avatar-sm me-3" alt="xd">
+                          </div>
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">Material XD Version</h6>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="avatar-group mt-2">
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
+                            <img src="/img/team-1.jpg" alt="team1">
+                          </a>
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
+                            <img src="/img/team-2.jpg" alt="team2">
+                          </a>
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Alexander Smith">
+                            <img src="/img/team-3.jpg" alt="team3">
+                          </a>
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
+                            <img src="/img/team-4.jpg" alt="team4">
+                          </a>
+                        </div>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-xs font-weight-bold"> $14,000 </span>
+                      </td>
+                      <td class="align-middle">
+                        <div class="progress-wrapper w-75 mx-auto">
+                          <div class="progress-info">
+                            <div class="progress-percentage">
+                              <span class="text-xs font-weight-bold">60%</span>
+                            </div>
+                          </div>
+                          <div class="progress">
+                            <div class="progress-bar bg-gradient-info w-60" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div>
+                            <img src="/img/small-logos/logo-atlassian.svg" class="avatar avatar-sm me-3" alt="atlassian">
+                          </div>
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">Add Progress Track</h6>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="avatar-group mt-2">
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
+                            <img src="/img/team-2.jpg" alt="team5">
+                          </a>
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
+                            <img src="/img/team-4.jpg" alt="team6">
+                          </a>
+                        </div>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-xs font-weight-bold"> $3,000 </span>
+                      </td>
+                      <td class="align-middle">
+                        <div class="progress-wrapper w-75 mx-auto">
+                          <div class="progress-info">
+                            <div class="progress-percentage">
+                              <span class="text-xs font-weight-bold">10%</span>
+                            </div>
+                          </div>
+                          <div class="progress">
+                            <div class="progress-bar bg-gradient-info w-10" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div>
+                            <img src="/img/small-logos/logo-slack.svg" class="avatar avatar-sm me-3" alt="team7">
+                          </div>
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">Fix Platform Errors</h6>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="avatar-group mt-2">
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
+                            <img src="/img/team-3.jpg" alt="team8">
+                          </a>
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
+                            <img src="/img/team-1.jpg" alt="team9">
+                          </a>
+                        </div>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-xs font-weight-bold"> Not set </span>
+                      </td>
+                      <td class="align-middle">
+                        <div class="progress-wrapper w-75 mx-auto">
+                          <div class="progress-info">
+                            <div class="progress-percentage">
+                              <span class="text-xs font-weight-bold">100%</span>
+                            </div>
+                          </div>
+                          <div class="progress">
+                            <div class="progress-bar bg-gradient-success w-100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div>
+                            <img src="/img/small-logos/logo-spotify.svg" class="avatar avatar-sm me-3" alt="spotify">
+                          </div>
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">Launch our Mobile App</h6>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="avatar-group mt-2">
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
+                            <img src="/img/team-4.jpg" alt="user1">
+                          </a>
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
+                            <img src="/img/team-3.jpg" alt="user2">
+                          </a>
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Alexander Smith">
+                            <img src="/img/team-4.jpg" alt="user3">
+                          </a>
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
+                            <img src="/img/team-1.jpg" alt="user4">
+                          </a>
+                        </div>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-xs font-weight-bold"> $20,500 </span>
+                      </td>
+                      <td class="align-middle">
+                        <div class="progress-wrapper w-75 mx-auto">
+                          <div class="progress-info">
+                            <div class="progress-percentage">
+                              <span class="text-xs font-weight-bold">100%</span>
+                            </div>
+                          </div>
+                          <div class="progress">
+                            <div class="progress-bar bg-gradient-success w-100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div>
+                            <img src="/img/small-logos/logo-jira.svg" class="avatar avatar-sm me-3" alt="jira">
+                          </div>
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">Add the New Pricing Page</h6>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="avatar-group mt-2">
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
+                            <img src="/img/team-4.jpg" alt="user5">
+                          </a>
+                        </div>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-xs font-weight-bold"> $500 </span>
+                      </td>
+                      <td class="align-middle">
+                        <div class="progress-wrapper w-75 mx-auto">
+                          <div class="progress-info">
+                            <div class="progress-percentage">
+                              <span class="text-xs font-weight-bold">25%</span>
+                            </div>
+                          </div>
+                          <div class="progress">
+                            <div class="progress-bar bg-gradient-info w-25" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="25"></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div>
+                            <img src="/img/small-logos/logo-invision.svg" class="avatar avatar-sm me-3" alt="invision">
+                          </div>
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm">Redesign New Online Shop</h6>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="avatar-group mt-2">
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
+                            <img src="/img/team-1.jpg" alt="user6">
+                          </a>
+                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
+                            <img src="/img/team-4.jpg" alt="user7">
+                          </a>
+                        </div>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-xs font-weight-bold"> $2,000 </span>
+                      </td>
+                      <td class="align-middle">
+                        <div class="progress-wrapper w-75 mx-auto">
+                          <div class="progress-info">
+                            <div class="progress-percentage">
+                              <span class="text-xs font-weight-bold">40%</span>
+                            </div>
+                          </div>
+                          <div class="progress">
+                            <div class="progress-bar bg-gradient-info w-40" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="40"></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>-->
+      
+      <div class="card mb-4" id="">
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive  p-0">
+              	<table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Sr No.</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Telecaller</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Not Processed</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Processed</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Counselling Done</th>
+                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Admission Done</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  	<tr th:each="telecaller,iStat:${xAxis}">
+                  		<td class="ps-4 d-flex justify-content-start align-items-center text-sm"  th:text="${iStat.index+1}">
+                  		</td>
+                  		<td class="text-sm font-weight-bold mb-0" th:text="${telecaller}">
+                  		</td>
+                  		<td class="align-middle text-center text-sm" th:text="${pendingLeadsByTelecaller[iStat.index]}">
+                  		</td>
+                  		<td class="align-middle text-center text-sm" th:text="${proccessedLeadsByTelecaller[iStat.index]}">
+                  		</td>
+                  		<td  class="align-middle text-center text-sm" th:text="${counselledLeadsByTelecaller[iStat.index]}">
+                  		</td>
+                  		<td class="align-middle text-center text-sm" th:text="${completedLeadsByTelecaller[iStat.index]}">
+                  		</td>
+                  	</tr>
+                  </tbody>
+    </div>
+  </main>
+
+   <script src="/js/core/popper.min.js"></script>
+  <script src="/js/core/bootstrap.min.js"></script>
+  <script src="/js/perfect-scrollbar.min.js"></script>
+  <script src="/js/smooth-scrollbar.min.js"></script>
+  <script src="/js/custom-sidebar.js"></script>
+   <script src="/js/add-task.js"></script>
+  <script th:inline="javascript">
+  
+  var platforms=/*[[${platforms}]]*/''
+  var activeLeadsByPlatform=/*[[${activeLeadsByPlatform}]]*/''
+  var convertedLeadsByPlatform=/*[[${convertedLeadsByPlatform}]]*/''
+  var notConvertedLeadsByPlatform=/*[[${notConvertedLeadsByPlatform}]]*/''
+  
+  var xAxis=/*[[${xAxis}]]*/''
+  var pendingLeadsByTelecaller=/*[[${pendingLeadsByTelecaller}]]*/''
+  var proccessedLeadsByTelecaller=/*[[${proccessedLeadsByTelecaller}]]*/''
+  var completedLeadsByTelecaller=/*[[${completedLeadsByTelecaller}]]*/''
+  var counselledLeadsByTelecaller=/*[[${counselledLeadsByTelecaller}]]*/''
+  var labels=[]
+  var processedDataPoints=[]
+  var pendingDataPoints=[]
+  var completedDataPoints=[]
+  var counselledDataPoints=[]
+  
+  var chartRef
+  for(let i=0;i<xAxis.length;i++){
+	labels.push(xAxis[i])
+	let pendingDatapoint={}
+	let processedDatapoint={}
+	let completedDatapoint={}
+	let counselledDatapoint={}
+	
+	pendingDatapoint['label']=xAxis[i]
+	pendingDatapoint['y']=pendingLeadsByTelecaller[i]
+	
+	processedDatapoint['label']=xAxis[i]
+	processedDatapoint['y']=proccessedLeadsByTelecaller[i]
+	
+	completedDatapoint['label']=xAxis[i]
+	completedDatapoint['y']=completedLeadsByTelecaller[i]
+	
+	
+	counselledDatapoint['label']=xAxis[i]
+	counselledDatapoint['y']=counselledLeadsByTelecaller[i]
+	
+	
+	counselledDataPoints.push(counselledDatapoint)
+	
+	processedDataPoints.push(processedDatapoint)
+	pendingDataPoints.push(pendingDatapoint)
+	completedDataPoints.push(completedDatapoint)
+}
+
+	var chart;
+   showGraph()
+
+
+   /*function showGraph(){
+		var ctx = document.getElementById("chart-bars").getContext("2d");
+	
+	    chartRef=new Chart(ctx, {
+	      type: "bar",
+	      data: {
+	        labels: labels,
+	        datasets: [{
+	          label: "Not Processed",
+	          tension: 0.4,
+	          borderWidth: 0,
+	          borderRadius: 4,
+	          borderSkipped: false,
+	          backgroundColor: "rgba(255, 255, 255, .8)",
+	          data: pendingLeadsByTelecaller,
+	          maxBarThickness: 6
+	        },{
+	          label: "Processed",
+	          tension: 0.4,
+	          borderWidth: 0,
+	          borderRadius: 4,
+	          borderSkipped: false,
+	          backgroundColor: "green",
+	          data: proccessedLeadsByTelecaller,
+	          maxBarThickness: 6
+	        },
+	        {
+	          label: "Converted",
+	          tension: 0.4,
+	          borderWidth: 0,
+	          borderRadius: 4,
+	          borderSkipped: false,
+	          backgroundColor: "red",
+	          data: completedLeadsByTelecaller,
+	          maxBarThickness: 6
+	        }],
+	      },
+	      options: {
+	        responsive: true,
+	        maintainAspectRatio: false,
+	        plugins: {
+	          legend: {
+	            display: false,
+	          }
+	        },
+	        interaction: {
+	          intersect: false,
+	          mode: 'index',
+	        },
+	        scales: {
+	      x: {
+	        stacked: true,
+	        ticks:{
+		 		font: {
+	                size: 14,
+	                weight: 300,
+	                family: "Roboto",
+	                style: 'normal',
+	                lineHeight: 2
+	              },
+	              color: "#fff"
+				}
+	      },
+	      y: {
+	        stacked: true,
+	        ticks:{
+		 		font: {
+	                size: 14,
+	                weight: 300,
+	                family: "Roboto",
+	                style: 'normal',
+	                lineHeight: 2
+	              },
+	              color: "#fff"
+				}
+	      }
+	    }
+	      },
+	    });
+	}*/
+	function showGraph(){
+	chart = new CanvasJS.Chart("chartContainer", {
+	animationEnabled: true,
+	title:{
+		text: ""
+	},
+	
+	toolTip: {
+		shared: true
+	},
+	legend: {
+		reversed: true,
+		verticalAlign: "center",
+		horizontalAlign: "right"
+	},
+	data: [{
+		type: "stackedColumn100",
+		name: "Not Processed",
+		showInLegend: true,
+		xValueFormatString: "YYYY",
+      	indexLabel: "{y}",
+		dataPoints: 
+			pendingDataPoints
+		
+	}, 
+	{
+		type: "stackedColumn100",
+		name: "Processed",
+		color:'green',
+		showInLegend: true,
+		xValueFormatString: "YYYY",
+		
+      indexLabel: "{y}",
+		dataPoints: processedDataPoints
+	}, 
+	{
+		type: "stackedColumn100",
+		name: "Admission Done",
+		color:'#F9E076',
+		showInLegend: true,
+		xValueFormatString: "YYYY",
+		indexLabel: "{y}",
+		dataPoints: completedDataPoints
+	},
+	
+	{
+		type: "stackedColumn100",
+		name: "Counselling Done",
+		color:'red',
+		showInLegend: true,
+		xValueFormatString: "YYYY",
+		indexLabel: "{y}",
+		dataPoints: counselledDataPoints
+	}]
+	});
+	chart.render();
+
+}
+  </script>
+  <script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = {
+        damping: '0.5'
+      }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+    
+   /* $("body").on("change",".user-select",function(e){
+		if($("#"+$(".role-select").val()).val()!=""){
+			$(".owner-select-label").removeClass("d-none")
+		}else{
+			$(".owner-select-label").addClass("d-none")
+		}
+	})*/
+   
+    
+    $("body").on("click",".dashboard-sumbit",function(e){
+		var filterRequests={}
+		filterRequests['role']=$(".role-select").val()
+		if($(".role-select").val()!="")
+			filterRequests['userName']=$("#"+$(".role-select").val()).val()
+		filterRequests['leadPlatform']=$("#platform").val()
+		filterRequests['courseName']=$("#course").val()
+		filterRequests['status']=$("#status").val()
+		filterRequests['isActive']=true
+		filterRequests['isOwner']=false
+		filterRequests['isScheduled']=$("#scheduleStatus").val()=='scheduled'?true:($("#scheduleStatus").val()=="not scheduled")?false:null
+		filterRequests['isCounselled']=$("#counsellingStatus").val()=='counselled'?true:($("#counsellingStatus").val()=="not counselled")?false:null
+		filterRequests['fromDate']=$("#fromDate").val()
+		filterRequests['toDate']=$("#toDate").val()
+		filterRequests['leadType']=$("#leadType").val()
+		if($(".owner-select").val()=="Yes"){
+			filterRequests['isOwner']=true
+		}
+		$.ajax({
+			url:"/admin/graphs/get",
+			type:"PUT",
+			data:JSON.stringify(filterRequests),
+			contentType:"application/json",
+			success:function(data){
+				console.log(data)
+				try{
+					showGraphAfterFilter(data['XPlots'],data['YPlots'])
+					$("#totalLeads").text(data['totalLeads'])
+				}catch(err){
+					console.log(err)
+				}
+				
+			},
+			error:function(err){
+				console.log(err)
+			}
+		})
+	})
+	
+	 $("body").on("click",".graph_report",function(e){
+		var filterRequests={}
+		filterRequests['role']=$(".role-select").val()
+		if($(".role-select").val()!="")
+			filterRequests['userName']=$("#"+$(".role-select").val()).val()
+		filterRequests['leadPlatform']=$("#platform").val()
+		filterRequests['courseName']=$("#course").val()
+		filterRequests['status']=$("#status").val()
+		filterRequests['isActive']=true
+		filterRequests['isOwner']=false
+		filterRequests['isScheduled']=$("#scheduleStatus").val()=='scheduled'?true:($("#scheduleStatus").val()=="not scheduled")?false:null
+		filterRequests['isCounselled']=$("#counsellingStatus").val()=='counselled'?true:($("#counsellingStatus").val()=="not counselled")?false:null
+		filterRequests['fromDate']=$("#fromDate").val()
+		filterRequests['toDate']=$("#toDate").val()
+		filterRequests['leadType']=$("#leadType").val()
+		if($(".owner-select").val()=="Yes"){
+			filterRequests['isOwner']=true
+		}
+		$.ajax({
+			url:"/admin/graphreport",
+			type:"PUT",
+			data:JSON.stringify(filterRequests),
+			contentType:"application/json",
+			xhrFields: {
+	            responseType: 'blob'
+	        },
+			success:function(data){
+				console.log(data)
+				try{
+					debugger;
+					const url = window.URL.createObjectURL(data);
+				    const a = document.createElement('a');
+				    a.style.display = 'none';
+				    a.href = url;
+				    // the filename you want
+				    a.download = 'graph_report.xlsx';
+				    document.body.appendChild(a);
+				    a.click();
+				    window.URL.revokeObjectURL(url);
+				}catch(err){
+					console.log(err)
+				}
+				
+			},
+			error:function(err){
+				console.log(err)
+			}
+		})
+	})
+	
+	
+	function showGraphAfterFilter(labelsForFilter,tasksCount){
+		debugger
+		//chart.destroy()
+		let datapoints=[]
+		for(let i=0;i<labelsForFilter.length;i++){
+			let pendingDatapoint={}
+			pendingDatapoint['label']=labelsForFilter[i]
+			pendingDatapoint['y']=tasksCount[i]
+			datapoints.push(pendingDatapoint)
+		}
+		
+		
+		
+		var chart = new CanvasJS.Chart("chartContainer", {
+		animationEnabled: true,
+		title:{
+			text: ""
+		},
+		
+		toolTip: {
+			shared: true
+		},
+		legend: {
+			reversed: true,
+			verticalAlign: "center",
+			horizontalAlign: "right"
+		},
+		data: [{
+			type: "stackedColumn100",
+			xValueFormatString: "",
+
+	      	indexLabel: "{y}",
+			dataPoints: 
+				datapoints
+			
+		}]
+		});
+		chart.render();
+		
+	}
+  </script>
+  <script src="/js/custom-sidebar.js"></script>
+  <!-- Github buttons -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+  <script src="/js/material-dashboard.min.js?v=3.0.4"></script>
+</body>
+
+</html>

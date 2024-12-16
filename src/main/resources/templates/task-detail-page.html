@@ -1,0 +1,659 @@
+
+<div class="container-fluid py-2">
+      <div class="row">
+        <div class="col-lg-9">
+          <div class="row h-100">
+            <div class="col-md-6 mb-3 mb-md-0">
+            
+	          <div class="card h-100">
+	          <a class="nav-link text-dark task-back " id="task-back-btn">
+              		<i class="material-icons opacity-10 p-2">arrow_back</i>
+         		 </a>
+	            <div class="card-header pb-0 px-3 pt-1 d-flex">
+	            
+	              <h6 class="mb-0">Field Data</h6>
+	              <div class="ms-auto text-end edit-field-data-container">
+	                    <a class="btn btn-link edit-field-data text-dark px-3 mb-0" href="javascript:;"><i class="material-icons text-sm me-2">edit</i>Edit</a>
+	                  </div>
+	                  <div class="ms-auto text-end d-none save-field-data-container">
+	                    <a class="btn btn-link save-field-data text-dark px-3 mb-0" th:id="|save-field-data-${task.facebookLeads.id}|" th:name="${task.id}" href="javascript:;"><i class="material-icons text-sm me-2">save</i>Save</a>
+	                  </div>
+	            </div>
+	            <div class="card-body pt-4 p-3">
+	            
+	              <ul class="list-group">
+	                <li class="list-group-item border-0 d-flex p-2 pb-1 mb-2 bg-gray-100 border-radius-lg" th:each="fieldData,istat:${fieldDataList}" th:if="${fieldData.get('name')!='phone_number' && fieldData.get('name')!='phone number'}">
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" th:text="|${fieldData.get('name')}:|">Company Name: </span>
+	                    <span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value" th:text="${fieldData.get('values').get(0)}">Viking Burrito</span>
+	                    
+	                  </div>
+	                  
+	                </li>
+	                
+	                 <li class="list-group-item border-0 d-flex p-2 pb-1 mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" >phone_number: </span>
+	                    <span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value position-relative" th:if=${task.phoneNumber} th:text="${task.phoneNumber}" id="phoneNumber-field">
+	                    <!--<span th:if=${task.phoneNumber}>
+	                    	<span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value position-relative" th:each="fieldData,istat:${fieldDataList}" th:if="${fieldData.get('name')=='phone_number'}" th:text="${fieldData.get('values').get(0)}" id="phoneNumber-field">
+		                   
+	                    	
+	                    </span>
+	                    </span>-->
+	                    
+	                    </span>
+	                    <span style="position: absolute;right: 5px;">
+	                    		
+	                    		<a th:href="|//api.whatsapp.com/send?phone=91${task.phoneNumber}&text=Hi|" target="_blank" id="whatsapp-btn">
+	                    		<img src="/img/logos/whatsapp.png" class="me-2 dash-logo-img float-right" style="top:13%;left:16%;border-radius:20px" width="25" /></a>
+	                    	</span>
+	                    	<span  style="position: absolute;right: 35px;">
+	                    		<a th:href="|tel:+91${task.phoneNumber}|" id="caller-btn">
+	                    			<img src="/img/logos/telephone.png"  class="me-2 dash-logo-img float-right" style="top:13%;left:16%;border-radius:20px" width="25" />
+	                    		</a>
+	                    		
+	                    		
+	                    	</span>
+	                  </div>
+	                  
+	                </li>
+	                
+	                <li class="list-group-item border-0 d-flex p-2 pb-1  mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" >Parents Phone Number: </span>
+	                    <span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value" id="phoneNumber2" th:text="${task.phoneNumber2}"></span>
+	                    	<span style="position: absolute;right: 5px;">
+	                    		
+	                    		<a th:href="|//api.whatsapp.com/send?phone=91${task.phoneNumber2}&text=Hi|" target="_blank" id="whatsapp-btn2">
+	                    		<img src="/img/logos/whatsapp.png" class="me-2 dash-logo-img float-right" style="top:13%;left:16%;border-radius:20px" width="25" /></a>
+	                    	</span>
+	                    	<span  style="position: absolute;right: 35px;">
+	                    		<a th:href="|tel:+91${task.phoneNumber2}|" id="caller-btn2">
+	                    			<img src="/img/logos/telephone.png"  class="me-2 dash-logo-img float-right" style="top:13%;left:16%;border-radius:20px" width="25" />
+	                    		</a>
+	                    		
+	                    		
+	                    	</span>
+	                  </div>
+	                  
+	                </li>
+	                <li class="list-group-item border-0 d-flex p-2 pb-1 mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" >state: </span>
+	                    <span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value" id="state" th:text="${task.state}"></span>
+	                    
+	                  </div>
+	                  
+	                </li>
+	                <li class="list-group-item border-0 d-flex p-2 pb-1 mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" >city: </span>
+	                    <span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value" id="city" th:text="${task.city}"></span>
+	                    
+	                  </div>
+	                  
+	                </li>
+	                <li class="list-group-item border-0 d-flex p-2 pb-1 mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" >area: </span>
+	                    <span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value" id="area_2" th:text="${task.area}"></span>
+	                    
+	                  </div>
+	                  
+	                </li>
+	                <li class="list-group-item border-0 d-flex p-2 pb-1  mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" >college: </span>
+	                    <span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value" id="college" th:text="${task.college}"></span>
+	                    
+	                  </div>
+	                  
+	                </li>
+	                
+	                <li class="list-group-item border-0 d-flex p-2 pb-1 mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm " >course: </span>
+	                    <select  id="course_2" class="mb-1 col-8"  style="border: 1px solid #d2d6da;height: 30px;" disabled>
+								<option value="0">Select Course</option>
+								<option th:each="course:${courses}" th:value="${course.courseName}" th:text="${course.courseName}" th:selected="${task.course==course.courseName}">D.PHARM</option>
+								
+							</select>
+	                    
+	                  </div>
+	                  
+	                </li>
+	                <li class="list-group-item border-0 d-flex p-2 pb-1  mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" >10th Percentage: </span>
+	                    <span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value" id="10thPercent" th:text="${task.tenthPercent}"></span>
+	                    
+	                  </div>
+	                  
+	                </li>
+	                <li class="list-group-item border-0 d-flex p-2 pb-1  mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" >12th Percentage: </span>
+	                    <span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value" id="12thPercent" th:text="${task.twelethPercent}"></span>
+	                    
+	                  </div>
+	                  
+	                </li>
+	                <li class="list-group-item border-0 d-flex p-2 pb-1  mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" >Neet Percentage: </span>
+	                    <span class="text-dark col-8 text-sm font-weight-bold ms-sm-2 field-data-value" id="neetPercent" th:text="${task.neetPercent}"></span>
+	                    
+	                  </div>
+	                  
+	                </li>
+	                <li class="list-group-item border-0 d-flex p-2 pb-1  mb-2 bg-gray-100 border-radius-lg" >
+	                  <div class="d-flex w-100">
+	                    <span class="mb-2 col-4 text-sm field-data-label" >Lead type: </span>
+	                   	<select  id="leadType" class="mb-1 col-8"  style="border: 1px solid #d2d6da;height: 30px;" disabled>
+								<option value="">Select Type</option>
+								<option value="PROSPECT" th:selected="${task.leadType=='PROSPECT'}">PROSPECT</option>
+								<option value="HOT" th:selected="${task.leadType=='HOT'}">HOT</option>
+								<option value="COLD" th:selected="${task.leadType=='COLD'}">COLD</option>
+								
+							</select>
+	                    
+	                  </div>
+	                  
+	                </li>
+	                
+	              </ul>
+	            </div>
+	          </div>
+        	</div>
+        	<div class="col-md-6">
+	          <div class="card h-100 mb-1">
+	            <div class="card-header pb-0 px-3 d-flex">
+	              <h6 class="mb-0">Comments</h6>
+	            </div>
+	            <div class="card-body pt-4 p-3 position-relative">
+	              <ul class="list-group pb-4 comments-ul-list" th:if="${comments}" >
+	                <li class="list-group-item border-0 d-flex p-4 mb-2 bg-gray-100 border-radius-lg" th:each="comment,istat2:${comments}">
+	                  <div class="d-flex flex-column w-100">
+	                    <span class="mb-2 text-xs  ">Name: <span class="text-dark font-weight-bold ms-sm-2 comment_name" th:text="${comment.userName}">Viking Burrito</span><span class=" ms-sm-2 font-weight-bold comment_date float-right" th:text="${#temporals.format(comment.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yyyy HH:mm')}">oliver@burrito.com</span></span>
+	                    <span class="text-xs">Comment: <span class="text-dark ms-sm-2 font-weight-bold comment_data" th:text="${comment.comment}">FRB1235476</span></span>
+	                  </div>
+	                </li>
+	                <h3 class="mt-5 text-xl no-comments-alert text-center" th:if="${#lists.size(comments)<=0}">
+					NO COMMENTS YET...
+					</h3>
+	              </ul>
+	             <!-- <i class="ms-auto material-icons opacity-10 comment-dropdown cursor-pointer " id="comment-dropdown-icon" >chat</i>
+	              <select class="comment-dropdown d-none w-100 " style="height: 100px;" id="comment-dropdown-select">
+	              <option>
+	              	Call Not Received
+	              </option>
+	              <option>
+	              	Call Busy
+	              </option>
+	              <option>
+	              	Not Reachable/Swith off
+	              </option>
+	              <option>
+	              	Busy now call me letter
+	              </option>
+	              <option>
+	              	Wrong enquiry
+	              </option>
+	              <option value="Competition call">
+	              	Competition call
+	              </option>
+	              <option value="Full Intrested">
+	              	Full Intrested
+	              </option>
+	              <option value="Not intrested at all">
+	              	Not intrested at all
+	              </option>
+	              <option value="Document's issue">
+	              	Document's issue
+	              </option>
+	              <option value="Travelling issue">
+	              	Travelling issue
+	              </option>
+	              <option value="Study issue">
+	              	study issue
+	              </option>
+	              <option value="Fees issue">
+	              	Fees issue
+	              </option>
+	              <option value="Want college in mumbai">
+	              	Want college in mumbai
+	              </option>
+	              
+	              <option value="Waiting for DTE, NEET and CET">
+	              	Waiting for DTE, NEET and CET
+	              </option>
+	              
+	              </select>-->
+	              <div class="comment-dropdown-header" style="position: absolute;bottom:8px">
+	              <select class="js-example-basic-single comment-search-dropwown" name="state">
+					 <option value="Call not received">Call not received</option>
+					  <option value="Call Busy">Call Busy</option>
+					  <option value="Not Reachable/Switch off">Not Reachable/Switch off</option>
+					  <option value="Busy now call me Later">Busy now call me Later</option>
+					  <option value="Wrong enquiry">Wrong enquiry</option>
+					  <option value="Competition Call">Competition Call</option>
+					  <option value="Full Interested">Full Interested</option>
+					  <option value="Not Interested at All">Not Interested at All</option>
+					  <option value="Document issue">Document issue</option>
+					  <option value="Travelling issue">Travelling issue</option>
+					  <option value="Study issue">Study issue</option>
+					  <option value="Fees issue">Fees issue</option>
+					  <option value="Want college in Mumbai only">Want college in Mumbai only</option>
+					  <option value="Waiting for DTE, NEET, CET">Waiting for DTE, NEET, CET</option>
+					  <option value="Will visit Thane branch">Will visit Thane branch</option>
+					  <option value="Will visit Andheri branch">Will visit Andheri branch</option>
+					  <option value="Will visit Bhayandar branch">Will visit Bhayandar branch</option>
+					  <option value="Will visit Nallasopara branch">Will visit Nallasopara branch</option>
+					  <option value="Will visit Bangalore college">Will visit Bangalore college</option>
+					  <option value="Will visit NIP college">Will visit NIP college</option>
+					  <option value="Will visit Malad college">Will visit Malad Branch</option>
+					   <option value="Will visit Malad college">Will visit Kurla Branch</option>
+					  <option value="Looking for job">Looking for job</option>
+					  <option value="Looking for internship">Looking for internship</option>
+					  <option value="Consultant">Consultant</option>
+					  <option value="Kannada call">Kannada call</option>
+					  <option value="Kolkata lead">Kolkata lead</option>
+					  <option value="Want college in particular state">Want college in particular state</option>
+					  <option value="Old leads">Old leads</option>
+					  <option value="Below 12th student">Below 12th student</option>
+					  <option value="Next year lead">Next year lead</option>
+					  <option value="10th private">10th private</option>
+					  <option value="MR paramedical">MR paramedical</option>
+					  <option value="Already taken admission">Already taken admission</option>
+					  <option value="Improvement exam">Improvement exam</option>
+					  <option value="12th fail">12th fail</option>
+					  <option value="Invalid number">Invalid number</option>
+					  <option value="Others">Others</option>
+					</select>
+	              </div>
+				<textarea type="text" class="form-control py-1 pe-5 ps-2 comment-textarea d-none" style="border: 0.5px solid #bbb;border-radius: 0px 0px 13px 13px;" placeholder="Add Comment..."></textarea>
+				<i class="ms-auto material-icons opacity-10 comments-send-button position-absolute cursor-pointer" >send</i>
+	            </div>
+	          </div>
+	          
+	          	
+        	</div>
+        	
+        	<div class="col-md-12 mt-3" th:if="${role=='counsellor' || role == 'admin'}">
+	          <div class="card">
+	            <div class="card-header pb-0 px-3">
+	              <h6 class="mb-0">Counselling Input</h6>
+	            </div>
+	            <div class="card-body pt-0 p-3">
+	              <ul class="list-group">
+	                <li class="list-group-item border-0 d-flex p-4 mb-2 border-radius-lg" >
+	                  <form role="form" class="w-100" >
+		                  <div class="form-check form-check-info text-start ps-0">
+		                      <input class="form-check-input" type="radio" value="true" name="counselled" id="flexCheckDefault"   >
+		                      <label class="form-check-label" for="flexCheckDefault">
+		                        Counselling Done
+		                      </label>
+		                      <input class="form-check-input" type="radio" value="false" name="counselled" id="flexCheckDefault2" >
+		                      <label class="form-check-label" for="flexCheckDefault2">
+		                        Counselling Not Done
+		                      </label>
+	                    </div>
+	                    <div class="mt-3 ts counselling-done-inputs d-none">
+	                    <select  id="course_counselling" class="mb-1 col-12 col-md-2"  style="border: 1px solid #d2d6da;height: 30px;" >
+								<option value="0">Select Course</option>
+								<option th:each="course:${courses}" th:value="${course.courseName}" th:text="${course.courseName}" th:selected="${task.course==course.courseName}">D.PHARM</option>
+								
+							</select>
+							<input type="text" id="feesPitched" placeholder="Fees Pitched" style="border: 1px solid #d2d6da;display: inline;width: auto;" class="p-1 form-control col-12 col-4  mt-2">
+	                    </div>
+	                    
+	                    <div class="mt-3  counselling-done-inputs d-none">
+	                    	<select class="js-example-basic-single counselling-done-remark " name="counsellingDoneRemark">
+							 	  <option value="Competition Call">Competition Call</option>
+								  <option value="Full Interested">Full Interested</option>
+								  <option value="Not Interested at All">Not Interested at All</option>
+								  <option value="Document issue">Document issue</option>
+								  <option value="Travelling issue">Travelling issue</option>
+								  <option value="Study issue">Study issue</option>
+								  <option value="Fees issue">Fees issue</option>
+								  <option value="Want college in Mumbai only">Want college in Mumbai only</option>
+								  <option value="Waiting for DTE, NEET, CET">Waiting for DTE, NEET, CET</option>
+								  <option value="Consultant">Consultant</option>
+								  <option value="Want college in particular state">Want college in particular state</option>
+								  <option value="Next year lead">Next year lead</option>
+								  <option value="After discussion with parents">After discussion with parents</option>
+								  <option value="Group discussion">Group discussion</option>
+							  	  <option value="Others">Others</option>
+							</select>
+	                    </div>
+	                    <div class="mt-3  counselling-not-done-inputs d-none">
+	                    	<select class="js-example-basic-single counselling-not-done-remark " name="counsellingDoneRemark">
+							  	  
+							  	  <option value="Call not received">Call not received</option>
+								  <option value="Call Busy">Call Busy</option>
+								  <option value="Not Reachable/Switch off">Not Reachable/Switch off</option>
+								  <option value="Busy now call me Later">Busy now call me Later</option>
+								  <option value="Document issue">Document issue</option>
+								  <option value="Travelling issue">Travelling issue</option>
+								  <option value="Study issue">Study issue</option>
+								  <option value="Fees issue">Fees issue</option>
+								  <option value="Want college in Mumbai only">Want college in Mumbai only</option>
+								  <option value="Waiting for DTE, NEET, CET">Waiting for DTE, NEET, CET</option>
+								  <option value="Consultant">Consultant</option>
+								  <option value="Want college in particular state">Want college in particular state</option>
+							  	  <option value="Others">Others</option>
+							</select>
+	                    </div>
+	                    	
+	                     <div class="mt-3">
+		                    <textarea type="text" class="p-2 form-control d-none" placeholder="Remark..." style="border: 0.5px solid #bbb;" id="counselling-done-remark-textbox"  onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
+		                </div>
+		                
+		                <div class="text-center  d-md-flex" >
+		                	<button type="button" id="saveCounsellingDetails" class="btn bg-gradient-primary  my-4 mb-2 col-4 me-2">Save</button>
+	                  </div>
+	                  </form>
+	                </li>
+	              </ul>
+	            </div>
+	          </div>
+        	</div>
+        	
+        	
+        	<div class="col-md-12 mt-2">
+	          <div class="card" th:if="${role!='telecaller'}">
+	            <div class="card-header pb-0 px-3">
+	              <h6 class="mb-0"><span th:text="${isClosed?'Closed':'Closing'}">Closing</span>  <span th:if="${isClosed}" th:text="| - ${closeTask.closingId}${closeTask.id}|"></span></h6>
+	            </div>
+	            <div class="card-body pt-0 p-3">
+	              <ul class="list-group">
+	                <li class="list-group-item border-0 d-flex p-4 mb-2 border-radius-lg" th:if="${task.isConverted!=null}" th:classappend="${task.isConverted?'bg-gray-100':''}">
+	                  <form role="form" class="w-100" >
+		                  <div class="form-check form-check-info text-start ps-0">
+		                      <input class="form-check-input" type="radio" value="true" name="converted" id="closing"  th:checked="${task.isConverted}" >
+		                      <label class="form-check-label" for="closing">
+		                        Admission Done
+		                      </label>
+		                      <input class="form-check-input" type="radio" value="false" name="converted" id="closing2" th:checked="!${task.isConverted}">
+		                      <label class="form-check-label" for="closing2">
+		                       Admission Not Done
+		                      </label>
+	                    </div>
+	                     <div class="mt-3">
+		                    <textarea type="text" class="p-2 form-control" placeholder="Remark..." style="border: 0.5px solid #bbb;" id="closing-remark" th:text="${task.closingRemark}" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
+		                </div>
+		                
+		                <div class="text-center d-none d-md-flex" >
+		                	<button type="button" id="saveClosingDetails" class="btn bg-gradient-primary close-ticket my-4 mb-2 col-4 me-2">Save</button>
+	                    	<button th:if="${role=='manager' || role=='admin'}" type="button" class="btn bg-gradient-primary my-4 mb-2 cd-popup-trigger3 col-4">Close Task</button>
+	                  </div>
+	                  <div class="text-center d-md-none" >
+		                	<button  type="button" id="saveClosingDetails" class="btn bg-gradient-primary w-100 my-4 mb-2  col-4">Save</button>
+	                    	<button th:if="${role=='manager' || role=='admin'}" type="button" class="btn bg-gradient-primary w-100  my-4 mb-2 cd-popup-trigger3 col-4">Close Task</button>
+	                  </div>
+	                  </form>
+	                </li>
+	                <li class="list-group-item border-0 d-flex p-4 mb-2  border-radius-lg" th:if="${task.isConverted==null}">
+	                  <form role="form" class="w-100" >
+		                  <div class="form-check form-check-info text-start ps-0">
+		                      <input class="form-check-input" type="radio" value="true" name="converted" id="closing" >
+		                      <label class="form-check-label" for="closing">
+		                        Admission Done
+		                      </label>
+		                      <input class="form-check-input" type="radio" value="false" name="converted" id="closing2" >
+		                      <label class="form-check-label" for="closing2">
+		                       Admission Not Done
+		                      </label>
+		                      
+	                    </div>
+	                     <div class="mt-3">
+		                    <textarea type="text" class="p-2 form-control" placeholder="Remark..." style="border: 0.5px solid #bbb;" id="closing-remark" th:text="${task.closingRemark}" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
+		                </div>
+		                
+		                <div class="text-center d-none d-md-flex" >
+		                	<button type="button" id="saveClosingDetails" class="btn bg-gradient-primary close-ticket my-4 mb-2 col-4 me-2">Save</button>
+	                    	<button th:if="${role=='manager' || role=='admin'}" type="button" class="btn bg-gradient-primary my-4 mb-2 cd-popup-trigger3 col-4">Close Task</button>
+	                  </div>
+	                  <div class="text-center d-md-none" >
+		                	<button  type="button" id="saveClosingDetails" class="btn bg-gradient-primary close-ticket w-100 my-4 mb-2  col-4">Save</button>
+	                    	<button th:if="${role=='manager' || role=='admin'}" type="button" class="btn bg-gradient-primary w-100  my-4 mb-2 cd-popup-trigger3 col-4">Close Task</button>
+	                  </div>
+	                  </form>
+	                </li>
+	                
+	              </ul>
+	            </div>
+	          </div>
+	          <div class="card" th:if="${role=='telecaller'}">
+	            <div class="card-header pb-0 px-3">
+	              <h6 class="mb-0"><span th:text="${isClosed?'Closed':'Closing'}">Closing</span>  <span th:if="${isClosed}" th:text="| - ${closeTask.closingId}${closeTask.id}|"></span></h6>
+	            </div>
+	            <div class="card-body pt-0 p-3">
+	              <ul class="list-group">
+	                <li class="list-group-item border-0 d-flex p-4 mb-2 border-radius-lg"  th:classappend="${task.isConverted!=null && task.isConverted?'bg-gray-100':''}">
+	                  <form role="form" class="w-100" >
+		                  
+	                     <div class="mt-3">
+		                    <textarea type="text" class="p-2 form-control" placeholder="Remark..." style="border: 0.5px solid #bbb;" id="closing-remark" th:text="${task.closingRemark}" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
+		                </div>
+		                
+		               <div class="text-center d-none d-md-flex" >
+		                	<button th:if="${role=='telecaller' }" type="button" id="saveCompleteDetails" class="btn bg-gradient-primary my-4 mb-2 col-4 me-2">Complete</button>
+	                  </div>	
+	                  <div class="text-center d-md-none" >
+		                	<button th:if="${role=='telecaller'  }" type="button" id="saveCompleteDetails" class="btn bg-gradient-primary w-100 my-4 mb-2  col-4">Complete</button>
+	                  </div>
+	                  </form>
+	                </li>
+	                
+	                
+	              </ul>
+	            </div>
+	          </div>
+        	</div>
+          </div>
+        </div>
+        <div class="col-lg-3 mt-3 mt-md-3">
+          <div class="row">
+          <div class="col-12">
+          		<div class="d-flex justify-content-around">
+	          		<button class="btn btn-scheduler scheduler material-icons opacity-10 cursor-pointer col-5" >timer</button>
+	          		<button class="btn btn-primary cd-popup-trigger2 mx-0 mt-0 col-5 move-popup-button">
+	          		Move
+	          		</button>
+          		</div>
+          </div>
+          	<div class="card h-100  scheduler-card"  th:classappend="${task.isScheduled!=null && task.isScheduled?'':'d-none'}">
+	            <div class="card-header pb-0 p-3">
+	              <div class="row">
+	                <div class="col-6 d-flex align-items-center">
+	               	 <h6 class="mb-0 text-center scheduler-title" th:text="${task.isScheduled!=null && task.isScheduled?'Scheduled':'Schedule'}">Scheduler</h6>
+	                </div>
+	                <div class="col-6 text-end">
+	                  <button class="btn btn-outline-primary btn-sm m-0 close-schedule-btn cd-popup-trigger" th:classappend="${task.isScheduled!=null && task.isScheduled?'':'d-none'}">Close</button>
+	                </div>
+	              </div>
+	              
+	            </div>
+	            <div class="card-body p-3 px-2 pb-0 schedule-card-body" th:classappend="${task.isScheduled!=null && task.isScheduled?'d-none':''}">
+	              <ul class="list-group">
+	                
+	                <li class="list-group-item border-0 d-flex justify-content-between p-0 mb-3 border-radius-lg">
+	                	<input type="datetime-local" id="scheduler-date" class="form-control px-2 "  style="border: 1px solid #c0c6cc;" placeholder="Comment">
+	                </li>
+	                <li class="list-group-item border-0 d-flex justify-content-between p-0 mb-3 border-radius-lg">
+	                	<input class="form-control px-2 " id="scheduler-comment" style="border: 1px solid #c0c6cc;" placeholder="Comment">
+	                </li>
+	                <li class="list-group-item border-0 d-flex justify-content-center p-0 mb-3 border-radius-lg">
+	                	<button class="btn btn-primary px-2  w-50" id="scheduler-submit" style="border: 1px solid #c0c6cc;" placeholder="Comment">Save</button>
+	                </li>
+	              </ul>
+	            </div>
+	            <div class="card-body p-3 existing-schedule-card-body" th:classappend="${task.isScheduled!=null && task.isScheduled?'':'d-none'}">
+	              <ul class="list-group">
+	                 <li class="list-group-item border-0 d-flex justify-content-between ps-0 py-0 mb-1 border-radius-lg">
+	                  
+	                  <span class="mb-1 text-sm">Scheduler: <span class="font-weight-bold text-dark task-schedulerName" th:text="${task.schedulerName}" ></span></span>
+	                  
+	                </li>
+	                <li class="list-group-item border-0 d-flex justify-content-between ps-0 py-0 mb-1 border-radius-lg">
+	                  
+	                  <span class="mb-1 text-sm">Date & Time: <span class="font-weight-bold text-dark task-scheduleTime" th:text="${#temporals.format(task.scheduleTime, 'dd/MM/yyyy HH:mm')}" ></span></span>
+	                  
+	                </li>
+	                <li class="list-group-item border-0 d-flex justify-content-between ps-0 py-0 mb-1 border-radius-lg">
+	                  
+	                  <span class="mb-1 text-sm">Comment: <span class="font-weight-bold text-dark task-scheduleComment" th:text="${task.scheduleComment}"></span></span>
+	                  
+	                </li>
+	              </ul>
+	            </div>
+	          </div>
+          </div>
+          <div class="row mt-3">
+          	<div class="card h-50">
+	            <div class="card-header pb-0 p-3">
+	              <div class="row">
+	               	<h6 class="mb-0 text-center">Events History</h6>
+	                
+	                <!--<div class="col-6 text-end">
+	                  <button class="btn btn-outline-primary btn-sm mb-0">View All</button>
+	                </div>-->
+	              </div>
+	            </div>
+	            <div class="card-body p-3 ">
+	              <ul class="list-group" th:if="${historyEvents}">
+	                <li class="list-group-item border-0 d-flex justify-content-between p-4 mb-2 border-radius-lg bg-gray-100" th:each="event,istat:${historyEvents}">
+	                 <div class="d-flex flex-column w-100">
+	                    <span class="mb-2 text-xs"  th:if="${event.userName}">Assignor: <span class="text-dark font-weight-bold ms-sm-2 comment_name"  th:text="${event.userName}">Viking Burrito</span></span>
+	                    <span class="mb-2 text-xs">Date & Time: <span class="text-dark ms-sm-2 font-weight-bold comment_date" th:text="${#temporals.format(event.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yyyy HH:mm')}">oliver@burrito.com</span></span>
+	                    <span class="mb-2 text-xs">Event Status: <span class="text-dark ms-sm-2 font-weight-bold comment_data" th:text="${event.event}">FRB1235476</span></span>
+	                    <span class="text-xs" th:if="${event.remark}">Remark: <span class="text-dark ms-sm-2 font-weight-bold comment_remark" th:text="${event.remark}">FRB1235476</span></span>
+	                  </div>
+	                </li>
+	              </ul>
+	              <h4 class="mt-2 text-xl text-center" th:if="${#lists.size(historyEvents)<=0}" >
+					NO EVENTS YET...
+				</h4>
+	            </div>
+          </div>
+          <div class="mt-2 card h-50">
+	            <div class="card-header pb-0 p-3">
+	              <div class="row">
+	               	<h6 class="mb-0 text-center">Counselling Details</h6>
+	                
+	                <!--<div class="col-6 text-end">
+	                  <button class="btn btn-outline-primary btn-sm mb-0">View All</button>
+	                </div>-->
+	              </div>
+	            </div>
+	            <div class="card-body p-3 ">
+	              <ul class="list-group" >
+	                <li class="list-group-item border-0 d-flex justify-content-between p-4 mb-2 border-radius-lg bg-gray-100" th:each="counsellingDetail:${counsellingDetails}">
+	                 <div class="d-flex flex-column w-100">
+	                    <span class="mb-2 text-xs" >Counsellor: <span class="text-dark font-weight-bold ms-sm-2 comment_name"  th:text="${counsellingDetail.userName}">Viking Burrito</span></span>
+	                    <span class="mb-2 text-xs">Date & Time: <span class="text-dark ms-sm-2 font-weight-bold comment_date" th:text="${#temporals.format(counsellingDetail.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yyyy HH:mm')}">oliver@burrito.com</span></span>
+	                    <span class="mb-2 text-xs">Status: <span class="text-dark ms-sm-2 font-weight-bold comment_data" th:text="${counsellingDetail.isCounselled?'Counselling Done':'Counselling Not Done'}">FRB1235476</span></span>
+	                    <span class="text-xs" th:if="${counsellingDetail.isCounselled}">Course: <span class="text-dark ms-sm-2 font-weight-bold comment_remark" th:text="${counsellingDetail.course}">FRB1235476</span></span>
+	                    <span class="text-xs" th:if="${counsellingDetail.isCounselled}">Fees Pitched: <span class="text-dark ms-sm-2 font-weight-bold comment_remark" th:text="${counsellingDetail.feesPitched}">FRB1235476</span></span>
+	                    <span class="text-xs" >Remark: <span class="text-dark ms-sm-2 font-weight-bold comment_remark" th:text="${counsellingDetail.remark}">FRB1235476</span></span>
+	                  </div>
+	                </li>
+	              </ul>
+	              <h4 class="mt-2 text-xl text-center" th:if="${#lists.size(counsellingDetails)<=0}" >
+					NO COUNSELLING YET...
+				</h4>
+	            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  
+  <div class="cd-popup2 " role="alert">
+	<div class="cd-popup-container2 assign-popup text-dark" style="min-width: 300px;">
+	<div class="card-header text-lg py-2" style="background: #e3e3e3;border-radius: 5px 5px 0px 0px;">Select Next User</div>
+		<select class="role-select my-3 w-80">
+			<option value="0" id="0">Select Role</option>
+			<option th:each="nextRole:${nextRoles}" th:value="${nextRole}" th:text="${nextRole}">
+			</option>
+		</select>
+		<select th:each="nextUser,istat:${nextUsers}" class="user-select mb-3 d-none w-80" th:id="${nextRoles[istat.index]}" >
+			<option value="0" id="0">Select User</option>
+			<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="${user.get('username')}">
+			</option>
+		</select>
+		<input type="text" id="move-remark" class="form-control2 mb-3 d-none w-80 p-2" style="border: 1px solid #d2d6da;" placeholder="Enter remark..">
+		<ul class="cd-buttons2 ps-0">
+			<li><a  class="cd-popup-close2_2">Cancel</a></li>
+			<li><a  class="move-ticket cursor-pointer">Assign</a></li>
+		</ul>
+		<a href="#0" class="cd-popup-close_2 img-replace">Close</a>
+	</div> <!-- cd-popup-container -->
+	<div class="cd-popup-container2 d-none ack-popup text-dark" id="task-status-popup" style="min-width: 300px;">
+	<div class="card-header text-lg py-2" style="background: #e3e3e3;border-radius: 5px 5px 0px 0px;">Task Status</div>
+		<p id="ticket-acknowledgement"></p>
+		<ul class="cd-buttons2 ps-0">
+			<li class="w-100"><a  class=" cd-popup-close2_2  cursor-pointer" id="close-acknowledg-popup"> Close</a></li>
+		</ul>
+		<a href="#0" class="cd-popup-close_2 img-replace">Close</a>
+	</div> 
+	<div class="cd-popup-container2 d-none closing-popup text-dark" id="closing-popup" style="min-width: 400px;">
+	<div class="card-header text-lg py-2" style="background: #e3e3e3;border-radius: 5px 5px 0px 0px;">Close Task</div>
+		<p id="ticket-closing">Are you sure you want to close task?</p>
+		<ul class="cd-buttons2 ps-0">
+			<li><a  class="cd-popup-close2_2">Cancel</a></li>
+			<li><a  class="close-ticket  cursor-pointer">Close Task</a></li>
+		</ul>
+		<a href="#0" class="cd-popup-close_2 img-replace">Close</a>
+	</div> 
+</div>
+
+<script th:inline="javascript">
+var userEmail=/*[[${userEmail}]]*/''
+var userName=/*[[${userName}]]*/''
+var userId=/*[[${userId}]]*/''
+var taskId=/*[[${taskId}]]*/''
+var isClosed=/*[[${isClosed}]]*/''
+var role=/*[[${role}]]*/''
+
+debugger
+window.onbeforeunload = function (evt) {
+	if(!(evt.originalTarget.activeElement.classList.contains("task-back")) && !(evt.explicitOriginalTarget.id=="close-acknowledg-popup") && !isMainPage)
+	{
+	 var message = 'Are you sure you want to leave?';
+	 console.log(evt)
+  if (typeof evt == 'undefined') {
+    evt = window.event;
+  }
+  if (evt) {
+    evt.returnValue = message;
+  }
+  return message;
+	}
+
+ 
+}
+
+$(document).ready(function(){
+	
+	$(document).ready(function() {
+    $('.js-example-basic-single').select2();
+});
+
+	
+	if(isClosed=="true" && role!="admin"){
+		console.log(isClosed)
+		let allInputs=$("input,select,textarea,button,i")
+		for(let i=0;i<allInputs.length;i++){
+			if(allInputs[i].id!="iconNavbarSidenav2" && allInputs[i].id!="search-box" && allInputs[i].getAttribute("name")!="tabs")
+				allInputs[i].disabled=true
+		}
+	}
+})
+
+
+
+</script>

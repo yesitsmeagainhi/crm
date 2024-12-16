@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
+.pagination,.pagination2,.pagination3{
+	height: 3rem;
+	padding-right: calc(var(--bs-gutter-x) * .5);
+}
+.pagination ul,.pagination2 ul,.pagination3 ul
+{
+  height: 2.7rem;
+  margin-bottom: 0px;
+  padding: 0px;
+  padding-bottom: 0.2rem;
+  padding-top: 0.2rem;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  background: #fff;
+  border-radius: 13px;
+  box-shadow: 0px 10px 15px rgba(0,0,0,0.1);
+}
+.pagination ul li,.pagination2 ul li,.pagination3 ul li{
+margin-bottom: 0px;
+  color: #7B809A;
+  list-style: none;
+  line-height: 40px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+.pagination ul li.numb,.pagination2 ul li.numb,.pagination3 ul li.numb{
+  list-style: none;
+  height: 37px;
+  width: 37px;
+  margin: 0 3px;
+  line-height: 40px;
+  border-radius: 50%;
+}
+.pagination ul li.numb.first,.pagination2 ul li.numb.first,.pagination3 ul li.numb.first{
+  margin: 0px 3px 0 -5px;
+}
+.pagination ul li.numb.last,.pagination2 ul li.numb.last,.pagination3 ul li.numb.last{
+  margin: 0px -5px 0 3px;
+}
+.pagination ul li.dots,.pagination2 ul li.dots,.pagination3 ul li.dots{
+  font-size: 22px;
+  cursor: default;
+}
+.pagination ul li.btn,.pagination2 ul li.btn,.pagination3 ul li.btn{
+  padding: 0 20px;
+  border-radius: 12px;
+}
+.pagination li.active,
+.pagination ul li.numb:hover,
+.pagination ul li:first-child:hover,
+.pagination ul li:last-child:hover,
+.pagination2 li.active,
+.pagination2 ul li.numb:hover,
+.pagination2 ul li:first-child:hover,
+.pagination2 ul li:last-child:hover,
+.pagination3 li.active,
+.pagination3 ul li.numb:hover,
+.pagination3 ul li:first-child:hover,
+.pagination3 ul li:last-child:hover{
+  color: #fff;
+  background: #133B5C;
+}

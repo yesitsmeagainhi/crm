@@ -1,0 +1,192 @@
+<th:block layout:replace="fragments/htmlhead"></th:block>
+<body class="g-sidenav-show  bg-gray-200">
+  <th:block layout:replace="fragments/sidebar"></th:block>	
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    <th:block layout:replace="fragments/header"></th:block>
+    <!-- End Navbar -->
+    <div class="container-fluid pb-4 automation-container">
+    	<form id="automation-form">
+				<select id="automationParameter" class="mb-3 " autocomplete="off">
+					<option value="" >Automation Paramter</option>
+					<option value="Random">Random</option>
+					<option value="Source">Source</option>
+					<option value="Course">Course</option>
+					<option value="Choice">Choice</option>
+					<option value="Campaign">Campaign</option>
+			</select>
+			<select id="sourceDropDown" class="mb-3 d-none Source parameter-dropdown" autocomplete="off">
+					<option value="">Select Source</option>
+					<option th:each="value,iStat:${sourceList}" th:value="${value.id}" th:text="${value.name}">Random</option>
+					
+			</select>
+			<select id="courseDropDown" class="d-none Course mb-3 parameter-dropdown"  autocomplete="off">
+					<option value="" >Select Course</option>
+					<option th:each="value,iStat:${courseList}" th:value="${value.id}" th:text="${value.courseName}">Random</option>
+					
+			</select>
+			<select id="campaignDropDown" class="d-none Campaign mb-3 parameter-dropdown"  autocomplete="off">
+					<option value="" >Select Campaign</option>
+					<option th:each="value,iStat:${capmaignsList}" th:value="${value.id}" th:text="${value.campaignName}">Random</option>
+					
+			</select>
+			<select id="userGroup" class="role-select d-none  mb-3 ">
+				<option value="0" id="0">Select Group</option>
+				<option th:each="group:${groups}" th:value="${group.id}" th:id="${group.id}" th:text="${group.name}">
+				</option>
+			</select>
+			
+			<button id="automation-group-save" class="btn btn-primary text-center d-none mx-auto">Save</button>
+			</form>
+			
+			<div class="" id="assigned-user-container">
+			
+			</div>
+			
+    </div>
+  </main>
+</body>
+<script>
+	$(document).ready(function($){
+		
+		$('body').on('change','.role-select',function(e){
+		
+			if($(this).val()!="0"){
+				$("#automation-group-save").removeClass("d-none")
+				$("#automation-group-save").addClass("d-block")
+			}else{
+				$("#automation-group-save").addClass("d-none")
+				$("#automation-group-save").removeClass("d-block")
+			}
+		})
+		
+		
+		$('body').on('change',"#sourceDropDown",function(e){
+			$(".role-select").removeClass("d-none")
+			var url="/automation/source-assigned-user"
+			$.ajax({
+				url:url+"?sourceId="+$("#sourceDropDown").val(),
+				type:"GET",
+				success:function(data){
+					if(data)
+						$("#assigned-user-container").html(data)
+				},
+				error:function(err){
+					console.log(err)
+				}
+			})
+		})
+		
+		$('body').on('change',"#courseDropDown",function(e){
+			$(".role-select").removeClass("d-none")
+			var url="/automation/course-assigned-user"
+			$.ajax({
+				url:url+"?courseId="+$("#courseDropDown").val(),
+				type:"GET",
+				success:function(data){
+					if(data)
+						$("#assigned-user-container").html(data)
+				},
+				error:function(err){
+					console.log(err)
+				}
+			})
+		})
+		
+		$('body').on('change',"#campaignDropDown",function(e){
+			$(".role-select").removeClass("d-none")
+			var url="/automation/campaign-assigned-user"
+			$.ajax({
+				url:url+"?campaignId="+$("#campaignDropDown").val(),
+				type:"GET",
+				success:function(data){
+					if(data)
+						$("#assigned-user-container").html(data)
+				},
+				error:function(err){
+					console.log(err)
+				}
+			})
+		})
+		
+		var selectedParamter=""
+		
+		$("body").on("change","#automationParameter",function(e){
+			$(".role-select").addClass("d-none")
+			$(".user-select").addClass("d-none")
+			$(".role-select").val("0")
+			$(".user-select").val("0")
+			$(".parameter-dropdown").val("")
+			$("#automation-group-save").addClass("d-none")
+			if($("#automationParameter").val()=="Source"){
+				selectedParamter="Source"
+				$(".parameter-dropdown").addClass("d-none")
+				$("#sourceDropDown").removeClass("d-none")
+			}else if($("#automationParameter").val()=="Course"){
+				selectedParamter="Course"
+				$(".parameter-dropdown").addClass("d-none")
+				$("#courseDropDown").removeClass("d-none")
+			}else if($("#automationParameter").val()=="Campaign"){
+				selectedParamter="Campaign"
+				$(".parameter-dropdown").addClass("d-none")
+				$("#campaignDropDown").removeClass("d-none")
+			}
+		})
+		
+		$("body").on("click","#automation-group-save",function(e){
+			e.preventDefault();
+			if(selectedParamter!=""){
+				
+				var automationGroupReuqest={
+					groupId:$("#userGroup").val(),
+					groupName:$("#"+$("#userGroup").val()).text(),
+					parameterId:$("."+$("#automationParameter").val()).val()
+					
+				}
+			}
+			
+			$.ajax({
+				url:"/automation/save"+"?paramter="+$("#automationParameter").val(),
+				type:"POST",
+				data:JSON.stringify(automationGroupReuqest),
+				contentType:"application/json",
+				success:function(data){
+					if(data)
+						$("#assigned-user-container").html(data)
+					else
+						alert("Unable to save this user")
+				},
+				error:function(err){
+					console.log(err)
+				}
+			})
+		})
+	})
+	
+	$("body").on("click",".delete-assigned-group",function(e){
+		var automationGroupReuqest={}
+		automationGroupReuqest['parameterId']=+(this.id)
+		automationGroupReuqest['groupName']=$("#automationParameter").val()
+		$.ajax({
+			url:"/automation/deleteassignedgroups",
+			type:"PUT",
+			data:JSON.stringify(automationGroupReuqest),
+			contentType:"application/json",
+			success:function(data){
+				if(data)
+					$("#assigned-user-container").html(data)
+				else
+					alert("Unable to save this user")
+			},
+			error:function(err){
+				console.log(err)
+			}
+		})
+	})
+</script>
+<script src="/js/core/popper.min.js"></script>
+  <script src="/js/core/bootstrap.min.js"></script>
+  <script src="/js/perfect-scrollbar.min.js"></script>
+  <script src="/js/smooth-scrollbar.min.js"></script>
+  <script src="/js/custom-sidebar.js"></script>
+   <script src="/js/add-task.js"></script>

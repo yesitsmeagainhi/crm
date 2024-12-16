@@ -1,0 +1,33 @@
+<h5 class="text-center mt-2">Assigned Groups</h5>
+<div class="card w-100">
+   <div class="card-body px-0 pb-2">
+      <div class="assigned-user-table table-responsive p-0">
+         <table  class="table align-items-center mb-0">
+            <thead>
+               <tr>
+                  <th>
+                     Sr.
+                  </th>
+                  <th>
+                     Group Name
+                  </th>
+                  <th>
+                     Delete
+                  </th>
+               </tr>
+            </thead>
+            <tbody>
+               <tr th:each="user,iStat:${allocatedUsers}">
+                  <td th:text="${iStat.index+1}">
+                  </td>
+                  <td th:text="${user.groupName}">
+                  </td>
+                   <td >
+                   	<button th:id="${user.id}" class="btn btn-primary delete-assigned-group">Delete</button>
+                  </td>
+               </tr>
+            </tbody>
+         </table>
+      </div>
+   </div>
+</div>

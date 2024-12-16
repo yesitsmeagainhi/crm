@@ -1,0 +1,39 @@
+<div class="card mb-4" id="">
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive  p-0">
+              	<table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Sr No.</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Mail Id</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">App Password</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="mail,iStat:${allMails}" >
+                      <td class="ps-4 d-flex justify-content-start align-items-center">
+                         <span class="text-secondary text-sm font-weight-bold" th:text="${iStat.index+1}">23/04/18</span>
+                      </td>
+                      <td>
+                        <p class="text-sm font-weight-bold mb-0" th:id="|mailId${mail.id}|" th:text="${mail.mailId}">Manager</p>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:id="|password${mail.id}|"  th:name="${mail.appPassword}">******</span>
+                      </td>
+                       <td class="align-middle text-center ">
+                        <span class="text-secondary text-sm  font-weight-bold" th:id="|mailIsActive${mail.id}|" th:text="${mail.isActive}">Open</span>
+                      </td>
+                      <td class="cursor-pointer">
+                      	<i  th:id="editConfig" th:name="${mail.id}" class="material-icons m-0 opacity-10 cursor-pointer cd-popup-trigger-mail">edit</i>
+                      </td>
+                      
+                    </tr>
+                    
+                    
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>

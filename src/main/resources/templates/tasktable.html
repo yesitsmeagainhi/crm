@@ -1,0 +1,209 @@
+
+<div class="col-12 task-container" th:if="${(isAdmin || isManager || isTelecaller)}" id="allTaskContainer">
+          <div class="card mb-4" id="allTaskContainer_inner">
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="cursor-pointer sort text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="allTask" id="createdOn">Date & Time</th>
+                      <th class="cursor-pointer sort text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2" name="allTask" id="id">Task Id</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="allTask" id="leadPlatform">Platform</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="allTask" id="campaign">Campaign</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="allTask" id="area">Area</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="allTask" id="leadName">Lead Name</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="allTask" id="remark">Remark</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="allTask" id="assignee">Assignee</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="allTask" id="status">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="activeTask,iStat:${allActiveTask.content}" th:id="${activeTask.id}">
+                      <td class="ps-4 d-flex justify-content-start align-items-center">
+                      <i th:if="${activeTask.isScheduled}" class="material-icons opacity-10 me-2"  style="color: orange;">timer</i>
+                     	 <i th:if="${activeTask.assignedTime < (#temporals.createNow().minusHours('1')) && (activeTask.isClaimed!=null && activeTask.isClaimed==false)}" class="material-icons opacity-10 me-2"  style="color: #f03131;">escalator</i>
+                         <span class="text-secondary text-sm font-weight-bold" th:text="${#temporals.format(activeTask.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yyyy HH:mm')}">23/04/18</span>
+                      </td>
+                      <td>
+                        <p class="text-sm font-weight-bold mb-0" th:text="${activeTask.id}">Manager</p>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.leadPlatform}">Facebook</span>
+                      </td>
+                       <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.campaign}"></span>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.area}"></span>
+                      </td>
+                      <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.leadName}">23/04/18</span>
+                      </td>
+                      <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.remark}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.assignee}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center ">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.status}">Open</span>
+                      </td>
+                      
+                      <!--<td class="align-middle text-center">
+                        <a href="javascript:;" class="text-secondary font-weight-bold text-sm" data-toggle="tooltip" data-original-title="Edit user">
+                          Open
+                        </a>
+                      </td>-->
+                    </tr>
+                    
+                    
+                  </tbody>
+                </table>
+                
+              </div>
+            </div>
+            
+          </div>
+          <div class="pagination" >
+			  <ul id="allTaskContainer_page">  </ul>
+			</div>
+        </div>
+        <div class="col-12 task-container" id="myTaskContainer" >
+          <div class="card mb-4" id="myTaskContainer_inner">
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="cursor-pointer sort text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="myTask" id="createdOn">Date & Time</th>
+                      <th class="cursor-pointer sort text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2" name="myTask" id="id">Task Id</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="myTask" id="leadPlatform">Platform</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="myTask" id="campaign">Campaign</th>
+                       <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="myTask" id="area">Area</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="myTask" id="leadName">Lead Name</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="myTask" id="remark">Remark</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="myTask" id="assignee">Assignee</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="myTask" id="status">Status</th>
+                      <!--<th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Action</th>-->
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="activeTask,iStat:${myTasks.content}" th:id="${activeTask.id}">
+                      <td class="ps-4 d-flex justify-content-start align-items-center">
+                      <i th:if="${activeTask.isScheduled}" class="material-icons opacity-10 me-2"  style="color: orange;">timer</i>
+                     	 <i th:if="${activeTask.assignedTime < (#temporals.createNow().minusHours('1')) && (activeTask.isClaimed!=null && activeTask.isClaimed==false)}" class="material-icons opacity-10 me-2"  style="color: #f03131;">escalator</i>
+                         <span class="text-secondary text-sm font-weight-bold" th:text="${#temporals.format(activeTask.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yyyy HH:mm')}">23/04/18</span>
+                      </td>
+                      <td>
+                        <p class="text-sm font-weight-bold mb-0" th:text="${activeTask.id}">Manager</p>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold " th:text="${activeTask.leadPlatform}"></span>
+                      </td>
+                       <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.campaign}"></span>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.area}"></span>
+                      </td>
+                      <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.leadName}">23/04/18</span>
+                      </td>
+                      <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.remark}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${activeTask.assignee}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center ">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.status}">Open</span>
+                      </td>
+                      
+                      <!--<td class="align-middle text-center">
+                        <a href="javascript:;" class="text-secondary font-weight-bold text-light text-sm btn btn-primary mb-0" data-toggle="tooltip" data-original-title="Edit user">
+                          Edit
+                        </a>
+                      </td>-->
+                    </tr>
+                    
+                    
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="pagination2">
+			  <ul id="myTaskContainer_page">  </ul>
+			</div>
+        </div>
+        <div class="col-12 task-container" id="completedTaskContainer" >
+          <div class="card mb-4" id="completedTaskContainer_inner">
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                     <th class="cursor-pointer sort text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="completedTask" id="createdOn">Date & Time</th>
+                      <th class="cursor-pointer sort text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2" name="completedTask" id="id">Task Id</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="completedTask" id="leadPlatform">Platform</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="completedTask" id="campaign">Campaign</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="completedTask" id="area">Area</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="completedTask" id="remark">Remark</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="completedTask" id="leadName">Lead Name</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="completedTask" id="assignee">Assignee</th>
+                      <th class="cursor-pointer sort text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" name="completedTask" id="status">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="completedTask,iStat:${completedTasks}" class="completed-task" th:id="${completedTask.activeTask.id}">
+                      <td class="ps-4 d-flex justify-content-start align-items-center">
+                      <i th:if="${completedTask.activeTask.isScheduled}" class="material-icons opacity-10 me-2"  style="color: orange;">timer</i>
+                         <span class="text-secondary text-sm font-weight-bold" th:text="${#temporals.format(completedTask.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yyyy HH:mm')}">23/04/18</span>
+                      </td>
+                      <td>
+                        <p class="text-sm font-weight-bold mb-0" th:text="${completedTask.id}">Manager</p>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${completedTask.activeTask.leadPlatform}"></span>
+                      </td>
+                       <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${completedTask.activeTask.campaign}"></span>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${completedTask.activeTask.area}"></span>
+                      </td>
+                      <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${completedTask.activeTask.leadName}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${completedTask.activeTask.remark}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center">
+                        <span class="text-secondary text-sm font-weight-bold" th:text="${completedTask.activeTask.assignee}">23/04/18</span>
+                      </td>
+                       <td class="align-middle text-center ">
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${completedTask.activeTask.status}">Open</span>
+                      </td>
+                      
+                      <!--<td class="align-middle text-center">
+                        <a href="javascript:;" class="text-secondary font-weight-bold text-sm btn " data-toggle="tooltip" data-original-title="Edit user">
+                          Open
+                        </a>
+                      </td>-->
+                    </tr>
+                    
+                    
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="pagination3">
+			  <ul id="completedTaskContainer_page">  </ul>
+			</div>
+        </div>
+        
+		
+<script th:inline="javascript">
+
+</script>
