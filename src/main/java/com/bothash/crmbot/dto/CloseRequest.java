@@ -12,6 +12,8 @@ public class CloseRequest {
 	private Boolean isConverted;
 	
 	private Boolean isTaskCompleted;
+
+	private Boolean isSeatConfirmed;
 	
 	private Boolean closeTask;
 	

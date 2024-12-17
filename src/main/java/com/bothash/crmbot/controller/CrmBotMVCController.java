@@ -850,4 +850,61 @@ public class CrmBotMVCController {
 
 	     return new ResponseEntity<List<ActiveTask>>(tasks, HttpStatus.OK);
 	   }
+	 
+	 @RequestMapping("/leads-transfer")
+	 public ModelAndView leadsTransfer(Principal principal) {
+		 KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) principal;
+		AccessToken accessToken = token.getAccount().getKeycloakSecurityContext().getToken();
+		
+		ModelAndView model=new ModelAndView();
+		model.addObject("role", "admin");
+		model.addObject("userName", accessToken.getName());
+		model.addObject("leadsTransfer", true);
+		model.setViewName("mail-configuration");
+		model.addObject("isAdmin", true);
+		model.setViewName("leads-transfer");
+		Boolean isAutomated = false;
+	 	List<Automation> autoamtions=this.automationService.getByIsActive(true);
+		if(autoamtions.size()>0) {
+			isAutomated=true;
+		}
+		model.addObject("isAutomated", isAutomated);
+		
+		List<String> nextRoles=new ArrayList<>();
+		nextRoles.add("manager");
+		nextRoles.add("telecaller");
+		nextRoles.add("counsellor");
+		
+		HttpHeaders header=new HttpHeaders();
+		MultiValueMap<String,String> body= new  LinkedMultiValueMap<>();
+		body.add("grant_type", "password");
+		body.add("client_secret", keycloackClientSecret);
+		body.add("username", adminUserName);
+		body.add("password", adminPassword);
+		body.add("client_id", "admin-cli");
+		
+		HttpEntity<MultiValueMap<String, String>> entity=new HttpEntity<>(body,header);
+		
+		@SuppressWarnings("rawtypes")
+		HashMap response=restTemplate.postForObject(keycloackUrl+"/realms/master/protocol/openid-connect/token",entity, HashMap.class);
+		String adminAccessToken=response.get("access_token").toString();
+		
+		HttpHeaders httpHeaders=new HttpHeaders();
+		httpHeaders.set("Authorization", "Bearer "+adminAccessToken);
+		
+		List<Course> courses=this.courseService.getAll();
+		model.addObject("courses", courses);
+		List<Platforms> platforms=platfromService.getAll();
+		model.addObject("platforms", platforms);
+		
+		List<Object> nextUsers=new ArrayList<>();
+		
+		for(String nextRole:nextRoles) {
+			ResponseEntity<Object> userResponse=restTemplate.exchange(keycloackUrl+"/admin/realms/crmbot/clients/"+crmbotClientId+"/roles/"+nextRole+"/users",HttpMethod.GET,new HttpEntity<>(httpHeaders),Object.class);
+			nextUsers.add(userResponse.getBody());
+		}
+		model.addObject("nextUsers", nextUsers); 
+		model.addObject("nextRoles", nextRoles);
+		 return model;
+	 }
 }

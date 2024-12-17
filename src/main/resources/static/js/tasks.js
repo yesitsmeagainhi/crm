@@ -89,6 +89,21 @@ $(document).ready(function($){
 		}
 	})
 	
+	$('body').on('change','.role-select2',function(e){
+		debugger;
+			if(this.value!="0"){
+				$(".user-select2").addClass("d-none")
+				document.querySelectorAll("#"+this.value+'2').forEach((item,index)=>{
+					$(item).toggleClass("d-none")
+				})
+				$("#move-remark").removeClass("d-none")
+				$("#move-remark").addClass("d-inline")
+			}else{
+				$(".user-select2").addClass("d-none")
+				$("#move-remark").addClass("d-none")
+			}
+		})
+	
 	$('body').on('change','.role-select-scheduler',function(e){
 		if(this.value!="0"){
 			$(".user-select-scheduler").addClass("d-none")
@@ -273,8 +288,12 @@ $(document).ready(function($){
 	$('body').on('click',".close-ticket",function(e){
 		
 		let isChecked=$('input[name="converted"]:checked').val();
+		let isSeatConfirmed=$('input[name="seatConfirmed"]:checked').val();
+		if(isSeatConfirmed == 'on'){
+			isSeatConfirmed = true
+		}
 		console.log($("#closing-remark").val())
-		if(( isChecked=="true" || isChecked=="false") && ($("#closing-remark").val().length>0)){
+		if(( isChecked=="true" || isChecked=="false" || isSeatConfirmed) && ($("#closing-remark").val().length>0)){
 			let closeRequest={}
 				closeRequest['taskId']=taskId
 				closeRequest['remark']=$("#closing-remark").val()
@@ -283,6 +302,7 @@ $(document).ready(function($){
 				closeRequest['userId']=userId
 				closeRequest['isConverted']=isChecked
 				closeRequest['closeTask']=false
+				closeRequest['isSeatConfirmed']=isSeatConfirmed
 				console.log(this.id)
 				debugger;
 				if(this.id!="saveClosingDetails" || isChecked=="true"){

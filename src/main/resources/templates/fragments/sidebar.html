@@ -92,11 +92,19 @@
           </a>
         </li>
 		<li class="nav-item">
-          <a class="nav-link text-dark" target="_blank" href="/crmbot/leads-summary">
+          <a class="nav-link text-dark"  target="_blank" href="/crmbot/leads-summary">
             <div class=" text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">add_chart</i>
             </div>
             <span class="nav-link-text ms-1">Leads Summary</span>
+          </a>
+	        </li>
+		<li class="nav-item">
+          <a class="nav-link text-dark" th:if="${isAdmin}" th:classappend="${leadsTransfer}? 'active bg-gradient-primary' : ''" href="/crmbot/leads-transfer">
+            <div class=" text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons opacity-10">add_chart</i>
+            </div>
+            <span class="nav-link-text ms-1">Leads Transfer</span>
           </a>
 	        </li>
         <!--<li class="nav-item">

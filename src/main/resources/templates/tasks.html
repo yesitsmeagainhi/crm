@@ -99,7 +99,7 @@
 			</select>
         	<select th:each="nextUser,istat:${nextUsers}" class="user-select w-80 mb-3 d-none" th:id="${nextRoles[istat.index]}" autocomplete="off">
 				<option value="" id="0">Select User</option>
-				<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="${user.get('username')}">
+				<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
 				</option>
 			</select>
 			

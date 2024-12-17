@@ -459,4 +459,21 @@ public class ActiveTaskServiceImpl implements ActiveTaskService{
 		return activeTaskRepository.countByTelecallerNameAndIsCounsellingDoneAndCreatedOnGreaterThan(telecallerName,true,LocalDateTime.of(2024, 3, 1, 0, 0));
 	}
 
+	@Override
+	public int transferLeads(String newOwner, String oldOwner) {
+		return this.activeTaskRepository.transferLeads(newOwner, oldOwner);
+	}
+
+	@Override
+	public List<ActiveTask> getByOwnerAndActive(String role, String userName) {
+		return this.activeTaskRepository.findByAssigneeAndOwnerAndIsActive(role, userName, true);
+	}
+
+	@Override
+	public List<ActiveTask> getByOwnerAndActiveAndCourseAndPlatform(String role, String userName, String course,
+			String platform) {
+		return this.activeTaskRepository.findByAssigneeAndOwnerAndIsActiveAndCourseAndLeadPlatform(role, userName, true,course,platform);
+	}
+
+
 }

@@ -1,0 +1,109 @@
+<th:block layout:replace="fragments/htmlhead"></th:block>
+<body class="g-sidenav-show  bg-gray-200">
+  <th:block layout:replace="fragments/sidebar"></th:block>
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    <th:block layout:replace="fragments/header"></th:block>
+    <div class="container-fluid py-2">
+      <div class="row  p-3 pt-0">
+        <div class="card col-lg-12">
+        	<div class="card-header  d-block pb-0 px-3">
+        	 	<div class="float-right text-dark cursor-pointer cd-popup-trigger4"></div>
+              	<h6 class="mb-0 text-center">Transfer Leads</h6>
+            </div>
+			<div class="d-block d-md-flex ">
+					            <form role="form" class="col-12 col-md-6  p-3 mt-3 me-2 left-form" id="leadDataForm">
+					            <div class="card-header pt-0 pb-2 d-block pb-0 px-3 position-relative">
+					              <h6 class="mb-0 text-center">Current Assignee
+					              	
+					              </h6>
+					            </div>
+								<div class="d-flex mb-3 w-90 justify-content-center">
+									<label class="form-label col-3">Role</label>
+										<select class="role-select currUserDetails col-8 ms-1">
+											<option value="" id="0">Select Role</option>
+											<option th:each="nextRole:${nextRoles}" th:value="${nextRole}" th:text="${nextRole}">
+											</option>
+										</select>
+									</div>
+									<div class="d-flex mb-3 w-90 justify-content-center">
+									<label class="form-label col-3 user-select-label d-none">User</label>
+										<select th:each="nextUser,istat:${nextUsers}" class="currUserDetails user-select col-8 ms-1 d-none" th:id="${nextRoles[istat.index]}" >
+											<option value="" id="0">Select User</option>
+											<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
+											</option>
+										</select>
+									</div>
+									<div class="d-flex mb-3 w-90 justify-content-center">
+										<label class="form-label col-3" name="phone">Course</label>
+										<select  id="course" class="currUserDetails p-2 ms-1   col-8" style="border: 1px solid #d2d6da;">
+											<option value="">Select Course</option>
+											<option th:each="course:${courses}" th:value="${course.courseName}" th:text="${course.courseName}">D.PHARM</option>
+											
+											
+										</select>
+									</div>
+									<div class="d-flex mb-3 w-90 justify-content-center">
+										<label class="form-label col-3">Platform</label>
+											<select id="platform" class="currUserDetails col-8 ms-1" style="height: 40px;">
+												<option value="" id="0">Platform</option>
+												<option th:each="platform:${platforms}"  th:value="${platform.name}" th:text="${platform.name}">Manager
+					        					</option>
+											</select>
+										</div>
+									<div class="d-flex mb-3 w-90 justify-content-center">
+										<p id="totalLeads"></p>
+									</div>
+				                </form>
+				                <form role="form" class="col-12 col-md-6  p-3 mt-3">
+					            <div class="card-header pt-0 pb-2 d-block pb-0 px-3">
+					              <h6 class="mb-0 text-center">Assign To</h6>
+					            </div>
+								<div class="d-flex mb-3 w-90 justify-content-center">
+									<label class="form-label col-3">Role</label>
+										<select class="role-select2 col-8 ms-1">
+											<option value="" id="0">Select Role</option>
+											<option th:each="nextRole:${nextRoles}" th:value="${nextRole}" th:text="${nextRole}">
+											</option>
+										</select>
+									</div>
+									<div class="d-flex mb-3 w-90 justify-content-center">
+									<label class="form-label col-3 user-select-label2 d-none">User</label>
+										<select th:each="nextUser,istat:${nextUsers}" class="user-select2 col-8 ms-1 d-none" th:id="|${nextRoles[istat.index]}2|" >
+											<option value="" id="0">Select User</option>
+											<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
+											</option>
+										</select>
+									</div>
+				                </form>
+				                
+				                
+				         </div>
+				 <div class="d-flex justify-content-center mt-3">
+                 	<button class="btn btn-primary transfer-leads">Transfer</button>
+                 </div>
+        </div>
+	  </div>
+	</div>
+	</main>
+	</body>
+	<script src="/js/core/popper.min.js"></script>
+	  <script src="/js/core/bootstrap.min.js"></script>
+	  <script src="/js/perfect-scrollbar.min.js"></script>
+	  <script src="/js/smooth-scrollbar.min.js"></script>
+	  <script src="/js/custom-sidebar.js"></script>
+	  <script src="/js/add-task.js"></script>
+	  <script src="/js/transfer-lead.js"></script>
+	  <script>
+	    var win = navigator.platform.indexOf('Win') > -1;
+	    if (win && document.querySelector('#sidenav-scrollbar')) {
+	      var options = {
+	        damping: '0.5'
+	      }
+	      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+	    }
+	  </script>
+	  <!-- Github buttons -->
+	  <script async defer src="https://buttons.github.io/buttons.js"></script>
+	  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+	  <script src="/js/material-dashboard.min.js?v=3.0.4"></script>

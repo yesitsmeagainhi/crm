@@ -109,6 +109,8 @@ public class ActiveTask implements Serializable {
 	
 	private Float neetPercent;
 	
+	private Boolean isSeatConfirmed;
+	
 	@ManyToOne
 	private FacebookLeads facebookLeads;
 	

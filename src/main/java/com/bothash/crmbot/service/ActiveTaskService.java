@@ -93,5 +93,12 @@ public interface ActiveTaskService {
 	Long countOfCompletedTaskByCaller(String telecallerName);
 
 	Long countOfCounselledTaskByCaller(String string);
+	
+	int transferLeads(String newOwner,String oldOwner);
+
+	List<ActiveTask> getByOwnerAndActive(String role, String userName);
+
+	List<ActiveTask> getByOwnerAndActiveAndCourseAndPlatform(String role, String userName, String course,
+			String platform);
 
 }

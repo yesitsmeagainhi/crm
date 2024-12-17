@@ -2,11 +2,15 @@ package com.bothash.crmbot.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
+import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -23,6 +27,8 @@ public interface ActiveTaskRepository extends JpaRepository<ActiveTask, Long>{
 	Page<ActiveTask> findByAssigneeAndIsActive(String role, boolean b, Pageable pagerequest);
 
 	Page<ActiveTask> findByAssigneeAndOwnerAndIsActive(String role, String userName, boolean b, Pageable pagerequest);
+	
+	List<ActiveTask> findByAssigneeAndOwnerAndIsActive(String role, String userName, boolean b);
 
 	Page<ActiveTask> findByAssigneeAndIsActive(Specification<ActiveTask> filter, String role, boolean b,
 			Pageable requestedPage);
@@ -131,5 +137,11 @@ public interface ActiveTaskRepository extends JpaRepository<ActiveTask, Long>{
 
 	Long countByTelecallerNameAndIsCounsellingDoneAndCreatedOnGreaterThan(String telecallerName, boolean b,LocalDateTime time);
 	
+	@Modifying
+    @Transactional
+    @Query("UPDATE ActiveTask a SET a.owner = :newOwner WHERE a.owner = :oldOwner and a.isActive=true")
+	int  transferLeads(String newOwner,String oldOwner);
 
+	List<ActiveTask> findByAssigneeAndOwnerAndIsActiveAndCourseAndLeadPlatform(String role, String userName, boolean b,
+			String course, String platform);
 }

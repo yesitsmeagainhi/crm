@@ -379,6 +379,11 @@
 		                      <label class="form-check-label" for="closing2">
 		                       Admission Not Done
 		                      </label>
+							  
+							  <input class="form-check-input" type="checkbox"  name="seatConfirmed" id="seatConfirmed" th:checked="${task.isSeatConfirmed}">
+  		                      <label class="form-check-label" for="seatConfirmed">
+  		                       Seat Confirmed
+  		                      </label>
 	                    </div>
 	                     <div class="mt-3">
 		                    <textarea type="text" class="p-2 form-control" placeholder="Remark..." style="border: 0.5px solid #bbb;" id="closing-remark" th:text="${task.closingRemark}" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
@@ -404,6 +409,10 @@
 		                      <input class="form-check-input" type="radio" value="false" name="converted" id="closing2" >
 		                      <label class="form-check-label" for="closing2">
 		                       Admission Not Done
+		                      </label>
+							  <input class="form-check-input" type="checkbox"  name="seatConfirmed" id="seatConfirmed" th:checked="${task.isSeatConfirmed}">
+		                      <label class="form-check-label" for="seatConfirmed">
+		                       Seat Confirmed
 		                      </label>
 		                      
 	                    </div>
@@ -582,7 +591,7 @@
 		</select>
 		<select th:each="nextUser,istat:${nextUsers}" class="user-select mb-3 d-none w-80" th:id="${nextRoles[istat.index]}" >
 			<option value="0" id="0">Select User</option>
-			<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="${user.get('username')}">
+			<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
 			</option>
 		</select>
 		<input type="text" id="move-remark" class="form-control2 mb-3 d-none w-80 p-2" style="border: 1px solid #d2d6da;" placeholder="Enter remark..">
@@ -643,7 +652,7 @@ $(document).ready(function(){
     $('.js-example-basic-single').select2();
 });
 
-	
+	debugger
 	if(isClosed=="true" && role!="admin"){
 		console.log(isClosed)
 		let allInputs=$("input,select,textarea,button,i")

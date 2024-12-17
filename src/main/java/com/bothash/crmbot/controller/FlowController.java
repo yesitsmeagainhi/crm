@@ -497,7 +497,9 @@ public class FlowController {
 		//}
 		activeTask.setClosingRemark(closeRequest.getRemark());
 		activeTask.setIsConverted(closeRequest.getIsConverted());
+		activeTask.setIsSeatConfirmed(closeRequest.getIsSeatConfirmed());
 		activeTask.setIsActive(true);
+		this.activeTaskService.save(activeTask);
 		HistoryEvents hisEvents=new HistoryEvents();
 		hisEvents.setActiveTask(activeTask);
 		hisEvents.setUserName(closeRequest.getUserName());
@@ -507,7 +509,8 @@ public class FlowController {
 		
 		if(!closeRequest.getCloseTask()) {
 			CloseTask closeTask=this.closeTaskService.getByActiveTask(closeRequest.getTaskId());
-			closeTaskService.delete(closeTask);
+			if(closeTask!=null)
+				closeTaskService.delete(closeTask);
 		}
 		
 		if(closeRequest.getCloseTask()) {
@@ -787,4 +790,15 @@ public class FlowController {
 		
 	}
 	
+	@PutMapping("/transfer-leads")
+	public  ResponseEntity<String> transferLeads(@RequestParam String fromUserName,@RequestParam String toUserName,Principal principal){
+		int response = this.activeTaskService.transferLeads(toUserName, fromUserName);
+		return new ResponseEntity<String>("success",HttpStatus.OK);
+	}
+	
+	@GetMapping("/total-leads")
+	public  ResponseEntity<Integer> getTotalLeadOfUser(@RequestParam String userName,@RequestParam String role,@RequestParam String course,@RequestParam String platform,Principal principal){
+		List<ActiveTask> response = this.activeTaskService.getByOwnerAndActiveAndCourseAndPlatform(role, userName,course,platform);
+		return new ResponseEntity<Integer>(response.size(),HttpStatus.OK);
+	}
 }
