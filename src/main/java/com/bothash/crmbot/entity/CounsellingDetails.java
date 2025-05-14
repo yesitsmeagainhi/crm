@@ -40,6 +40,10 @@ public class CounsellingDetails implements Serializable {
 	
 	private String userEmail;
 	
+	private String counsellingDoneBy;
+	
+	private String cousellingDoneOthers;
+	
 	@ManyToOne
 	private ActiveTask activeTask;
 	

@@ -5,6 +5,9 @@
 		border-radius: 5px 5px;
 		padding: 8px;
 	}
+	.text-black{
+		color: black;
+	}
 	
 </style>
 
@@ -113,6 +116,10 @@
 			<input type="date" id="toDate" class="mb-3 w-80 px-2 " autocomplete="off"  style="border: 1px solid #c0c6cc;">
 			
           </div>
+		  <div class="col-xl-3 col-sm-5 mb-4 mt-3 text-center">
+          	<input type="checkbox" id="seatConfirmed" name="seatConfirmed"> <span class="text-black">Seat Confirmed</span>
+          	
+           </div>
           <div class="col-xl-2 col-sm-5 mb-4  d-flex">
          	 <button class="btn btn-primary dashboard-sumbit mt-0 col-12 row">Sumbit</button>
           </div>
@@ -574,6 +581,18 @@
   <script src="/js/custom-sidebar.js"></script>
    <script src="/js/add-task.js"></script>
   <script th:inline="javascript">
+	
+	var role=/*[[${role}]]*/''
+
+	/*$(document).ready(function(){
+		debugger
+		if(role=='supervisor'){
+			let allInputs=$(".graph_report")
+			for(let i=0;i<allInputs.length;i++){
+					allInputs[i].disabled=true
+			}
+		}
+	})*/
   
   var platforms=/*[[${platforms}]]*/''
   var activeLeadsByPlatform=/*[[${activeLeadsByPlatform}]]*/''
@@ -796,6 +815,7 @@
 		filterRequests['fromDate']=$("#fromDate").val()
 		filterRequests['toDate']=$("#toDate").val()
 		filterRequests['leadType']=$("#leadType").val()
+		filterRequests['isSeatConfirmed']=$('#seatConfirmed').is(':checked')
 		if($(".owner-select").val()=="Yes"){
 			filterRequests['isOwner']=true
 		}
@@ -835,6 +855,7 @@
 		filterRequests['fromDate']=$("#fromDate").val()
 		filterRequests['toDate']=$("#toDate").val()
 		filterRequests['leadType']=$("#leadType").val()
+		filterRequests['isSeatConfirmed']=$('#seatConfirmed').is(':checked')
 		if($(".owner-select").val()=="Yes"){
 			filterRequests['isOwner']=true
 		}

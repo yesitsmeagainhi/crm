@@ -52,6 +52,12 @@ public class FilterSpecification {
 						}
 					}
 				}
+				if (reportFilterDto!=null && reportFilterDto.getLeadType()!=null &&  reportFilterDto.getLeadType().length()>0) {
+
+					final Predicate leadType= cb.equal(cb.lower(root.get("leadType")),reportFilterDto.getLeadType().toLowerCase());
+					
+					predicates.add(leadType);
+				}
 				if (reportFilterDto!=null && reportFilterDto.getLeadPlatform()!=null &&  reportFilterDto.getLeadPlatform().length()>0) {
 
 					final Predicate leadPlatform= cb.equal(cb.lower(root.get("leadPlatform")),reportFilterDto.getLeadPlatform().toLowerCase());
@@ -88,6 +94,11 @@ public class FilterSpecification {
 				if(reportFilterDto.getIsCounselled()!=null && reportFilterDto.getIsCounselled()) {
 					final Predicate isCounselled= cb.equal(root.get("isCounsellingDone"),reportFilterDto.getIsCounselled());
 					
+					predicates.add(isCounselled);
+				}else if(reportFilterDto.getIsLeadTransfer()!=null && reportFilterDto.getIsLeadTransfer() && reportFilterDto.getIsCounselled()!=null && !reportFilterDto.getIsCounselled()) {
+					final Predicate isCounselled1 = cb.equal(root.get("isCounsellingDone"),false);
+					final Predicate isCounselled2 = cb.isNull(root.get("isCounsellingDone"));
+					final Predicate isCounselled = cb.or(isCounselled1,isCounselled2);
 					predicates.add(isCounselled);
 				}
 				if(reportFilterDto.getLeadName()!=null && reportFilterDto.getLeadName().length()>0) {

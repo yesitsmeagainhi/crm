@@ -19,6 +19,7 @@
                   <tbody th:if="!${isClosedTask}">
                     <tr  th:each="activeTask,iStat:${tasks.content}" class="open-detail" th:classappend="${activeTask.isDuplicate!=null && activeTask.isDuplicate?'duplicate-task':activeTask.isCounsellingDone!=null && activeTask.isCounsellingDone==true? 'counselled-task': activeTask.isClaimed==null || activeTask.isClaimed==false?'unclaimed-task': activeTask.isCounsellingDone!=null && activeTask.isCounsellingDone==false?'uncounselled-task':'' }" th:id="${activeTask.id}">
                       <td class="ps-2">
+						<span th:if="${!activeTask.duplicateDetails.isEmpty()}" th:text="${#lists.size(activeTask.duplicateDetails)}" class=""  style="color: red;font-size: medium;font-weight: bold;">circle</span>
                      	 <i th:if="${activeTask.isScheduled}" class="material-icons opacity-10 me-2"  style="color: orange;">timer</i>
                      	 <i th:if="${activeTask.assignedTime < (#temporals.createNow().minusHours('1')) && (activeTask.isClaimed!=null && activeTask.isClaimed==false)}" class="material-icons opacity-10 me-2"  style="color: #f03131;">priority_high</i>
                          <span class="text-secondary text-sm font-weight-bold" th:text="${#temporals.format(activeTask.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yy HH:mm')}">23/04/18</span>

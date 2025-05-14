@@ -48,6 +48,12 @@
         	<groupId>org.springframework.boot</groupId>
         	<artifactId>spring-boot-devtools</artifactId>
         </dependency> 
+<!-- https://mvnrepository.com/artifact/com.twilio.sdk/twilio -->
+<dependency>
+    <groupId>com.twilio.sdk</groupId>
+    <artifactId>twilio</artifactId>
+    <version>10.6.4</version>
+</dependency>
 
 <dependency>
 			<groupId>org.projectlombok</groupId>
@@ -97,6 +103,8 @@
     <groupId>mysql</groupId>
     <artifactId>mysql-connector-java</artifactId>
 </dependency>
+
+
 	</dependencies>
 
 	<build>

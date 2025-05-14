@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.bothash.crmbot.dto.FilterRequests;
+import com.bothash.crmbot.dto.TransferLeadsRequest;
 import com.bothash.crmbot.entity.ActiveTask;
 
 public interface ActiveTaskService {
@@ -94,11 +95,11 @@ public interface ActiveTaskService {
 
 	Long countOfCounselledTaskByCaller(String string);
 	
-	int transferLeads(String newOwner,String oldOwner);
+	int transferLeads(TransferLeadsRequest transferLeadsRequest);
 
 	List<ActiveTask> getByOwnerAndActive(String role, String userName);
 
-	List<ActiveTask> getByOwnerAndActiveAndCourseAndPlatform(String role, String userName, String course,
-			String platform);
+	List<ActiveTask> getByOwnerAndActiveAndCourseAndPlatformAndLeadType(String role, String userName, String course,
+			String platform,String leadType);
 
 }

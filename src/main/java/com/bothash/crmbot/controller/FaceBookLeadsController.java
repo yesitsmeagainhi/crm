@@ -25,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 import com.bothash.crmbot.dto.Constants;
 import com.bothash.crmbot.entity.ActiveTask;
 import com.bothash.crmbot.entity.Automation;
+import com.bothash.crmbot.entity.DuplicateDetails;
 import com.bothash.crmbot.entity.FacebookLeadConfigs;
 import com.bothash.crmbot.entity.FacebookLeads;
 import com.bothash.crmbot.entity.HistoryEvents;
@@ -32,6 +33,7 @@ import com.bothash.crmbot.service.ActiveTaskService;
 import com.bothash.crmbot.service.AutomationByCourseService;
 import com.bothash.crmbot.service.AutomationBySourceService;
 import com.bothash.crmbot.service.AutomationService;
+import com.bothash.crmbot.service.DuplicateDetailsService;
 import com.bothash.crmbot.service.FacebookLeadConfigService;
 import com.bothash.crmbot.service.FacebookLeadsService;
 import com.bothash.crmbot.service.HistoryEventsService;
@@ -73,13 +75,16 @@ public class FaceBookLeadsController {
 	@Autowired
 	private TaskListener taskListener;
 	
+	@Autowired
+	private DuplicateDetailsService duplicateDetailsService;
+	
 	
 	@Value("${facebook.access.token}")
 	private String facebookAccessToken;
 	
 	@GetMapping("/leads")
 	@RolesAllowed("user")
-	@Scheduled(fixedRate = 120000)
+	//@Scheduled(fixedRate = 120000)
 	public ResponseEntity<List<FacebookLeads>> getLeads(){
 		
 		
@@ -189,6 +194,24 @@ public class FaceBookLeadsController {
 					List<ActiveTask> existingTask =this.activeTaskService.getTaskByPhoneNumber(activeTask.getPhoneNumber());
 					if(existingTask!=null && existingTask.size()>0) {
 						activeTask.setIsDuplicate(true);
+						try {
+							DuplicateDetails duplicateDetails = new DuplicateDetails();
+				    		duplicateDetails.setActiveTask(existingTask.get(0));
+				    		duplicateDetails.setPlatform("G");
+				    		
+				    		this.duplicateDetailsService.save(duplicateDetails);
+				    		this.facebookLeadConfigService.save(activeConfig);
+				    		HistoryEvents event =new HistoryEvents();
+							event.setActiveTask(existingTask.get(0));
+							event.setUserEmail("Facebook");
+							event.setUserName("Facebook");
+							event.setUserId("Facebook");
+							event.setEvent("Duplicate task created through Facebook");
+							historyEventsService.save(event);
+				    		return null;
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 			    		try {
 			    			activeTask.setAssignee(existingTask.get(0).getAssignee());
 							activeTask.setOwner(existingTask.get(0).getOwner());

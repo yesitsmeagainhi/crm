@@ -126,6 +126,10 @@ public class AdminController {
 		
 		ModelAndView model=new ModelAndView();
 		model.addObject("role", "admin");
+		Set<String> roles=token.getAccount().getRoles();
+		if (roles.contains(Constants.supervisor)) {
+			model.addObject("role", "supervisor");
+		}
 		model.addObject("userName", accessToken.getName());
 		model.setViewName("dashboard");
 		model.addObject("dashboard", true);
@@ -150,7 +154,6 @@ public class AdminController {
 		model.addObject("platforms", platforms);
 		model.addObject("courses", courses);
 		model.addObject("isAdmin", true);
-		model.addObject("role", "admin");
 		
 		UserMaster userDetails=this.userMasterService.getByUserName(accessToken.getPreferredUsername());
 		if(userDetails!=null)
@@ -241,6 +244,11 @@ public class AdminController {
 		model.addObject("facebookLeadConfigs", facebookLeadConfigs);
 		model.addObject("isAdmin", true);
 		model.addObject("role", "admin");
+		
+		Set<String> roles=token.getAccount().getRoles();
+		if (roles.contains(Constants.supervisor)) {
+			model.addObject("role", "supervisor");
+		}
 		model.addObject("userName", accessToken.getName());
 		
 		UserMaster userDetails=this.userMasterService.getByUserName(accessToken.getPreferredUsername());
@@ -348,6 +356,11 @@ public class AdminController {
 		model.addObject("mailConfiguration", true);
 		model.setViewName("mail-configuration");
 		model.addObject("isAdmin", true);
+		
+		Set<String> roles=token.getAccount().getRoles();
+		if (roles.contains(Constants.supervisor)) {
+			model.addObject("role", "supervisor");
+		}
 		
 		UserMaster userDetails=this.userMasterService.getByUserName(accessToken.getPreferredUsername());
 		if(userDetails!=null)

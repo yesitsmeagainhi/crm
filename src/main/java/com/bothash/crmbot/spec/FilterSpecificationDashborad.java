@@ -116,6 +116,7 @@ public class FilterSpecificationDashborad {
 					
 				}
 				
+				
 				if(reportFilterDto.getIsCounselled()!=null) {
 					if(reportFilterDto.getIsCounselled()) {
 						final Predicate isActive = cb.equal(root.get("isCounsellingDone"),reportFilterDto.getIsCounselled());
@@ -127,6 +128,20 @@ public class FilterSpecificationDashborad {
 						final Predicate isActive = cb.or(isActive1,isActive2);
 						predicates.add(isActive);
 					}
+					
+				}
+				
+				if(reportFilterDto.getIsSeatConfirmed()!=null) {
+					if(reportFilterDto.getIsSeatConfirmed()) {
+						final Predicate isSeatConfirmed = cb.equal(root.get("isSeatConfirmed"),reportFilterDto.getIsSeatConfirmed());
+						predicates.add(isSeatConfirmed);
+					}else {
+						final Predicate isSeatConfirmed1 = cb.equal(root.get("isSeatConfirmed"),false);
+						final Predicate isSeatConfirmed2 = cb.isNull(root.get("isSeatConfirmed"));
+						final Predicate isSeatConfirmed = cb.or(isSeatConfirmed1,isSeatConfirmed2);
+						predicates.add(isSeatConfirmed);
+					}
+					
 					
 				}
 				

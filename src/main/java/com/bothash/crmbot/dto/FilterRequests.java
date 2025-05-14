@@ -51,4 +51,14 @@ public class FilterRequests {
 	private String userNameForFilterMainTaskPage;
 	
 	private String leadType;
+	
+	private Boolean isSeatConfirmed;
+	
+	private Boolean isLeadTransfer;
+	
+	private String toRole;
+	
+	private String toUserName;
+	
+	private Integer numberOfLeads;
 }

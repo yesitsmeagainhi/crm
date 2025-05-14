@@ -31,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import com.bothash.crmbot.dto.FilterRequests;
 import com.bothash.crmbot.dto.Groups;
 import com.bothash.crmbot.dto.KeycloakUserResponse;
+import com.bothash.crmbot.dto.TransferLeadsRequest;
 import com.bothash.crmbot.entity.ActiveTask;
 import com.bothash.crmbot.entity.AutomationByCourse;
 import com.bothash.crmbot.entity.AutomationBySource;
@@ -460,8 +461,9 @@ public class ActiveTaskServiceImpl implements ActiveTaskService{
 	}
 
 	@Override
-	public int transferLeads(String newOwner, String oldOwner) {
-		return this.activeTaskRepository.transferLeads(newOwner, oldOwner);
+	public int transferLeads(TransferLeadsRequest transferLeadsRequest) {
+		
+		return this.activeTaskRepository.transferLeads(transferLeadsRequest.getToUserName(), transferLeadsRequest.getToRole(), transferLeadsRequest.getFromUserName(), transferLeadsRequest.getFromRole(), transferLeadsRequest.getCourse(), transferLeadsRequest.getPlatform(), transferLeadsRequest.getLeadType(), transferLeadsRequest.getNumberOfLeads());
 	}
 
 	@Override
@@ -470,9 +472,9 @@ public class ActiveTaskServiceImpl implements ActiveTaskService{
 	}
 
 	@Override
-	public List<ActiveTask> getByOwnerAndActiveAndCourseAndPlatform(String role, String userName, String course,
-			String platform) {
-		return this.activeTaskRepository.findByAssigneeAndOwnerAndIsActiveAndCourseAndLeadPlatform(role, userName, true,course,platform);
+	public List<ActiveTask> getByOwnerAndActiveAndCourseAndPlatformAndLeadType(String role, String userName, String course,
+			String platform,String leadType) {
+		return this.activeTaskRepository.findByAssigneeAndOwnerAndIsActiveAndCourseAndLeadPlatformAndLeadType(role, userName, true,course,platform,leadType);
 	}
 
 

@@ -58,4 +58,17 @@
   <script src="/js/smooth-scrollbar.min.js"></script>
   <script src="/js/add-task.js"></script>
    <script src="/js/mail-config.js"></script>
+   <script th:inline="javascript">
+	var role=/*[[${role}]]*/''
+
+		$(document).ready(function(){
+			debugger
+			if(role=='supervisor'){
+					let allInputs=$("button")
+					for(let i=0;i<allInputs.length;i++){
+							allInputs[i].disabled=true
+					}
+				}
+		})
+   </script>
    

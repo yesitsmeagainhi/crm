@@ -33,8 +33,8 @@ public class KeycloakSecurity extends KeycloakWebSecurityConfigurerAdapter {
          super.configure(http);
         http.authorizeRequests()
         		.antMatchers("/bothash/**").permitAll()
-                .antMatchers("/crmbot/**").hasAnyRole("user","admin","manager","counsellor","telecaller")
-                .antMatchers("/admin/**").hasAnyRole("admin")
+                .antMatchers("/crmbot/**").hasAnyRole("user","admin","manager","counsellor","telecaller","supervisor")
+                .antMatchers("/admin/**").hasAnyRole("admin","supervisor")
                 .anyRequest().permitAll();
         http.csrf().disable();
     }

@@ -14,5 +14,6 @@ public class Constants {
 	public final static String counselledTask="counselledTask";
 	public final static String shceduledTask="shceduledTask";
 	public final static String meetingTask="meetingTask";
+	public final static String supervisor ="supervisor";
 	
 }

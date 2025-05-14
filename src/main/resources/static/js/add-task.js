@@ -70,12 +70,19 @@ $(document).ready(function(){
 			activeTask['isActive']=true
 			try{
 				if($(".role-select").val()!="0"){
-				activeTask['taskGroup']=$(".role-select").val()
-				activeTask['assignee']=$(".role-select").val()
-				if($("#"+$(".role-select").val()).val()!=")")
-					activeTask['owner']=$("#"+$(".role-select").val()).val()
-					var selectedUserForAdd=$("#"+$(".role-select").val()).val()
-					createTicketRequest['ownerName']=$("#"+selectedUserForAdd.split('@')[0]).attr('name')
+					activeTask['taskGroup']=$(".role-select").val()
+					activeTask['assignee']=$(".role-select").val()
+					if($("#"+$(".role-select").val()).val()!=")")
+						activeTask['owner']=$("#"+$(".role-select").val()).val()
+						var selectedUserForAdd=$("#"+$(".role-select").val()).val()
+						
+						var selectedOption2= $("#"+$(".role-select").val()+ " option[value='" + selectedUserForAdd + "']");
+						if (selectedOption2.length > 0) {
+				            var selectedOptionName2 = selectedOption2.attr("name");
+				           
+				        } 
+						
+						createTicketRequest['ownerName']=selectedOptionName2
 				}
 			}catch(err){
 				console.log(err)

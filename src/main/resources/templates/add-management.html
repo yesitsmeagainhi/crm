@@ -121,7 +121,7 @@
   <script src="/js/addmanagement.js"></script>
   <script src="/js/custom-sidebar.js"></script>
   <script src="/js/tasks.js"></script>
-  <script>
+  <script th:inline="javascript">
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
       var options = {
@@ -129,6 +129,17 @@
       }
       Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
+	var role=/*[[${role}]]*/''
+
+	$(document).ready(function(){
+		debugger
+		if(role=='supervisor'){
+				let allInputs=$(".cd-popup-trigger2")
+				for(let i=0;i<allInputs.length;i++){
+						allInputs[i].disabled=true
+				}
+			}
+	})
   </script>
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>

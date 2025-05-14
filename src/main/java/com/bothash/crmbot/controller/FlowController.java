@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,29 +38,38 @@ import com.bothash.crmbot.CrmbotApplication;
 import com.bothash.crmbot.dto.CloseRequest;
 import com.bothash.crmbot.dto.Constants;
 import com.bothash.crmbot.dto.CreateTicketRequest;
+import com.bothash.crmbot.dto.FilterRequests;
 import com.bothash.crmbot.dto.JustDialCreateRequest;
 import com.bothash.crmbot.dto.SchedulerRequest;
 import com.bothash.crmbot.dto.TicketFwdRequest;
+import com.bothash.crmbot.dto.TransferLeadsRequest;
 import com.bothash.crmbot.entity.ActiveTask;
 import com.bothash.crmbot.entity.Automation;
 import com.bothash.crmbot.entity.AutomationByCourse;
 import com.bothash.crmbot.entity.AutomationBySource;
 import com.bothash.crmbot.entity.CloseTask;
+import com.bothash.crmbot.entity.Comments;
 import com.bothash.crmbot.entity.CounsellingDetails;
+import com.bothash.crmbot.entity.DuplicateDetails;
 import com.bothash.crmbot.entity.FacebookLeads;
 import com.bothash.crmbot.entity.HistoryEvents;
+import com.bothash.crmbot.repository.ActiveTaskRepository;
 import com.bothash.crmbot.service.ActiveTaskService;
 import com.bothash.crmbot.service.AutomationByCampaignService;
 import com.bothash.crmbot.service.AutomationByCourseService;
 import com.bothash.crmbot.service.AutomationBySourceService;
 import com.bothash.crmbot.service.AutomationService;
 import com.bothash.crmbot.service.CloseTaskService;
+import com.bothash.crmbot.service.CommentsService;
 import com.bothash.crmbot.service.CounsellingDetailsService;
+import com.bothash.crmbot.service.DuplicateDetailsService;
 import com.bothash.crmbot.service.FacebookLeadsService;
 import com.bothash.crmbot.service.HistoryEventsService;
 import com.bothash.crmbot.service.impl.TaskListener;
+import com.bothash.crmbot.service.impl.TwilioWhatsAppService;
 import com.bothash.crmbot.service.impl.WhatsappService;
 import com.bothash.crmbot.spec.ExcelHelper;
+import com.bothash.crmbot.spec.FilterSpecification;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -107,6 +117,18 @@ public class FlowController {
 	@Autowired
 	private WhatsappService whatsappService;
 	
+	@Autowired
+	private CommentsService commentsService;
+	
+	@Autowired
+	private DuplicateDetailsService duplicateDetailsService;
+	
+	@Autowired
+    private TwilioWhatsAppService twilioWhatsAppService;
+	
+	@Autowired
+	private ActiveTaskRepository activeTaskRepository;
+	
 	@Value("${facebook.access.token}")
 	private String facebookAccessToken;
 	
@@ -148,6 +170,23 @@ public class FlowController {
 			
 			if(existingTask!=null && existingTask.size()>0){
 				activeTask.setIsDuplicate(true);
+				try {
+					DuplicateDetails duplicateDetails = new DuplicateDetails();
+		    		duplicateDetails.setActiveTask(existingTask.get(0));
+		    		duplicateDetails.setPlatform("G");
+		    		
+		    		this.duplicateDetailsService.save(duplicateDetails);
+		    		HistoryEvents hisEvents=new HistoryEvents();
+					hisEvents.setActiveTask(existingTask.get(0));
+					hisEvents.setUserName(createTicketRequest.getUserName());
+					hisEvents.setUserEmail(createTicketRequest.getUserEmail());
+					hisEvents.setUserId(createTicketRequest.getUserId());
+					hisEvents.setEvent(createTicketRequest.getUserName() +" tried creating duplicate task");
+					historyEventsService.save(hisEvents);
+		    		return null;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				for(ActiveTask existing:existingTask) {
 					if(existing.getAssignee()!=null && existing.getAssignee()!="") {
 						if(existing.getOwner()!=null && existing.getOwner()!="") {
@@ -270,10 +309,17 @@ public class FlowController {
 				e.printStackTrace();
 			}
 			
-			try {
-				whatsappService.sendMessage(activeTask.getCampaign(),phoneNumber);
-			}catch(Exception e2) {
-				e2.printStackTrace();
+//			try {
+//				whatsappService.sendMessage(activeTask.getCampaign(),phoneNumber);
+//			}catch(Exception e2) {
+//				e2.printStackTrace();
+//			}
+			if(activeTask.getLeadName().toLowerCase().contains("naresh")) {
+				try {
+					twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");
+				}catch(Exception e2) {
+					e2.printStackTrace();
+				}
 			}
 			return new ResponseEntity<ActiveTask>(activeTask,HttpStatus.OK);
 		
@@ -305,16 +351,16 @@ public class FlowController {
 				for( ActiveTask activeTask : activeTasks) {
 					FacebookLeads faceBookLead=this.facebookLeadsService.save(activeTask.getFacebookLeads());
 					activeTask.setFacebookLeads(faceBookLead);
-					activeTask.setAssignee("admin");
+//					activeTask.setAssignee("admin");
 					activeTask.setIsActive(true);
 					activeTask.setIsClaimed(false);
-					activeTask.setTaskGroup("admin");
+//					activeTask.setTaskGroup("admin");
 					activeTask.setTaskName("");
-					activeTask.setStatus("Open");
+//					activeTask.setStatus("Open");
 					activeTask.setAssignedTime(LocalDateTime.now().plusHours(5).plusMinutes(30));
 					
 					List<Automation> automationList=automationService.getByIsActive(true);
-					if(automationList.size()>0) {
+					if(automationList.size()>0 && activeTask.getOwner()==null) {
 						Automation automationParamter=automationList.get(0);
 						Map<String,String> userToAllocate =new HashMap<String,String>();
 						if(automationParamter.getParamter().equals("Source")) {
@@ -362,6 +408,14 @@ public class FlowController {
 					hisEvents.setUserId(userId);
 					hisEvents.setEvent("Task created by "+userName+" using excel");
 					historyEventsService.save(hisEvents);
+					
+					HistoryEvents hisEvents2=new HistoryEvents();
+					hisEvents2.setActiveTask(activeTask);
+					hisEvents2.setUserName(userName);
+					hisEvents2.setUserEmail(userEmail);
+					hisEvents2.setUserId(userId);
+					hisEvents2.setEvent("Task assigned to "+activeTask.getOwner()+" using excel");
+					historyEventsService.save(hisEvents2);
 				}
 				
 			} catch (IOException e) {
@@ -505,7 +559,16 @@ public class FlowController {
 		hisEvents.setUserName(closeRequest.getUserName());
 		hisEvents.setUserEmail(closeRequest.getUserEmail());
 		hisEvents.setUserId(closeRequest.getUserId());
-		hisEvents.setRemark(closeRequest.getRemark());
+		hisEvents.setRemark("Admission done by "+closeRequest.getCounsellingDoneBy()+" with remark: "+closeRequest.getRemark());
+		
+		Comments comments = new Comments();
+		comments.setCommentDateTime(LocalDateTime.now());
+		comments.setUserName(closeRequest.getUserName());
+		comments.setUserEmail(closeRequest.getUserEmail());
+		
+		comments.setComment("Admission done by "+closeRequest.getCounsellingDoneBy()+" with remark: "+closeRequest.getRemark());
+		comments.setActiveTask(activeTask);
+		Comments saveComment=commentsService.save(comments);
 		
 		if(!closeRequest.getCloseTask()) {
 			CloseTask closeTask=this.closeTaskService.getByActiveTask(closeRequest.getTaskId());
@@ -577,16 +640,52 @@ public class FlowController {
 	}
 	
 	@PostMapping("/counselling/save")
-	public ResponseEntity<CounsellingDetails> saveCounsellingDetails(@RequestBody CounsellingDetails counsellingDetails,@RequestParam Long activeTaskId){
+	public ResponseEntity<CounsellingDetails> saveCounsellingDetails(@RequestBody CounsellingDetails counsellingDetails,@RequestParam Long activeTaskId,Principal principal){
+		KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) principal;
+		AccessToken accessToken = token.getAccount().getKeycloakSecurityContext().getToken();
+		
+		Set<String> roles=token.getAccount().getRoles();
+		String userName=accessToken.getPreferredUsername();
+		
 		ActiveTask activeTask=this.activeTaskService.getTaskById(activeTaskId);
+		
+		String commentString = "";
+		String counsellingDoneBy = counsellingDetails.getCounsellingDoneBy();
+		
+		if(counsellingDetails.getCounsellingDoneBy().equalsIgnoreCase("Other")) {
+			counsellingDoneBy = counsellingDetails.getCousellingDoneOthers();
+		}
+		
+		
+			
+		if(activeTask.getIsCounsellingDone()==null) {
+			activeTask.setIsCounsellingDone(false);
+			commentString = "Counselling not done by "+counsellingDoneBy;
+		}
 		if(counsellingDetails.getIsCounselled()) {
 			activeTask.setIsCounsellingDone(true);
-		}else if(activeTask.getIsCounsellingDone()==null) {
-			activeTask.setIsCounsellingDone(false);
+			commentString = "Counselling done by "+counsellingDoneBy +" with details (Course: "+counsellingDetails.getCourse()+", Fees : "+counsellingDetails.getFeesPitched()+", Remark: "+ counsellingDetails.getRemark()+")";
+		}else {
+			commentString = "Counselling not done by "+counsellingDoneBy + "with remark: "+counsellingDetails.getRemark();
 		}
 		this.activeTaskService.save(activeTask);
+		counsellingDetails.setUserName(counsellingDoneBy);
 		counsellingDetails.setActiveTask(activeTask);
 		CounsellingDetails saveCounsellingDetails=this.conCounsellingDetailsService.save(counsellingDetails);
+		
+		if(activeTask.getIsClaimed()==null || !activeTask.getIsClaimed())
+			activeTask.setClaimTime(LocalDateTime.now().plusHours(5).plusMinutes(30));
+		
+		activeTask.setIsClaimed(true);
+		Comments comments = new Comments();
+		comments.setCommentDateTime(LocalDateTime.now());
+		comments.setUserName(userName);
+		comments.setUserEmail(userName);
+		
+		comments.setComment(commentString);
+		comments.setActiveTask(activeTask);
+		Comments saveComment=commentsService.save(comments);
+		
 		return new ResponseEntity<CounsellingDetails>(saveCounsellingDetails,HttpStatus.OK);
 	}
 	
@@ -662,6 +761,24 @@ public class FlowController {
 		activeTask.setLeadPlatform("J");
 		if(existingTask!=null && existingTask.size()>0){
 			activeTask.setIsDuplicate(true);
+			try {
+				DuplicateDetails duplicateDetails = new DuplicateDetails();
+	    		duplicateDetails.setActiveTask(existingTask.get(0));
+	    		duplicateDetails.setPlatform("G");
+	    		
+	    		this.duplicateDetailsService.save(duplicateDetails);
+	    		HistoryEvents hisEvents=new HistoryEvents();
+				hisEvents.setActiveTask(existingTask.get(0));
+				hisEvents.setUserName("Just Dial");
+				hisEvents.setUserEmail("Just Dial");
+				hisEvents.setUserId("Just Dial");
+				hisEvents.setEvent("Just Dial" +" tried creating duplicate task");
+				historyEventsService.save(hisEvents);
+	    		return null;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
 			for(ActiveTask existing:existingTask) {
 				if(existing.getAssignee()!=null && existing.getAssignee()!="") {
 					if(existing.getOwner()!=null && existing.getOwner()!="") {
@@ -756,7 +873,13 @@ public class FlowController {
 		//}
 		
 		activeTask=this.activeTaskService.save(activeTask);
-		
+		if(activeTask.getLeadName().toLowerCase().contains("naresh")) {
+			try {
+				twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");
+			}catch(Exception e2) {
+				e2.printStackTrace();
+			}
+		}
 		
 		HistoryEvents hisEvents=new HistoryEvents();
 		hisEvents.setUserName("Email");
@@ -791,14 +914,42 @@ public class FlowController {
 	}
 	
 	@PutMapping("/transfer-leads")
-	public  ResponseEntity<String> transferLeads(@RequestParam String fromUserName,@RequestParam String toUserName,Principal principal){
-		int response = this.activeTaskService.transferLeads(toUserName, fromUserName);
+	public  ResponseEntity<String> transferLeads(@RequestBody FilterRequests filterRequests,Principal principal){
+		List<ActiveTask> tasks = this.activeTaskRepository.findAll(FilterSpecification.filter(filterRequests));
+		if(filterRequests.getToRole().equalsIgnoreCase("telecaller")) {
+			tasks.stream()
+		    .limit(filterRequests.getNumberOfLeads()).forEach(task ->{
+				task.setAssignee(filterRequests.getToRole());
+				task.setIsClaimed(false);
+				task.setOwner(filterRequests.getToUserName());
+				task.setTelecallerName(filterRequests.getToUserName());
+			});
+		}else if(filterRequests.getToRole().equalsIgnoreCase("manager")) {
+			tasks.stream()
+		    .limit(filterRequests.getNumberOfLeads()).forEach(task ->{
+				task.setAssignee(filterRequests.getToRole());
+				task.setOwner(filterRequests.getToUserName());
+				task.setIsClaimed(false);
+				task.setManagerName(filterRequests.getToUserName());
+			});
+		}if(filterRequests.getToRole().equalsIgnoreCase("counsellor")) {
+			tasks.stream()
+		    .limit(filterRequests.getNumberOfLeads()).forEach(task ->{
+				task.setAssignee(filterRequests.getToRole());
+				task.setOwner(filterRequests.getToUserName());
+				task.setIsClaimed(false);
+				task.setCounsellorName(filterRequests.getToUserName());
+			});
+		}
+		this.activeTaskRepository.saveAll(tasks);
 		return new ResponseEntity<String>("success",HttpStatus.OK);
 	}
 	
-	@GetMapping("/total-leads")
-	public  ResponseEntity<Integer> getTotalLeadOfUser(@RequestParam String userName,@RequestParam String role,@RequestParam String course,@RequestParam String platform,Principal principal){
-		List<ActiveTask> response = this.activeTaskService.getByOwnerAndActiveAndCourseAndPlatform(role, userName,course,platform);
-		return new ResponseEntity<Integer>(response.size(),HttpStatus.OK);
+	@PostMapping("/total-leads")
+	public  ResponseEntity<Integer> getTotalLeadOfUser(@RequestBody FilterRequests filterRequests, Principal principal){
+		int count = this.activeTaskRepository.count(FilterSpecification.filter(filterRequests));
+		//List<ActiveTask> response = this.activeTaskRepository.findAll(FilterSpecification.filter(filterRequests));
+//		List<ActiveTask> response = this.activeTaskRepository.findAll(filterRequests.getRole(), filterRequests.getUserName(),filterRequests.getCourseName(),filterRequests.getLeadPlatform(),filterRequests.getLeadType());
+		return new ResponseEntity<Integer>(count,HttpStatus.OK);
 	}
 }

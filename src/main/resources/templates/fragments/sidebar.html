@@ -51,7 +51,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-dark  " th:classappend="${addtask}? 'active bg-gradient-primary' : ''" href="/crmbot/add-task">
+          <a class="nav-link text-dark  " th:if="${role!='supervisor'}"  th:classappend="${addtask}? 'active bg-gradient-primary' : ''" href="/crmbot/add-task">
             <div class=" text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">add</i>
             </div>
@@ -67,7 +67,7 @@
           </a>
         </li>
          <li class="nav-item">
-          <a class="nav-link text-dark " th:if="${isAdmin}"  th:classappend="${automation}? 'active bg-gradient-primary' : ''"  href="/crmbot/automation">
+          <a class="nav-link text-dark " th:if="${isAdmin && role!='supervisor'}"  th:classappend="${automation}? 'active bg-gradient-primary' : ''"  href="/crmbot/automation">
             <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">table_view</i>
             </div>
@@ -100,13 +100,21 @@
           </a>
 	        </li>
 		<li class="nav-item">
-          <a class="nav-link text-dark" th:if="${isAdmin}" th:classappend="${leadsTransfer}? 'active bg-gradient-primary' : ''" href="/crmbot/leads-transfer">
+          <a class="nav-link text-dark" th:if="${isAdmin && role!='supervisor'}" th:classappend="${leadsTransfer}? 'active bg-gradient-primary' : ''" href="/crmbot/leads-transfer">
             <div class=" text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">add_chart</i>
             </div>
             <span class="nav-link-text ms-1">Leads Transfer</span>
           </a>
 	        </li>
+			<li class="nav-item">
+	          <a class="nav-link text-dark" th:if="${isAdmin}" th:classappend="${messageMaster}? 'active bg-gradient-primary' : ''" href="/messages">
+	            <div class=" text-center me-2 d-flex align-items-center justify-content-center">
+	              <i class="material-icons opacity-10">add_chart</i>
+	            </div>
+	            <span class="nav-link-text ms-1">Message Master</span>
+	          </a>
+		        </li>
         <!--<li class="nav-item">
           <a class="nav-link text-dark ">
             <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">

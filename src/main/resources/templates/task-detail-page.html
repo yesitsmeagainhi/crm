@@ -273,7 +273,7 @@
 					</select>
 	              </div>
 				<textarea type="text" class="form-control py-1 pe-5 ps-2 comment-textarea d-none" style="border: 0.5px solid #bbb;border-radius: 0px 0px 13px 13px;" placeholder="Add Comment..."></textarea>
-				<i class="ms-auto material-icons opacity-10 comments-send-button position-absolute cursor-pointer" >send</i>
+				<button class="ms-auto material-icons opacity-10 comments-send-button position-absolute cursor-pointer btn-primary" >send</button>
 	            </div>
 	          </div>
 	          
@@ -349,6 +349,16 @@
 	                     <div class="mt-3">
 		                    <textarea type="text" class="p-2 form-control d-none" placeholder="Remark..." style="border: 0.5px solid #bbb;" id="counselling-done-remark-textbox"  onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
 		                </div>
+						
+						
+						<select th:each="users:${counsellors}" class="mb-3 counselling-done-counsellors w-40" id="counselling_done_by_dropdwon" >
+					  			<option value="" id="">Counselling Done by</option>
+					  			<option th:each="user:${users}" th:value="|${user.get('firstName')} ${user.get('lastName')}|" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
+					  			</option>
+								<option value="Other" >Other</option>
+					  		</select>
+						  
+						  <input class="p-2 ms-1 form-control2 field-data-input w-40 d-none" type="text"  name="counsellingDoneOthers" id="counselling-done-others" placeholder="Enter Name">
 		                
 		                <div class="text-center  d-md-flex" >
 		                	<button type="button" id="saveCounsellingDetails" class="btn bg-gradient-primary  my-4 mb-2 col-4 me-2">Save</button>
@@ -369,7 +379,8 @@
 	            <div class="card-body pt-0 p-3">
 	              <ul class="list-group">
 	                <li class="list-group-item border-0 d-flex p-4 mb-2 border-radius-lg" th:if="${task.isConverted!=null}" th:classappend="${task.isConverted?'bg-gray-100':''}">
-	                  <form role="form" class="w-100" >
+						
+						<form role="form" class="w-100" >
 		                  <div class="form-check form-check-info text-start ps-0">
 		                      <input class="form-check-input" type="radio" value="true" name="converted" id="closing"  th:checked="${task.isConverted}" >
 		                      <label class="form-check-label" for="closing">
@@ -384,6 +395,15 @@
   		                      <label class="form-check-label" for="seatConfirmed">
   		                       Seat Confirmed
   		                      </label>
+							  <span th:each="nextUser,istat:${nextUsers}">
+	  								<select th:if="${nextRoles[istat.index]=='counsellor'}" class="mb-3 admission-done-counsellors w-40" th:id="|${nextRoles[istat.index]}_admission_done|" >
+	  							  			<option value="" id="0">Admission Done by</option>
+	  							  			<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
+	  							  			</option>
+	  										<option value="Other" >Other</option>
+	  							  		</select>
+	  							  </span>
+	  							  <input class="p-2 ms-1 form-control2 field-data-input w-40 d-none" type="text"  name="admissionDoneOthers" id="admission-done-others" placeholder="Enter Name">
 	                    </div>
 	                     <div class="mt-3">
 		                    <textarea type="text" class="p-2 form-control" placeholder="Remark..." style="border: 0.5px solid #bbb;" id="closing-remark" th:text="${task.closingRemark}" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
@@ -400,7 +420,8 @@
 	                  </form>
 	                </li>
 	                <li class="list-group-item border-0 d-flex p-4 mb-2  border-radius-lg" th:if="${task.isConverted==null}">
-	                  <form role="form" class="w-100" >
+
+						<form role="form" class="w-100" >
 		                  <div class="form-check form-check-info text-start ps-0">
 		                      <input class="form-check-input" type="radio" value="true" name="converted" id="closing" >
 		                      <label class="form-check-label" for="closing">
@@ -414,7 +435,15 @@
 		                      <label class="form-check-label" for="seatConfirmed">
 		                       Seat Confirmed
 		                      </label>
-		                      
+							  <span th:each="nextUser,istat:${nextUsers}">
+								<select th:if="${nextRoles[istat.index]=='counsellor'}" class="mb-3 admission-done-counsellors w-40" th:id="|${nextRoles[istat.index]}_admission_done|" >
+							  			<option value="" id="0">Admission Done by</option>
+							  			<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
+							  			</option>
+										<option value="Other" >Other</option>
+							  		</select>
+							  </span>
+							  <input class="p-2 ms-1 form-control2 field-data-input w-40 d-none" type="text"  name="admissionDoneOthers" id="admission-done-others" placeholder="Enter Name">
 	                    </div>
 	                     <div class="mt-3">
 		                    <textarea type="text" class="p-2 form-control" placeholder="Remark..." style="border: 0.5px solid #bbb;" id="closing-remark" th:text="${task.closingRemark}" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
@@ -590,8 +619,8 @@
 			</option>
 		</select>
 		<select th:each="nextUser,istat:${nextUsers}" class="user-select mb-3 d-none w-80" th:id="${nextRoles[istat.index]}" >
-			<option value="0" id="0">Select User</option>
-			<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
+			<option value="">Select User</option>
+			<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
 			</option>
 		</select>
 		<input type="text" id="move-remark" class="form-control2 mb-3 d-none w-80 p-2" style="border: 1px solid #d2d6da;" placeholder="Enter remark..">
@@ -653,14 +682,36 @@ $(document).ready(function(){
 });
 
 	debugger
-	if(isClosed=="true" && role!="admin"){
+	if((isClosed=="true" && role!="admin") || role=='supervisor'){
 		console.log(isClosed)
+		
 		let allInputs=$("input,select,textarea,button,i")
 		for(let i=0;i<allInputs.length;i++){
 			if(allInputs[i].id!="iconNavbarSidenav2" && allInputs[i].id!="search-box" && allInputs[i].getAttribute("name")!="tabs")
 				allInputs[i].disabled=true
 		}
+		if(role == 'supervisor' && isClosed!="true"){
+			$(".comment-search-dropwown").removeAttr("disabled")
+			$(".comments-send-button").removeAttr("disabled")
+			$(".comment-textarea").removeAttr("disabled")
+			
+		}
 	}
+	
+	$('body').on("change",'.admission-done-counsellors',function(){
+		if($(this).val()=='Other'){
+			$("#admission-done-others").removeClass("d-none")
+		}else{
+			$("#admission-done-others").addClass("d-none")
+		}
+	})
+	$('body').on("change",'.counselling-done-counsellors',function(){
+			if($(this).val()=='Other'){
+				$("#counselling-done-others").removeClass("d-none")
+			}else{
+				$("#counselling-done-others").addClass("d-none")
+			}
+		})
 })
 
 

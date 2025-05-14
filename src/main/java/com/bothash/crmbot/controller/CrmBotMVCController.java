@@ -143,12 +143,13 @@ public class CrmBotMVCController {
 		Boolean isManager=false;
 		Boolean isTelecaller=false;
 		Boolean isCounsellor=false;
+		Boolean isSupervisor = false;
 		String role="";
 		
 		Set<String> roles=token.getAccount().getRoles();
 		String userName=accessToken.getPreferredUsername();
 		Boolean isAutomated=false;
-		if(roles.contains("admin")) {
+		if(roles.contains("admin") || roles.contains("supervisor")) {
 			isAdmin=true;
 			List<Automation> autoamtions=this.automationService.getByIsActive(true);
 			if(autoamtions.size()>0) {
@@ -169,6 +170,10 @@ public class CrmBotMVCController {
 		}else if(roles.contains("counsellor")) {
 			role="counsellor";
 			isCounsellor=true;
+		}
+		if(roles.contains("supervisor")) {
+			role="supervisor";
+			isSupervisor=true;
 		}
 		model.addObject("isAutomated", isAutomated);
 		model.addObject("role", role);
@@ -203,6 +208,7 @@ public class CrmBotMVCController {
 		model.addObject("isManager", isManager);
 		model.addObject("isTelecaller", isTelecaller);
 		model.addObject("isCounsellor", isCounsellor);
+		model.addObject("isSupervisor", isSupervisor);
 		model.addObject("myTasks",myTasks);
 		model.addObject("completedTasks", completedTasks);
 		model.addObject("task", true);
@@ -279,7 +285,7 @@ public class CrmBotMVCController {
 		filterRequests.setIsActive(true);
 		Set<String> roles=token.getAccount().getRoles();
 		String role="";
-		if(roles.contains("admin")) {
+		if(roles.contains("admin") || roles.contains("supervisor")) {
 			isAdmin=true;
 			role="admin";
 			filterRequests.setIsAdmin(true);
@@ -465,11 +471,7 @@ public class CrmBotMVCController {
 		ActiveTask task=this.activeTaskService.getTaskById(id);
 		
 		CloseTask closeTask=this.closeTaskService.getByActiveTask(id);
-		
-		
-		
-		
-		
+
 		List<Comments> comments= this.commentsService.getByActiveTask(id);
 		
 		List<CounsellingDetails> counsellingDetails=this.conCounsellingDetailsService.getByActiveTask(id);
@@ -501,7 +503,7 @@ public class CrmBotMVCController {
 		}
 		
 		List<String> nextRoles=new ArrayList<>();
-		if(role.equalsIgnoreCase(Constants.admin)) {
+		if(role.equalsIgnoreCase(Constants.admin) || role.equalsIgnoreCase(Constants.supervisor)) {
 			nextRoles.add("manager");
 			nextRoles.add("telecaller");
 			nextRoles.add("counsellor");
@@ -554,6 +556,11 @@ public class CrmBotMVCController {
 			ResponseEntity<Object> userResponse=restTemplate.exchange(keycloackUrl+"/admin/realms/crmbot/clients/"+crmbotClientId+"/roles/"+nextRole+"/users",HttpMethod.GET,new HttpEntity<>(httpHeaders),Object.class);
 			nextUsers.add(userResponse.getBody());
 		}
+		
+		List<Object> counsellors=new ArrayList<>();
+		ResponseEntity<Object> userResponse=restTemplate.exchange(keycloackUrl+"/admin/realms/crmbot/clients/"+crmbotClientId+"/roles/"+"counsellor"+"/users",HttpMethod.GET,new HttpEntity<>(httpHeaders),Object.class);
+		counsellors.add(userResponse.getBody());
+		model.addObject("counsellors", counsellors);
 		UserMaster userDetails=this.userMasterService.getByUserName(accessToken.getPreferredUsername());
 		if(userDetails!=null)
 			model.addObject("isUserActive", userDetails.getIsActive());
@@ -586,7 +593,7 @@ public class CrmBotMVCController {
 		Set<String> roles=token.getAccount().getRoles();
 		Boolean isAutomated=false;
 		List<String> nextRoles=new ArrayList<>();
-		if(roles.contains("admin")) {
+		if(roles.contains("admin") || role.contains(Constants.supervisor)) {
 			isAdmin=true;
 			role="admin";
 			nextRoles.add("manager");
@@ -729,9 +736,12 @@ public class CrmBotMVCController {
 		Set<String> roles=token.getAccount().getRoles();
 		Boolean isAutomated=false;
 		List<String> nextRoles=new ArrayList<>(Arrays.asList("admin","manager", "telecaller","counsellor"));
-		if(roles.contains("admin")) {
+		if(roles.contains("admin") || roles.contains(Constants.supervisor)) {
 			isAdmin=true;
 			role="admin";
+			if(roles.contains(Constants.supervisor)){
+				role="supervisor";
+			}
 			List<Automation> autoamtions=this.automationService.getByIsActive(true);
 			if(autoamtions.size()>0) {
 				isAutomated=true;
@@ -834,18 +844,40 @@ public class CrmBotMVCController {
 	   public ResponseEntity<List<ActiveTask>> reportJson( Principal principal) {
 	      KeycloakAuthenticationToken token = (KeycloakAuthenticationToken)principal;
 	      AccessToken accessToken = token.getAccount().getKeycloakSecurityContext().getToken();
+	      
+	      String role="";
+	      Boolean isManager = false;
+	      Boolean isTelecaller = false;
+	      Boolean isCounsellor = false;
+	      Set<String> roles=token.getAccount().getRoles();
+	      if(roles.contains("admin") || roles.contains(Constants.supervisor)) {
+			List<Automation> autoamtions=this.automationService.getByIsActive(true);
+			role="admin";
+	      }else if(roles.contains("manager")) {
+			role="manager";
+			isManager=true;
+	      }else if(roles.contains("telecaller")) {
+			role="telecaller";
+			isTelecaller=true;
+	      }else if(roles.contains("counsellor")) {
+			role="counsellor";
+			isCounsellor=true;
+	      }
+	      
 	      FilterRequests filterRequests = new FilterRequests();
 //	      filterRequests.setLeadPlatform(leadPlatform);
-//	      filterRequests.setAssignee(assignee);
+	      //filterRequests.setAssignee(role);
 //	      filterRequests.setFromDate(fromDate);
 //	      filterRequests.setToDate(toDate);
-	      filterRequests.setIsAdmin(true);
-	      filterRequests.setIsManager(false);
-	      filterRequests.setIsTeleCaller(false);
-	      filterRequests.setIsCounsellor(false);
+	      filterRequests.setIsAdmin(false);
+	      //filterRequests.setRole(role);
+	      filterRequests.setIsManager(isManager);
+	      filterRequests.setIsTeleCaller(isTelecaller);
+	      filterRequests.setIsCounsellor(isCounsellor);
 	      filterRequests.setIsAllTask(true);
 	      filterRequests.setIsMyTask(false);
 	      filterRequests.setUserName(accessToken.getPreferredUsername());
+	      //Pageable requestedPage = PageRequest.of(page, size, Sort.by(sorting).descending());
 	      List tasks = this.activeTaskService.getAllTasks(FilterSpecification.filter(filterRequests));
 
 	     return new ResponseEntity<List<ActiveTask>>(tasks, HttpStatus.OK);

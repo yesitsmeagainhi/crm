@@ -2,15 +2,19 @@ package com.bothash.crmbot.entity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -113,6 +117,14 @@ public class ActiveTask implements Serializable {
 	
 	@ManyToOne
 	private FacebookLeads facebookLeads;
+	
+	private String admissionDoneBy;
+	
+	private String admissionDoneOthers;
+	
+	@OneToMany(mappedBy="activeTask")
+	 @JsonManagedReference
+    private List<DuplicateDetails> duplicateDetails;
 	
 	@CreationTimestamp
 	private LocalDateTime createdOn;

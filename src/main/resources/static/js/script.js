@@ -175,8 +175,9 @@ function renderLeadCard(row) {
     const leadId = row.id || `lead-${row['phoneNumber'] || 'unknown'}`;
     const name = row['leadName'] || 'Unknown Lead';
     const number = row['phoneNumber'] || 'Unknown Number';
+	
     const counsellor = row['counsellorName'] || 'Not Assigned';
-    //const counsellingDone = row['No. of counselling'] && parseInt(row['No. of counselling']) > 0;
+    const counsellingDone = row['isCounsellingDone'] ;
     const course = row['course'] || 'Not Specified';
     const leadType = row['leadType'] || 'Not Specified';
 
@@ -286,9 +287,7 @@ function renderLeadCard(row) {
     card.appendChild(rightContainer);
 
     // Add click event listener to the entire card to also copy number and navigate
-    card.addEventListener('click', () => {
-        copyNumberAndNavigate(number);
-    });
+    
 
     return card;
 }
@@ -430,6 +429,7 @@ function copyNumberAndNavigate(number) {
         function calculateSummaryInfo(data) {
             const totalLeads = data.length;
             const counsellingDone = data.filter(lead => lead['isCounsellingDone']).length;
+			debugger
             const admissionsDone = data.filter(lead => lead['isConverted']);
             const dPharmAdmissions = admissionsDone.filter(lead => lead['course']?.toLowerCase() === 'd.pharm').length;
             const bPharmAdmissions = admissionsDone.filter(lead => lead['course']?.toLowerCase() === 'b.pharm').length;
@@ -526,14 +526,15 @@ function copyNumberAndNavigate(number) {
         }
 
         function updateCounsellingButtonCounts() {
+			debugger
             const counsellingAssignedNotDone = globalData.filter(lead => 
                 lead['counsellorName'] &&
-                (!lead['No. of counselling'] || parseInt(lead['No. of counselling']) === 0) &&
+                (!lead['isCounsellingDone']) &&
                 lead['status']?.trim().toLowerCase() !== 'closed'
             );
 
             const counsellingAssigned = globalData.filter(lead => 
-                lead['No. of counselling'] && parseInt(lead['No. of counselling']) > 0 &&
+                lead['isCounsellingDone'] &&
                 lead['status']?.trim().toLowerCase() !== 'closed'
             );
 
@@ -547,7 +548,7 @@ function copyNumberAndNavigate(number) {
         function filterCounsellingAssignedNotDone() {
             const counsellingAssignedNotDone = globalData.filter(lead => 
                 lead['counsellorName'] &&
-                (!lead['No. of counselling'] || parseInt(lead['No. of counselling']) === 0) &&
+                (!lead['isCounsellingDone']) &&
                 lead['status']?.trim().toLowerCase() !== 'closed'
             );
             renderLeads(counsellingAssignedNotDone);
@@ -555,7 +556,7 @@ function copyNumberAndNavigate(number) {
 
         function filterCounsellingAssigned() {
             const counsellingAssigned = globalData.filter(lead => 
-                lead['No. of counselling'] && parseInt(lead['No. of counselling']) > 0 &&
+                lead['isCounsellingDone']  &&
                 lead['status']?.trim().toLowerCase() !== 'closed'
             );
             renderLeads(counsellingAssigned);

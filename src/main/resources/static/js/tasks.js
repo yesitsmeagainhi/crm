@@ -134,11 +134,15 @@ $(document).ready(function($){
 				document.querySelectorAll("#"+document.querySelectorAll(".role-select")[1].value)[1].value!="0" && $("#move-remark").val().length>0 && ($("#leadType").val().length>0 && $(".task-schedulerName").text().length>0 || role=="admin")){
 
 			const selectedUser=document.querySelectorAll("#"+selectedRole)[1].value
-			
+
 			var ticketFwdRequest={
 				
 			}
-			ticketFwdRequest['userName']=$("#"+selectedUser.split('@')[0]).attr('name')
+			var selectedOption2= $("#"+selectedRole+ " option[value='" + selectedUser + "']");
+			if (selectedOption2.length > 0) {
+	            var selectedOptionName2 = selectedOption2.attr("name");
+	        } 
+			ticketFwdRequest['userName']=selectedOptionName2
 			ticketFwdRequest['userEmail']=selectedUser
 			ticketFwdRequest['userGroup']=selectedRole
 			ticketFwdRequest['taskId']=taskId
@@ -186,6 +190,7 @@ $(document).ready(function($){
 	
 	var isCommentAlreadyClicked=false
 	$('body').on('click', '.comments-send-button', function(e) {
+		debugger;
 		if((($(".comment-search-dropwown").val().length>0 && $(".comment-search-dropwown").val()!="Others") || ($(".comment-search-dropwown").val()=="Others" && $(".comment-textarea").val().length>0)) && !isCommentAlreadyClicked){
 			isCommentAlreadyClicked=true
 			let comments={};
@@ -293,46 +298,56 @@ $(document).ready(function($){
 			isSeatConfirmed = true
 		}
 		console.log($("#closing-remark").val())
+		let admissionDone = $(".admission-done-counsellors").val()
+		if(admissionDone=='Other'){
+			admissionDone = $("#admission-done-others").val()
+		}
 		if(( isChecked=="true" || isChecked=="false" || isSeatConfirmed) && ($("#closing-remark").val().length>0)){
-			let closeRequest={}
-				closeRequest['taskId']=taskId
-				closeRequest['remark']=$("#closing-remark").val()
-				closeRequest['userName']=userName
-				closeRequest['userEmail']=userEmail
-				closeRequest['userId']=userId
-				closeRequest['isConverted']=isChecked
-				closeRequest['closeTask']=false
-				closeRequest['isSeatConfirmed']=isSeatConfirmed
-				console.log(this.id)
-				debugger;
-				if(this.id!="saveClosingDetails" || isChecked=="true"){
-						closeRequest['closeTask']=true
-					
-				}
-					
-				$.ajax({
-					url:'/crmbot/flow/close-task',
-					contentType:'application/json',
-					type:'PUT',
-					data:JSON.stringify(closeRequest),
-					success:function(data){
-						ticketForwarded=true
-						let alertText=data
+			if((isChecked == 'true' && admissionDone) || isChecked=="false"|| isSeatConfirmed){
+				let closeRequest={}
+					closeRequest['taskId']=taskId
+					closeRequest['remark']=$("#closing-remark").val()
+					closeRequest['userName']=userName
+					closeRequest['userEmail']=userEmail
+					closeRequest['userId']=userId
+					closeRequest['isConverted']=isChecked
+					closeRequest['closeTask']=false
+					closeRequest['isSeatConfirmed']=isSeatConfirmed
+					closeRequest['counsellingDoneBy']
+					console.log(this.id)
+					debugger;
+					if(this.id!="saveClosingDetails" || isChecked=="true"){
+							closeRequest['closeTask']=true
 						
-						
-						$(".cd-popup-trigger3").click()	
-						$(".cd-popup-trigger2").click()	
-						$(".cd-popup-container2").addClass("d-none")
-						$("#ticket-acknowledgement").text(alertText)
-						$(".ack-popup").removeClass("d-none")
-						$(".closing-popup").addClass("d-none")
-						let allInputs=$("input,select,textarea,button,i")
-							for(let i=0;i<allInputs.length;i++){
-								if(allInputs[i].id!="iconNavbarSidenav2" )
-									allInputs[i].disabled=true
-							}
 					}
+						
+					$.ajax({
+						url:'/crmbot/flow/close-task',
+						contentType:'application/json',
+						type:'PUT',
+						data:JSON.stringify(closeRequest),
+						success:function(data){
+							ticketForwarded=true
+							let alertText=data
+							
+							
+							$(".cd-popup-trigger3").click()	
+							$(".cd-popup-trigger2").click()	
+							$(".cd-popup-container2").addClass("d-none")
+							$("#ticket-acknowledgement").text(alertText)
+							$(".ack-popup").removeClass("d-none")
+							$(".closing-popup").addClass("d-none")
+							let allInputs=$("input,select,textarea,button,i")
+								for(let i=0;i<allInputs.length;i++){
+									if(allInputs[i].id!="iconNavbarSidenav2" )
+										allInputs[i].disabled=true
+								}
+						}
 				})
+			}			
+			else{
+					alert("Enter all details")
+				}
 			}else{
 				alert("Enter all details")
 			}
@@ -379,14 +394,16 @@ $(document).ready(function($){
 	})
 	
 	$('body').on('click',"#saveCounsellingDetails",function(e){
-		
+		debugger
 		let isChecked=$('input[name="counselled"]:checked').val();
 		if(( isChecked=="true" || isChecked=="false") ){
 				let counsellingDetails={}
 				let cousellingRemark =""
+				let cousellingDoneBy = $(".counselling-done-counsellors").val()
+				let cousellingDoneOthers = $("#counselling-done-others").val()
 				if(isChecked == "true"){
 					
-					if($("#feesPitched").val() && $("#course_counselling").val() && $(".counselling-done-remark").val()){
+					if($("#feesPitched").val() && $("#course_counselling").val() && $(".counselling-done-remark").val() && cousellingDoneBy){
 						counsellingDetails['feesPitched']=$("#feesPitched").val()
 						counsellingDetails['course']=$("#course_counselling").val()
 						if($(".counselling-done-remark").val() && $(".counselling-done-remark").val()!="Others"){
@@ -419,7 +436,9 @@ $(document).ready(function($){
 				counsellingDetails['userName']=userName
 				counsellingDetails['userEmail']=userEmail
 				counsellingDetails['isCounselled']=isChecked
-					
+				counsellingDetails['counsellingDoneBy'] = cousellingDoneBy
+				counsellingDetails['cousellingDoneOthers'] = cousellingDoneOthers
+				
 				$.ajax({
 					url:'/crmbot/flow/counselling/save?activeTaskId='+taskId,
 					contentType:'application/json',

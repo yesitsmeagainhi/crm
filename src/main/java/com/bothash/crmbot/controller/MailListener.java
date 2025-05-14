@@ -43,6 +43,7 @@ import org.springframework.stereotype.Controller;
 
 import com.bothash.crmbot.entity.ActiveTask;
 import com.bothash.crmbot.entity.Automation;
+import com.bothash.crmbot.entity.DuplicateDetails;
 import com.bothash.crmbot.entity.FacebookLeadConfigs;
 import com.bothash.crmbot.entity.FacebookLeads;
 import com.bothash.crmbot.entity.HistoryEvents;
@@ -52,11 +53,13 @@ import com.bothash.crmbot.service.AutomationByCampaignService;
 import com.bothash.crmbot.service.AutomationByCourseService;
 import com.bothash.crmbot.service.AutomationBySourceService;
 import com.bothash.crmbot.service.AutomationService;
+import com.bothash.crmbot.service.DuplicateDetailsService;
 import com.bothash.crmbot.service.FacebookLeadConfigService;
 import com.bothash.crmbot.service.FacebookLeadsService;
 import com.bothash.crmbot.service.HistoryEventsService;
 import com.bothash.crmbot.service.TargetMailsService;
 import com.bothash.crmbot.service.impl.TaskListener;
+import com.bothash.crmbot.service.impl.TwilioWhatsAppService;
 import com.bothash.crmbot.service.impl.WhatsappService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -95,6 +98,12 @@ public class MailListener {
 	
 	@Autowired
 	private WhatsappService whatsappService;
+	
+	@Autowired
+	private DuplicateDetailsService duplicateDetailsService;
+	
+	@Autowired
+    private TwilioWhatsAppService twilioWhatsAppService;
 	
 	@Value("${email.user.name}")
 	private String userName;
@@ -245,7 +254,7 @@ public class MailListener {
         Matcher matcher = pattern.matcher(content);
         ActiveTask activeTask=new ActiveTask();
         String plafrom="G";
-        
+        String phoneNumber = "";
         //subject=subject.replace("Enquiry for ", "");
         try{
         	String[] campaings=subject.split("-");
@@ -286,7 +295,7 @@ public class MailListener {
         matcher = pattern.matcher(content);
         while (matcher.find()) {
         	try {
-		    	String phoneNumber=matcher.group(2);
+		    	phoneNumber=matcher.group(2);
 		    	System.out.println("fullName   "+ phoneNumber);
 		    	phoneNumber=phoneNumber.split("\n")[0];
 		    	phoneNumber=phoneNumber.split("<br />")[1];
@@ -305,6 +314,25 @@ public class MailListener {
 				}
 		    	if(existingTask!=null && existingTask.size()>0) {
 		    		activeTask.setIsDuplicate(true);
+		    		try {
+		    			DuplicateDetails duplicateDetails = new DuplicateDetails();
+			    		duplicateDetails.setActiveTask(existingTask.get(0));
+			    		duplicateDetails.setPlatform(plafrom);
+			    		
+			    		this.duplicateDetailsService.save(duplicateDetails);
+			    		HistoryEvents hisEvents=new HistoryEvents();
+						hisEvents.setActiveTask(existingTask.get(0));
+						hisEvents.setUserName("Email");
+						hisEvents.setUserEmail("Email");
+						hisEvents.setUserId("Email");
+						hisEvents.setEvent("Duplicate task created from platform "+plafrom);
+						historyEventsService.save(hisEvents);
+			    		return ;
+		    		}catch(Exception e) {
+		    			e.printStackTrace();
+		    		}
+		    		
+		    		
 		    		for(ActiveTask existing:existingTask) {
 						if(existing.getAssignee()!=null && existing.getAssignee()!="") {
 							if(existing.getOwner()!=null && existing.getOwner()!="") {
@@ -423,11 +451,19 @@ public class MailListener {
 			}
 		}
 		
-		try {
-			whatsappService.sendMessage(activeTask.getCampaign(),activeTask.getPhoneNumber());
-		}catch(Exception e2) {
-			e2.printStackTrace();
+//		try {
+//			whatsappService.sendMessage(activeTask.getCampaign(),activeTask.getPhoneNumber());
+//		}catch(Exception e2) {
+//			e2.printStackTrace();
+//		}
+		if(activeTask.getLeadName().toLowerCase().contains("naresh")) {
+			try {
+				twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");
+			}catch(Exception e2) {
+				e2.printStackTrace();
+			}
 		}
+		
 		this.activeTaskService.save(activeTask);
 		
 		HistoryEvents hisEvents=new HistoryEvents();
@@ -467,9 +503,10 @@ public class MailListener {
         regex= "(Contact[^\\w]*Number|Phone[^\\w]*number|Number|Numbers)((?:\\S*\\s*\\n?){1,10})";
 		pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(content);
+        String phoneNumber = "";
         while (matcher.find()) {
         	try {
-		    	String phoneNumber=matcher.group(2);
+        		phoneNumber=matcher.group(2);
 		    	System.out.println("fullName   "+ phoneNumber);
 		    	phoneNumber=phoneNumber.split("<td")[1];
 		    	phoneNumber=phoneNumber.split(">")[1];
@@ -488,6 +525,24 @@ public class MailListener {
 		    	
 		    	if(existingTask!=null && existingTask.size()>0) {
 		    		activeTask.setIsDuplicate(true);
+		    		try {
+		    			DuplicateDetails duplicateDetails = new DuplicateDetails();
+			    		duplicateDetails.setActiveTask(existingTask.get(0));
+			    		duplicateDetails.setPlatform("G");
+			    		
+			    		this.duplicateDetailsService.save(duplicateDetails);
+			    		HistoryEvents hisEvents=new HistoryEvents();
+						hisEvents.setActiveTask(existingTask.get(0));
+						hisEvents.setUserName("Email");
+						hisEvents.setUserEmail("Email");
+						hisEvents.setUserId("Email");
+						hisEvents.setEvent("Duplicate task created from platform G");
+						historyEventsService.save(hisEvents);
+			    		return ;
+		    		}catch(Exception e){
+		    			e.printStackTrace();
+		    		}
+		    		
 			    		try {
 			    			activeTask.setAssignee(existingTask.get(0).getAssignee());
 							activeTask.setOwner(existingTask.get(0).getOwner());
@@ -597,11 +652,19 @@ public class MailListener {
 				activeTask.setAssignee("admin");
 			}
 		}
-		
-		try {
-			whatsappService.sendMessage(activeTask.getCampaign(),activeTask.getPhoneNumber());
-		}catch(Exception e2) {
-			e2.printStackTrace();
+//		
+//		try {
+//			whatsappService.sendMessage(activeTask.getCampaign(),activeTask.getPhoneNumber());
+//		}catch(Exception e2) {
+//			e2.printStackTrace();
+//		}
+//		
+		if(activeTask.getLeadName().toLowerCase().contains("naresh")) {
+			try {
+				twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");
+			}catch(Exception e2) {
+				e2.printStackTrace();
+			}
 		}
 		
 		this.activeTaskService.save(activeTask);
@@ -709,6 +772,23 @@ public class MailListener {
 	        				}
 	        				if(existingTask!=null && existingTask.size()>0) {
 	        					activeTask.setIsDuplicate(true);
+	        					try {
+	        						DuplicateDetails duplicateDetails = new DuplicateDetails();
+		        		    		duplicateDetails.setActiveTask(existingTask.get(0));
+		        		    		duplicateDetails.setPlatform("J");
+		        		    		
+		        		    		this.duplicateDetailsService.save(duplicateDetails);
+		        		    		HistoryEvents hisEvents=new HistoryEvents();
+		        					hisEvents.setActiveTask(existingTask.get(0));
+		        					hisEvents.setUserName("Email");
+		        					hisEvents.setUserEmail("Email");
+		        					hisEvents.setUserId("Email");
+		        					hisEvents.setEvent("Duplicate task created from platform J");
+		        					historyEventsService.save(hisEvents);
+		        		    		return ;
+	        					}catch(Exception e) {
+	        						e.printStackTrace();
+	        					}
 	        					try {
 	    			    			activeTask.setAssignee(existingTask.get(0).getAssignee());
 	    							activeTask.setOwner(existingTask.get(0).getOwner());
@@ -833,10 +913,18 @@ public class MailListener {
 				activeTask.setAssignee("admin");
 			}
 		}
-		try {
-			whatsappService.sendMessage(activeTask.getCampaign(),activeTask.getPhoneNumber());
-		}catch(Exception e2) {
-			e2.printStackTrace();
+//		try {
+//			whatsappService.sendMessage(activeTask.getCampaign(),activeTask.getPhoneNumber());
+//		}catch(Exception e2) {
+//			e2.printStackTrace();
+//		}
+		
+		if(activeTask.getLeadName().toLowerCase().contains("naresh")) {
+			try {
+				twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");
+			}catch(Exception e2) {
+				e2.printStackTrace();
+			}
 		}
 		
 		this.activeTaskService.save(activeTask);

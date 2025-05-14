@@ -139,9 +139,32 @@ public interface ActiveTaskRepository extends JpaRepository<ActiveTask, Long>{
 	
 	@Modifying
     @Transactional
-    @Query("UPDATE ActiveTask a SET a.owner = :newOwner WHERE a.owner = :oldOwner and a.isActive=true")
-	int  transferLeads(String newOwner,String oldOwner);
+    @Query(value = "UPDATE active_task " +
+            "SET owner = :newOwner, " +
+            "    assignee = :newAssignee " +
+            "WHERE owner = :oldOwner " +
+            "  AND assignee = :oldAssignee " +
+            "  AND is_active = true " +
+            "  AND course = :course " +
+            "  AND lead_platform = :platform " +
+            "  AND lead_type = :leadType " +
+            "ORDER BY id " +
+            "LIMIT :limit", nativeQuery = true)
+//    @Query("UPDATE ActiveTask a SET a.owner = :newOwner, a.assignee =:newAssignee  WHERE a.owner = :oldOwner and a.assignee =:oldAssignee and a.isActive=true and a.course=:course and a.leadPlatform =:platform and a.leadType=:leadType LIMIT :limit")
+	int  transferLeads(@Param("newOwner") String newOwner,
+	        @Param("newAssignee") String newAssignee,
+	        @Param("oldOwner") String oldOwner,
+	        @Param("oldAssignee") String oldAssignee,
+	        @Param("course") String course,
+	        @Param("platform") String platform,
+	        @Param("leadType") String leadType,
+	        @Param("limit") int limit);
 
 	List<ActiveTask> findByAssigneeAndOwnerAndIsActiveAndCourseAndLeadPlatform(String role, String userName, boolean b,
 			String course, String platform);
+
+	List<ActiveTask> findByAssigneeAndOwnerAndIsActiveAndCourseAndLeadPlatformAndLeadType(String role, String userName,
+			boolean b, String course, String platform, String prospect);
+
+	int count(Specification<ActiveTask> filter);
 }
