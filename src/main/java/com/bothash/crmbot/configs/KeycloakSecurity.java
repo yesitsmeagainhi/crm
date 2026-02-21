@@ -16,10 +16,29 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
+import org.springframework.beans.factory.annotation.Value;
 
 
 @KeycloakConfiguration
 public class KeycloakSecurity extends KeycloakWebSecurityConfigurerAdapter {
+	
+	@Value("${keycloak.auth-server-url}")
+	private String keycloackUrl;
+	
+	@Value("${keycloak.realm}")
+	private String keycloackRealm;
+	
+	@Value("${crmbot-client-id}")
+	private String crmbotClientId;
+	
+	@Value("${keycloack.admin.username}")
+	private String adminUserName;
+	
+	@Value("${keycloack.admin.password}")
+	private String adminPassword;
 
     @Bean
     @Override
@@ -34,7 +53,7 @@ public class KeycloakSecurity extends KeycloakWebSecurityConfigurerAdapter {
         http.authorizeRequests()
         		.antMatchers("/bothash/**").permitAll()
                 .antMatchers("/crmbot/**").hasAnyRole("user","admin","manager","counsellor","telecaller","supervisor")
-                .antMatchers("/admin/**").hasAnyRole("admin","supervisor")
+                //.antMatchers("/admin/**").hasAnyRole("admin","supervisor")
                 .anyRequest().permitAll();
         http.csrf().disable();
     }
@@ -63,4 +82,18 @@ public class KeycloakSecurity extends KeycloakWebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoder() {
       return new BCryptPasswordEncoder(10,new SecureRandom());
     }
+    
+    @Bean
+    Keycloak keycloakAdminClient() {
+        return KeycloakBuilder.builder()
+                .serverUrl(keycloackUrl)
+                .realm("master") // or your realm name
+                .grantType(OAuth2Constants.PASSWORD)
+                .clientId("admin-cli")
+                .username(adminUserName)
+                .password(adminPassword)
+                .build();
+    }
+    
+ 
 }

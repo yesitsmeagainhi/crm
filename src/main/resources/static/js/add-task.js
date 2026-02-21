@@ -32,7 +32,7 @@ $(document).ready(function(){
 	
 	$('body').on('click','.save-lead',function(e){
 		debugger
-		if($("#leadName").val().length>0 && $("#phoneNumber").val().length>0){
+		if($("#leadName").val().length>0 && $("#phoneNumber").val().length>0 && $("#platform").val().length>0){
 			$(".save-lead").attr("disabled",true)
 			let createTicketRequest={}
 			
@@ -144,6 +144,8 @@ $(document).ready(function(){
 					$(".save-lead").removeAttr("disabled")
 				}
 			})
+		}else{
+			alert("Enter all mandatory details")
 		}
 		
 	})
@@ -168,6 +170,11 @@ $(document).ready(function(){
 		formData.append("userName",userName)
 		formData.append("userEmail",userEmail)
 		formData.append("userId",userId)
+		$("#excel-file-input-p").addClass('d-none')
+		$("#excel-ack").removeClass("d-none")
+		$("#cd-main-buttons").addClass("d-none")
+		$("#task-creation-ack-buttons").removeClass("d-none")
+		$("#excel-ack").text("Lead Upload under process.... it will reflect in sometime ")
 		 $.ajax({
 
             type:'POST',
@@ -196,6 +203,8 @@ $(document).ready(function(){
 			}
 				
 		})
+		
+		
 		
 		
 	})

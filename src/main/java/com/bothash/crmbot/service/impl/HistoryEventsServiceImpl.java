@@ -24,5 +24,10 @@ public class HistoryEventsServiceImpl implements HistoryEventsService{
 	public HistoryEvents save(HistoryEvents event) {
 		return historyEventsRepository.save(event);
 	}
+	
+	@Override
+	public List<HistoryEvents> saveAll(List<HistoryEvents> events) {
+		return historyEventsRepository.saveAll(events);
+	}
 
 }

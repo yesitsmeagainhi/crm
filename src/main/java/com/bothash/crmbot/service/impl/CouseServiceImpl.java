@@ -36,4 +36,26 @@ public class CouseServiceImpl implements CourseService{
 		return courseRepository.findByCourseName(courseName);
 	}
 
+	@Override
+    public Course create(Course course) {
+        return courseRepository.save(course);
+    }
+
+    @Override
+    public Optional<Course> update(Long id, Course updatedCourse) {
+        return courseRepository.findById(id).map(course -> {
+            course.setCourseName(updatedCourse.getCourseName());
+            return courseRepository.save(course);
+        });
+    }
+
+    @Override
+    public boolean delete(Long id) {
+        if (courseRepository.existsById(id)) {
+            courseRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
 }

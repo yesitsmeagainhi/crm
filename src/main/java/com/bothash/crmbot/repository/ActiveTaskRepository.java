@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -119,10 +120,18 @@ public interface ActiveTaskRepository extends JpaRepository<ActiveTask, Long>{
 	Page<ActiveTask> findByAssigneeAndIsActiveAndIsScheduledAndScheduleTimeLessThanAndScheduleTimeGreaterThan(
 			String string, boolean b, boolean c, LocalDateTime tomorrow, LocalDateTime yesterday,
 			Pageable requestedPage);
+	
+	List<ActiveTask> findByAssigneeAndIsActiveAndIsScheduledAndScheduleTimeLessThanAndScheduleTimeGreaterThan(
+			String string, boolean b, boolean c, LocalDateTime tomorrow, LocalDateTime yesterday,
+			Sort sort);
 
 	@Query("select a from ActiveTask a where   a.assignee=:string and a.isActive=:b and (a.scheduleTime > :maxTime or a.scheduleTime < :minTime or a.scheduleTime is null)" )
 	Page<ActiveTask> findByAssigneeAndIsActiveAndScheduleTimeGreaterThanOrScheduleTimeLessThan(String string, boolean b,
 			LocalDateTime maxTime, LocalDateTime minTime, Pageable requestedPage2);
+	
+	@Query("select a from ActiveTask a where   a.assignee=:string and a.isActive=:b and (a.scheduleTime > :maxTime or a.scheduleTime < :minTime or a.scheduleTime is null)" )
+	List<ActiveTask> findByAssigneeAndIsActiveAndScheduleTimeGreaterThanOrScheduleTimeLessThan(String string, boolean b,
+			LocalDateTime maxTime, LocalDateTime minTime, Sort sort);
 
 	Long countByIsActiveAndOwner(boolean b, String userName);
 
@@ -167,4 +176,31 @@ public interface ActiveTaskRepository extends JpaRepository<ActiveTask, Long>{
 			boolean b, String course, String platform, String prospect);
 
 	int count(Specification<ActiveTask> filter);
+		
+	@Query(value = "SELECT MONTH(schedule_time) AS month, COUNT(*) AS count " +
+            "FROM active_task " +
+            "WHERE YEAR(schedule_time) = :year AND schedule_time IS NOT NULL " +
+            "AND ((owner NOT IN (:excludedOwners) or owner is NULL) )" +
+            " AND is_active=true "+
+            "GROUP BY MONTH(schedule_time)", nativeQuery = true)
+List<Object[]> countTasksPerMonth(@Param("year") int year,@Param("excludedOwners") List<String> excludedOwners);
+
+
+	@Query(value = "SELECT DAY(schedule_time) AS day, COUNT(*) AS count FROM active_task WHERE YEAR(schedule_time) = :year AND MONTH(schedule_time) = :month "
+			+"AND ((owner NOT IN (:excludedOwners) or owner is NULL) )" 
+			+" AND is_active=true "
+	 +  " GROUP BY DAY(schedule_time)", nativeQuery = true)
+	List<Object[]> countTasksPerDay(@Param("year") int year, @Param("month") int month,@Param("excludedOwners") List<String> excludedOwners);
+	
+	@Query(value = "SELECT YEAR(schedule_time) AS year, COUNT(*) AS count " +
+            "FROM active_task " +
+            "WHERE schedule_time IS NOT NULL " +
+            "AND ((owner NOT IN (:excludedOwners) or owner is NULL)) " +
+            " AND is_active=true "+
+            "GROUP BY YEAR(schedule_time)", nativeQuery = true)
+	List<Object[]> countTasksPerYear(@Param("excludedOwners") List<String> excludedOwners);
+	
+
+
+
 }

@@ -15,7 +15,7 @@ public interface CloseTaskService {
 	Page<CloseTask> convertedTask(String role, String userName, Pageable requestedPage);
 
 	Page<CloseTask> convertedTask(FilterRequests filterRequests, String role, String userName ,
-			Pageable requestedPage);
+			Pageable requestedPage,Boolean isAdminLevelData);
 
 	void delete(CloseTask closeTask);
 }

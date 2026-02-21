@@ -1,3 +1,11 @@
+ function showLoader() {
+	document.getElementById("loader").classList.remove("hidden");
+ }
+
+  function hideLoader() {
+    document.getElementById("loader").classList.add("hidden");
+  }
+
 $('body').on('change','.role-select2',function(e){
 			
 			$(".user-select-label2").removeClass("d-none")
@@ -56,6 +64,7 @@ $('body').on('change','.currUserDetails',function(e){
 			contentType:'application/json',
 			data:JSON.stringify(filterRequest),
 			success:function(data){
+				
 				currLeads = data
 				$("#totalLeads").text("Total Leads : "+data)
 				},
@@ -67,8 +76,15 @@ $('body').on('change','.currUserDetails',function(e){
 	
 		
 	$('body').on('click','.transfer-leads',function(e){
+		showLoader()
 		let currentRole = $('.role-select').val()
 		let currentUser = $("#"+$('.role-select').val()).val()
+		
+
+		var selectedOption= $("#"+currentRole+ " option[value='" + currentUser + "']");
+		if (selectedOption.length > 0) {
+            var selectedOptionName = selectedOption.attr("name");
+        }
 		
 		var filterRequest = {}
 		filterRequest['role']=$('.role-select').val()
@@ -79,6 +95,8 @@ $('body').on('change','.currUserDetails',function(e){
 		filterRequest['isLeadTransfer']=true
 		filterRequest['isAdmin']=false
 		filterRequest['isActive']=true
+		
+		
 		
 		let nextRole = $('.role-select2').val()
 		let nextUser = ""
@@ -91,6 +109,14 @@ $('body').on('change','.currUserDetails',function(e){
 		filterRequest['toRole']=nextRole
 		filterRequest['toUserName']=nextUser
 		filterRequest['numberOfLeads']=numberOfLeads
+		
+		const selectedUser=document.querySelectorAll("#"+nextRole+"2")[0].value
+
+		var selectedOption2= $("#"+nextRole+ " option[value='" + selectedUser + "']");
+		if (selectedOption2.length > 0) {
+            var selectedOptionName2 = selectedOption2.attr("name");
+        }
+		filterRequest['userNameForUi']=selectedOptionName2 
 		
 		if($("#taskType").val()=='My Task'){
 			filterRequest['isMyTask']=true
@@ -128,10 +154,27 @@ $('body').on('change','.currUserDetails',function(e){
 					contentType:'application/json',
 					data:JSON.stringify(filterRequest),
 					success:function(data){
+						hideLoader()
 						alert("Leads successfully transfered")
+						
+						if(data){
+							tasksToAddEvent = data.content
+							$.ajax({
+								url:'/crmbot/flow/add-event?fromUser='+selectedOptionName,
+								type:'PUT',
+								contentType:'application/json',
+								data:JSON.stringify(tasksToAddEvent),
+								success:function(data2){
+									console.log(data2)
+								},
+								error:function(err2){
+									hideLoader()
+								}
+							})
+						}
 						},
 					error:function(err){
-						
+						hideLoader()
 					}
 				})
 			}else{

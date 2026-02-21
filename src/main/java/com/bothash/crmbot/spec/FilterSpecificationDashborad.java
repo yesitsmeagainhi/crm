@@ -5,18 +5,22 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 
 import org.springframework.data.jpa.domain.Specification;
 
 import com.bothash.crmbot.dto.FilterRequests;
 import com.bothash.crmbot.entity.ActiveTask;
+import com.bothash.crmbot.entity.CounsellingDetails;
 
 public class FilterSpecificationDashborad {
 
@@ -26,6 +30,7 @@ public class FilterSpecificationDashborad {
 			public Predicate toPredicate(Root<ActiveTask> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 				 query.distinct(true);
 				final Collection<Predicate> predicates = new ArrayList<>();
+				final List<String> usersToIgnore = Arrays.asList("dustbin@gmail.com","vikasji7676@gmail.com");
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 				/*if(reportFilterDto.getRole()!=null && reportFilterDto.getRole().length()>0) {
 					
@@ -118,16 +123,26 @@ public class FilterSpecificationDashborad {
 				
 				
 				if(reportFilterDto.getIsCounselled()!=null) {
-					if(reportFilterDto.getIsCounselled()) {
-						final Predicate isActive = cb.equal(root.get("isCounsellingDone"),reportFilterDto.getIsCounselled());
-						predicates.add(isActive);
-						
-					}else {
-						final Predicate isActive1 = cb.equal(root.get("isCounsellingDone"),false);
-						final Predicate isActive2 = cb.isNull(root.get("isCounsellingDone"));
-						final Predicate isActive = cb.or(isActive1,isActive2);
-						predicates.add(isActive);
-					}
+//					final Predicate isCounselled1= cb.equal(root.get("isCounsellingDone"),reportFilterDto.getIsCounselled());
+//					final Predicate isCounselled2 = cb.and(
+//	                        cb.isNotNull(root.get("counsellorName")),
+//	                        cb.notEqual(cb.trim(root.get("counsellorName")), "")
+//	                    );
+//					final Predicate isCounselled = cb.or(isCounselled1,isCounselled2);
+					
+					Subquery<Long> commentSubquery = query.subquery(Long.class);
+                    Root<CounsellingDetails> counsellingRoot = commentSubquery.from(CounsellingDetails.class);
+                    
+                	commentSubquery.select(cb.count(counsellingRoot))
+                    .where(cb.equal(counsellingRoot.get("activeTask"), root));
+                    
+
+                    if (reportFilterDto.getIsCounselled()) {
+                        predicates.add(cb.greaterThan(commentSubquery.getSelection(), cb.literal(0L)));
+                    } else {
+                        predicates.add(cb.equal(commentSubquery.getSelection(), cb.literal(0L)));
+                    }
+//					predicates.add(isCounselled);
 					
 				}
 				
@@ -176,10 +191,24 @@ public class FilterSpecificationDashborad {
 					predicates.add(toDate);
 				}
 				
-				if(reportFilterDto.getLeadType()!=null && reportFilterDto.getLeadType().length()>0) {
-					final Predicate assignee= cb.like(cb.lower(root.get("leadType")),"%"+reportFilterDto.getLeadType().toLowerCase()+"%");
+				if (reportFilterDto!=null && reportFilterDto.getLeadType()!=null && !reportFilterDto.getLeadType().equalsIgnoreCase("")) {
+					if(!reportFilterDto.getLeadType().equalsIgnoreCase("BLANK")) {
+						final Predicate leadType= cb.equal(cb.lower(root.get("leadType")),reportFilterDto.getLeadType().toLowerCase());
+						
+						predicates.add(leadType);
+					}else {
+//						final Predicate leadType= cb.equal(cb.lower(root.get("leadType")),reportFilterDto.getLeadType().toLowerCase());
+						final Predicate leadType1 = cb.equal(root.get("leadType"),"");
+						final Predicate leadType2 = cb.isNull(root.get("leadType"));
+						final Predicate leadType = cb.or(leadType1,leadType2);
+						predicates.add(leadType);
+					}
 					
-					predicates.add(assignee);
+				}
+				if ((reportFilterDto.getIsLeadSummary() != null && reportFilterDto.getIsLeadSummary()) || (reportFilterDto.getIsDashboardFilter()!=null && reportFilterDto.getIsDashboardFilter())) {
+				    predicates.add(cb.or(cb.not(root.get("owner").in(usersToIgnore)),cb.isNull(root.get("owner"))));
+
+//					predicates.add(cb.not(root.get("managerName").in(usersToIgnore)));
 				}
 				
 				return cb.and(predicates.toArray(new Predicate[predicates.size()]));

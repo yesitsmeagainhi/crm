@@ -1,5 +1,7 @@
 package com.bothash.crmbot.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,4 +41,8 @@ public class MessageService {
     public Message findByName(String name) {
     	return this.messageRepository.findByMessageName(name);
     }
+
+	public List<Message> findAll() {
+		return this.messageRepository.findAll();
+	}
 }

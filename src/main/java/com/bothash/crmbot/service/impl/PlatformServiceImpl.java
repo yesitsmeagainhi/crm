@@ -37,5 +37,27 @@ public class PlatformServiceImpl implements PlatformService{
 	public Platforms getBySourceName(String platformName) {
 		return platFormRepository.findByName(platformName);
 	}
+	
+	@Override
+    public Platforms create(Platforms platform) {
+        return platFormRepository.save(platform);
+    }
+
+    @Override
+    public Optional<Platforms> update(Long id, Platforms platform) {
+        return platFormRepository.findById(id).map(existing -> {
+            existing.setName(platform.getName());
+            return platFormRepository.save(existing);
+        });
+    }
+
+    @Override
+    public boolean delete(Long id) {
+        if (platFormRepository.existsById(id)) {
+            platFormRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 
 }

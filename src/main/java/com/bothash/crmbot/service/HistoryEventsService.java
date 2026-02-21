@@ -9,4 +9,6 @@ public interface HistoryEventsService {
 	List<HistoryEvents> getByTask(Long id);
 
 	HistoryEvents save(HistoryEvents event);
+
+	List<HistoryEvents> saveAll(List<HistoryEvents> events);
 }

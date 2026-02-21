@@ -120,6 +120,7 @@ public class MailListener {
 	      return properties;
 	   }
 
+	
 	@Scheduled(fixedRate = 110000)
 	   public void getNewEmails() {
 		
@@ -327,6 +328,16 @@ public class MailListener {
 						hisEvents.setUserId("Email");
 						hisEvents.setEvent("Duplicate task created from platform "+plafrom);
 						historyEventsService.save(hisEvents);
+						
+						for(ActiveTask existing:existingTask) {
+							try {
+								//existing.setModifiedOn(LocalDateTime.now());
+								existing.setCreatedOnDuplicate(LocalDateTime.now());
+							}catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						this.activeTaskService.saveAll(existingTask);
 			    		return ;
 		    		}catch(Exception e) {
 		    			e.printStackTrace();
@@ -538,6 +549,16 @@ public class MailListener {
 						hisEvents.setUserId("Email");
 						hisEvents.setEvent("Duplicate task created from platform G");
 						historyEventsService.save(hisEvents);
+						
+						for(ActiveTask existing:existingTask) {
+							try {
+								//existing.setModifiedOn(LocalDateTime.now());
+								existing.setCreatedOnDuplicate(LocalDateTime.now());
+							}catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						this.activeTaskService.saveAll(existingTask);
 			    		return ;
 		    		}catch(Exception e){
 		    			e.printStackTrace();

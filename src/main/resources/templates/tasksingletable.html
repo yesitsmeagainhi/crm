@@ -16,8 +16,8 @@
                       <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="campaign" th:if="${role=='admin'}">Campaign</th>
                     </tr>
                   </thead>
-                  <tbody th:if="!${isClosedTask}">
-                    <tr  th:each="activeTask,iStat:${tasks.content}" class="open-detail" th:classappend="${activeTask.isDuplicate!=null && activeTask.isDuplicate?'duplicate-task':activeTask.isCounsellingDone!=null && activeTask.isCounsellingDone==true? 'counselled-task': activeTask.isClaimed==null || activeTask.isClaimed==false?'unclaimed-task': activeTask.isCounsellingDone!=null && activeTask.isCounsellingDone==false?'uncounselled-task':'' }" th:id="${activeTask.id}">
+                  <tbody th:if="${!isClosedTask && tasks!=null && tasks.content!=null}">
+                    <tr  th:each="activeTask,iStat:${tasks.content}" class="open-detail"  th:classappend="${activeTask.isDuplicate!=null && activeTask.isDuplicate?'duplicate-task':activeTask.isCounsellingDone!=null && activeTask.isCounsellingDone==true? 'counselled-task': activeTask.isClaimed==null || activeTask.isClaimed==false?'unclaimed-task': activeTask.isCounsellingDone!=null && activeTask.isCounsellingDone==false?'uncounselled-task':'' }" th:id="${activeTask.id}" th:data-search-lead="${isSearchLead}">
                       <td class="ps-2">
 						<span th:if="${!activeTask.duplicateDetails.isEmpty()}" th:text="${#lists.size(activeTask.duplicateDetails)}" class=""  style="color: red;font-size: medium;font-weight: bold;">circle</span>
                      	 <i th:if="${activeTask.isScheduled}" class="material-icons opacity-10 me-2"  style="color: orange;">timer</i>
@@ -108,7 +108,7 @@
                     </tr>
                     </span>
                   </tbody>
-                  <tbody th:if="${isClosedTask}">
+                  <tbody th:if="${isClosedTask && completedtasks!=null}">
                     <tr th:each="completedTask,iStat:${completedtasks.content}" class="completed-task open-detail" th:id="${completedTask.activeTask.id}">
                       <td class="ps-4 d-flex justify-content-start align-items-center">
                       <i th:if="${completedTask.activeTask.isScheduled}" class="material-icons opacity-10 me-2" style="color: #f03131;">timer</i>
@@ -193,6 +193,8 @@
 		task=shceduledTask
 	}else if(taskType=='meetingTask'){
 		task=meetingTask
+	}else if(taskType=='searchLead'){
+		task=allTask
 	}else{
 		task=completedtasks
 	}
@@ -338,13 +340,21 @@
 			nextPage=+nextPage
 			currPage=nextPage
 			var filterRequests={}
-			  filterRequests['leadPlatform']=$("#leadPlatform").val()
+			
+			  if(currTaskType =='searchLead'){
+				filterRequests['leadName']=$("#search-lead-box").val()
+				filterRequests['phoneNumber']=$("#search-lead-box").val()
+			  }else{
+				filterRequests['leadPlatform']=$("#leadPlatform").val()
 			   filterRequests['assignee']=$("#assignee").val()
 			   filterRequests['fromDate']=$("#fromDate").val()
 			   filterRequests['toDate']=$("#toDate").val()
 			   filterRequests['isActive']=true
+			  }
+			
+			  
 			  $.ajax({
-				url:'/crmbot/singletasktable?page='+(nextPage)+"&size="+$("#pagesize").val()+"&sorting=createdOn&desc=true&taskType="+currTaskType,
+				url:'/crmbot/singletasktable?page='+(nextPage)+"&size="+$("#pagesize").val()+"&sorting=createdOnDuplicate&desc=true&taskType="+currTaskType,
 				type:'PUT',
 				contentType:'application/json',
 				data:JSON.stringify(filterRequests),

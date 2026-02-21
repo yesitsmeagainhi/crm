@@ -1,5 +1,7 @@
 package com.bothash.crmbot.controller;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -8,9 +10,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.security.RolesAllowed;
 
+import org.apache.http.HttpResponse;
+import org.jose4j.lang.JoseException;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +34,8 @@ import com.bothash.crmbot.entity.DuplicateDetails;
 import com.bothash.crmbot.entity.FacebookLeadConfigs;
 import com.bothash.crmbot.entity.FacebookLeads;
 import com.bothash.crmbot.entity.HistoryEvents;
+import com.bothash.crmbot.entity.PushSubscription;
+import com.bothash.crmbot.repository.SubscriptionRepository;
 import com.bothash.crmbot.service.ActiveTaskService;
 import com.bothash.crmbot.service.AutomationByCourseService;
 import com.bothash.crmbot.service.AutomationBySourceService;
@@ -42,6 +49,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
+import nl.martijndwars.webpush.Notification;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Subscription;
+import nl.martijndwars.webpush.Subscription.Keys;
 
 @RestController
 @RequestMapping("/crmbot/facebook")
@@ -78,13 +89,19 @@ public class FaceBookLeadsController {
 	@Autowired
 	private DuplicateDetailsService duplicateDetailsService;
 	
+	@Autowired
+	private  SubscriptionRepository subs;
+	
+	@Autowired
+	private  PushService push;
+	
 	
 	@Value("${facebook.access.token}")
 	private String facebookAccessToken;
 	
 	@GetMapping("/leads")
 	@RolesAllowed("user")
-	//@Scheduled(fixedRate = 120000)
+	@Scheduled(fixedRate = 120000)
 	public ResponseEntity<List<FacebookLeads>> getLeads(){
 		
 		
@@ -167,6 +184,9 @@ public class FaceBookLeadsController {
 							}else if(fieldDataArray.getJSONObject(i).getString("name").equals("phone_number") || fieldDataArray.getJSONObject(i).getString("name").equals("contact_number") || fieldDataArray.getJSONObject(i).getString("name").contains("contact")) {
 								phoneNumber=fieldDataArray.getJSONObject(i).getJSONArray("values").get(0).toString();
 							}
+							else if(fieldDataArray.getJSONObject(i).getString("name").equals("phone") || fieldDataArray.getJSONObject(i).getString("name").equals("contact_number") || fieldDataArray.getJSONObject(i).getString("name").contains("contact")) {
+								phoneNumber=fieldDataArray.getJSONObject(i).getJSONArray("values").get(0).toString();
+							}
 							phoneNumber=phoneNumber.replaceAll("\\+91", "");
 							phoneNumber=phoneNumber.replaceAll(" ", "");
 							activeTask.setPhoneNumber(phoneNumber);
@@ -192,7 +212,7 @@ public class FaceBookLeadsController {
 					}
 					activeTask.setLeadName(name);
 					List<ActiveTask> existingTask =this.activeTaskService.getTaskByPhoneNumber(activeTask.getPhoneNumber());
-					if(existingTask!=null && existingTask.size()>0) {
+					if(existingTask!=null && existingTask.size()>0 && activeTask.getPhoneNumber()!=null && !activeTask.getPhoneNumber().isEmpty()) {
 						activeTask.setIsDuplicate(true);
 						try {
 							DuplicateDetails duplicateDetails = new DuplicateDetails();
@@ -208,6 +228,25 @@ public class FaceBookLeadsController {
 							event.setUserId("Facebook");
 							event.setEvent("Duplicate task created through Facebook");
 							historyEventsService.save(event);
+							
+							PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
+							String payload = "{"
+							        + "\"title\": \"🎉 New Admission Lead!\","
+							        + "\"body\": \"New lead is added with number"+activeTask.getPhoneNumber()+". Tap to review.\","
+							        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+							        + "\"url\": \"https://www.vmedify.com\""
+							        + "}";
+						    try {
+						    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+					    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+					        
+						        HttpResponse notiResponse = push.send(new Notification(sub,payload));
+						        log.info("pushed");
+						    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+						        // 404 / 410 ⇒ subscription no longer valid – prune it
+						        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+						          subs.delete(s);
+						      }
 				    		return null;
 						} catch (Exception e) {
 							e.printStackTrace();

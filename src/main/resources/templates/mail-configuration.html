@@ -2,13 +2,17 @@
 
 <body class="g-sidenav-show  bg-gray-200">
   <th:block layout:replace="fragments/sidebar"></th:block>
+  <th:block th:if="${access != null and !#lists.isEmpty(access)}"
+  	          th:with="
+  	            mailConfigAccess=${#lists.isEmpty(access.?[modules.name == 'MAIL CONFIGURATION']) ? null : access.?[modules.name == 'MAIL CONFIGURATION'][0]}
+  	          ">
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
     <!-- Navbar -->
     <th:block layout:replace="fragments/header"></th:block>
     <div class="container-fluid py-2">
       <div class="row d-flex justify-content-end">
 	  	<div class="col-3 col-md-1">
-	  	<button class="btn btn-primary cd-popup-trigger-mail mt-0 ms-auto"><i  class="material-icons opacity-10 me-2" >add</i></button>
+	  	<button th:if="${mailConfigAccess != null and (mailConfigAccess.isEdit == true)}" class="btn btn-primary cd-popup-trigger-mail mt-0 ms-auto"><i  class="material-icons opacity-10 me-2" >add</i></button>
 	  	</div>
 	  </div>
 	  <div class="row" id="">

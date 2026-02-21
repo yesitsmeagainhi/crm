@@ -1,36 +1,42 @@
-
 <th:block layout:replace="fragments/htmlhead"></th:block>
+<link href="/css/dashboad.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
 <style>
-	#toDate,#fromDate{
-		border-radius: 5px 5px;
-		padding: 8px;
-	}
-	.text-black{
-		color: black;
-	}
-	
+#toDate,
+#fromDate {
+	border-radius: 5px 5px;
+	padding: 8px;
+}
+
+.text-black {
+	color: black;
+}
+.tab-content.hidden {
+	 display: none; 
+ }
 </style>
 
 <body class="g-sidenav-show  bg-gray-200">
-  <th:block layout:replace="fragments/sidebar"></th:block>
-  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
-    <!-- Navbar -->
-    <th:block layout:replace="fragments/header"></th:block>
-    <!-- End Navbar -->
-    <div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-xl-3 col-sm-5  mb-4 ">
-        	<select class="role-select w-100" autocomplete="off">
-				<option value="" id="0">Select Role</option>
-				<option th:each="nextRole:${nextRoles}" th:value="${nextRole}" th:text="${nextRole}">
-				</option>
-			</select>
-        </div>
-        <div class="col-xl-3 col-sm-5  mb-4 d-none user-select-label" >
-        	<select th:each="nextUser,istat:${nextUsers}" class="user-select w-100 d-none" th:id="${nextRoles[istat.index]}" autocomplete="off">
-				<option value="" id="0">Select User</option>
-				<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
-				</option>
+	<th:block layout:replace="fragments/sidebar"></th:block>
+	<main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+		<!-- Navbar -->
+		<th:block layout:replace="fragments/header"></th:block>
+		<!-- End Navbar -->
+		<div class="container-fluid py-4">
+			<div class="row mb-4">
+				<div class="col-xl-3 col-sm-5  mb-4 ">
+					<select class="role-select w-100" autocomplete="off">
+						<option value="" id="0">Select Role</option>
+						<option th:each="nextRole:${nextRoles}" th:value="${nextRole}" th:text="${nextRole} ">
+						</option>
+					</select>
+				</div>
+				<div class="col-xl-3 col-sm-5  mb-4  user-select-label">
+					<select th:each="nextUser,istat:${nextUsers}" class="user-select w-100 " th:classappend="${nextRoles[istat.index]!='telecaller'?'d-none':''}" th:id="${nextRoles[istat.index]}" autocomplete="off">
+						<option value="" id="0">Select User</option>
+						<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" 
+										class="status-dot" th:classappend="${user['isActiveOnCRM'] != null and user['isActiveOnCRM']} ? ' active' : ' inactive'"
+										th:text="|${user.get('firstName')} ${user.get('lastName')} (${user['isActiveOnCRM'] != null and user['isActiveOnCRM'] ? 'Active' : 'Inactive'})|">
 			</select>
         </div>
         <div class="col-xl-3 col-sm-5  mb-4  owner-select-label" >
@@ -98,6 +104,8 @@
         	<select class="w-100" id="leadType" autocomplete="off">
 	        	<option value="">select Lead Type
 	        	</option>
+				<option value="BLANK">Blank
+					        	</option>
 	        	<option value="PROSPECT">Prospect
 	        	</option>
 	        	<option value="HOT">Hot
@@ -107,6 +115,18 @@
         	</select>
         	
          </div>
+		 <div class="col-xl-3 col-sm-5 mb-4 mt-1">
+		         	<select class="w-100" id="dateType" autocomplete="off">
+						<option value="">Select Date Type
+								 					        	</option>
+		 				<option value="admissionDate">Admission Date
+		 					        	</option>
+		 	        	<option value="cousellingDate">Couselling Date
+		 	        	</option>
+		 	        	
+		         	</select>
+		         	
+		          </div>
          <div class="col-xl-3 col-sm-5 mb-4 mt-1 d-flex">
          <label class="w-20 mt-2 text-left" style="text-align: left;">From Date :</label>
 			<input type="date" id="fromDate" class="mb-3 w-80 px-2 " autocomplete="off" style="border: 1px solid #c0c6cc;">
@@ -116,7 +136,7 @@
 			<input type="date" id="toDate" class="mb-3 w-80 px-2 " autocomplete="off"  style="border: 1px solid #c0c6cc;">
 			
           </div>
-		  <div class="col-xl-3 col-sm-5 mb-4 mt-3 text-center">
+		  <div class="col-xl-2 col-sm-5 mb-4 mt-3 text-center">
           	<input type="checkbox" id="seatConfirmed" name="seatConfirmed"> <span class="text-black">Seat Confirmed</span>
           	
            </div>
@@ -128,33 +148,17 @@
           </div>
     </div>
       <div class="row">
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-          <div class="card">
-            <div class="card-header p-3 pt-2">
-              <div class="icon icon-lg icon-shape bg-gradient-white shadow-dark text-center border-radius-xl mt-n4 position-absolute">
-                <img src="/img/logos/all.png" class="position-absolute dash-logo-img" width="40" />
-              </div>
-              <div class="text-end pt-1">
-                <p class="text-sm mb-0 text-capitalize">Total Leads</p>
-                <h4 class="mb-0" id="totalLeads" th:text="${totalTask}">5,300</h4>
-              </div>
-            </div>
-            <hr class="dark horizontal my-0">
-            <div class="card-footer p-3">
-              <!-- <p class="mb-0"><span class="text-success text-sm font-weight-bolder">+55% </span>than last week</p>-->
-            </div>
-          </div>
-        </div>
+        
        
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="col mb-xl-0 mb-4">
           <div class="card">
             <div class="card-header p-3 pt-2">
               <div class="icon icon-lg icon-shape bg-gradient-white shadow-primary text-center border-radius-xl mt-n4 position-absolute">
-                <img src="/img/logos/present.png" class="position-absolute dash-logo-img" style="top:10%;left:13%" width="50" />
+                <img src="/img/logos/present.png" class="position-absolute dash-logo-img" style="top:10%;left:13%" width="35" />
               </div>
               <div class="text-end pt-1">
               	<p class="text-sm mb-0 text-capitalize">Todays Leads</p>
-                <h4 class="mb-0" th:text="${totalTodaysTask}">103,430</h4>
+                <h4 class="mb-0" id="todaysLead" th:text="${totalTodaysTask}">103,430</h4>
               </div>
             </div>
             <hr class="dark horizontal my-0">
@@ -163,15 +167,15 @@
             </div>
           </div>
         </div>
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="col  mb-xl-0 mb-4">
           <div class="card">
             <div class="card-header p-3 pt-2">
               <div class="icon icon-lg icon-shape bg-gradient-white shadow-success text-center border-radius-xl mt-n4 position-absolute" >
-                <img src="/img/logos/processing.png" class="position-absolute dash-logo-img" style="top:8%;left:12%" width="50" />
+                <img src="/img/logos/processing.png" class="position-absolute dash-logo-img" style="top:8%;left:12%" width="35" />
               </div>
               <div class="text-end pt-1">
-              <p class="text-sm mb-0 text-capitalize">In Progess Leads</p>
-                <h4 class="mb-0" th:text="${totalActiveTask}">2,300</h4>
+              <p class="text-sm mb-0 text-capitalize">Today's counselling</p>
+                <h4 class="mb-0"  id="todaysCounselled"></h4>
               </div>
             </div>
             <hr class="dark horizontal my-0">
@@ -180,15 +184,32 @@
             </div>
           </div>
         </div>
-        <div class="col-xl-3 col-sm-6">
+		<div class="col  mb-xl-0 mb-4">
+          <div class="card">
+            <div class="card-header p-3 pt-2">
+              <div class="icon icon-lg icon-shape bg-gradient-white shadow-success text-center border-radius-xl mt-n4 position-absolute" >
+                <img src="/img/logos/processing.png" class="position-absolute dash-logo-img" style="top:8%;left:12%" width="35" />
+              </div>
+              <div class="text-end pt-1">
+              <p class="text-sm mb-0 text-capitalize">Today's seat confirmed</p>
+                <h4 class="mb-0" id="todaysSeatConfirmed"></h4>
+              </div>
+            </div>
+            <hr class="dark horizontal my-0">
+            <div class="card-footer p-3">
+             <!--  <p class="mb-0"><span class="text-danger text-sm font-weight-bolder">-2%</span> than yesterday</p>-->
+            </div>
+          </div>
+        </div>
+        <div class="col ">
           <div class="card">
             <div class="card-header p-3 pt-2">
               <div class="icon icon-lg icon-shape bg-gradient-white shadow-info text-center border-radius-xl mt-n4 position-absolute">
-                <img src="/img/logos/checked.png" class="position-absolute dash-logo-img" style="top:13%;left:16%" width="45" />
+                <img src="/img/logos/checked.png" class="position-absolute dash-logo-img" style="top:13%;left:16%" width="30" />
               </div>
               <div class="text-end pt-1">
-                <p class="text-sm mb-0 text-capitalize">Converted Leads</p>
-                <h4 class="mb-0" th:text="${totalConvertedTask}">3,462</h4>
+                <p class="text-sm mb-0 text-capitalize">Total Admission</p>
+                <h4 class="mb-0" id="totalAdmission" th:text="${totalConvertedTask}">3,462</h4>
               </div>
             </div>
           <hr class="dark horizontal my-0">
@@ -198,380 +219,119 @@
           </div>
         </div>
       </div>
-      <div class="mt-4">
-        <div class=" col-12 mt-4 mb-4">
-          <div class="card z-index-2 p-4">
-           <!-- <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
-              <div class="bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1">
-                <div class="chart">
-                  <canvas id="chart-bars" class="chart-canvas" height="300"></canvas>
-                  
+	  <div class="col  mb-xl-0 mb-4">
+            <div class="card">
+              <div class="card-header p-3 pt-2">
+                <div class="icon icon-lg icon-shape bg-gradient-white shadow-dark text-center border-radius-xl mt-n4 position-absolute">
+                  <img src="/img/logos/all.png" class="position-absolute dash-logo-img" width="30" />
+                </div>
+                <div class="text-end pt-1">
+                  <p class="text-sm mb-0 text-capitalize">Total Leads</p>
+                  <h4 class="mb-0" id="totalLeads" th:text="${totalTask}">5,300</h4>
                 </div>
               </div>
-            </div>-->
-            
-            <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+              <hr class="dark horizontal my-0">
+              <div class="card-footer p-3">
+                <!-- <p class="mb-0"><span class="text-success text-sm font-weight-bolder">+55% </span>than last week</p>-->
+              </div>
+            </div>
+          </div>
+       
+              </div>
+			  
+			  <div class="mt-4">
+				<button class="btn btn-outline-primary me-2 mb-3 tab-button active"  onclick="openTab('basic')">Basic</button>
+				  <button class="btn btn-outline-primary me-2 mb-3 tab-button" onclick="openTab('scrutiny')">Scrutiny</button>
 
-            <div class="card-body text-center">
-              <h6 class="mb-0 ">Total leads by telecallers</h6>
-              <!--	<p class="text-sm ">(+15%) increase in today leads.</p>
-              <hr class="dark horizontal">
-              <div class="d-flex ">
-                <i class="material-icons text-sm my-auto me-1">schedule</i>
-                <p class="mb-0 text-sm"> campaign sent 2 days ago </p>
-              </div>-->
+				  <!-- filters -->
+				  <div class="row g-3 align-items-center mb-3">
+				    <div class="col-auto">
+				      <div class="btn-group" id="quickDates">
+				        <button class="btn btn-outline-primary date-short-filter" data-range="today">Today</button>
+				        <button class="btn btn-outline-primary date-short-filter" data-range="week">Week</button>
+				        <button class="btn btn-outline-primary date-short-filter" data-range="month">Month</button>
+				        <button class="btn btn-outline-primary date-short-filter active" data-range="all">All</button>
+				      </div>
+				    </div>
+				    <!--<div class="col-auto"><input id="fromDate" class="form-control date-picker" placeholder="From"></div>
+				    <div class="col-auto"><input id="toDate"   class="form-control date-picker" placeholder="To"></div>-->
+
+				    <!-- <div class="col-auto">
+				      <div class="form-check form-switch">
+				        <input class="form-check-input" type="checkbox" id="excludeVikas">
+				        <label class="form-check-label" for="excludeVikas">Hide Manager Vikas</label>
+				      </div>
+				    </div>
+
+				 
+				    <div class="col-auto dropdown">
+				      <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" id="entityBtn">Select Callers</button>
+				      <div class="dropdown-menu p-3" id="entityList" style="max-height:300px;overflow:auto"></div>
+				    </div>-->
+
+				   <!-- <div class="col-auto"><button class="btn btn-primary" id="copyBtn" disabled>Copy Selected</button></div> 
+				    <div class="col-auto"><button class="btn btn-success" id="downloadBtn">Download Excel</button></div>-->
+				  </div>
+
+				  <!-- table -->
+				  <div id="basic" class="tab-content">
+					  <div class="card shadow-sm">
+					    <div class="card-body table-responsive">
+					      <table class="table align-middle mb-0" id="perfTable">
+					        <thead class="table-light">
+					          <tr>
+								<th >Sr.no</th>
+					            <th data-k="userName" class="dashboardBasicParam"><span >Entity Name</span><span class="sort-arrow">▲</span><small class="d-block">Caller / Counsellor</small></th>
+					            <th data-k="todaysScheduled" class="dashboardBasicParam"><span>Today</span><span class="sort-arrow">▲</span><small>Schedules today</small></th>
+					            <th data-k="missedSchedule" class="dashboardBasicParam"><span>Missed</span><span class="sort-arrow">▲</span><small>Schedules before today</small></th>
+					            <th data-k="counselled" class="dashboardBasicParam"><span>Couns.</span><span class="sort-arrow">▲</span><small>Leads ≥1 counselling</small></th>
+					            <th data-k="converted" class="dashboardBasicParam"><span>Adm.</span><span class="sort-arrow">▲</span><small>Admissions done</small></th>
+					          </tr>
+					        </thead>
+					        <tbody id="perfBody">
+								<tr><td colspan="5" class="py-4 text-center">Loading…</td></tr></tbody>
+					      </table>
+					    </div>
+					  </div>
+				</div>
+				<div id="scrutiny" class="tab-content hidden">
+					<div class="card shadow-sm">
+					    <div class="card-body table-responsive">
+					      <table class="table align-middle mb-0" id="perfTable">
+					        <thead class="table-light">
+							  <tr>
+								<th >Sr.no</th>
+								<th data-k="name" class="dashboardScrutinyParam px-0"><span>Entity</span><span class="sort-arrow">▲</span><small>name</small></th>
+					            <th data-k="total"  class="dashboardScrutinyParam px-0"><span>Total</span><span class="sort-arrow">▲</span><small>All task</small></th>
+								<th data-k="dustbin"  class="dashboardScrutinyParam px-0"><span>Dustbin</span><span class="sort-arrow">▲</span><small>Moved to dustbin</small></th>
+								<th data-k="blank"  class="dashboardScrutinyParam px-0"><span>Blank</span><span class="sort-arrow">▲</span><small>Lead type=BLANK</small></th>
+					            <th data-k="hot" class="dashboardScrutinyParam px-0" ><span>Hot</span><span class="sort-arrow">▲</span><small>Lead type=HOT</small></th>
+					            <th data-k="prospect" class="dashboardScrutinyParam px-0"><span>Prospect</span><span class="sort-arrow">▲</span><small>Lead type=PROSPECT</small></th>
+					            <th data-k="cold" class="dashboardScrutinyParam px-0"><span>Cold</span><span class="sort-arrow">▲</span><small>Lead type=COLD</small></th>
+								<th data-k="nocomment" class="dashboardScrutinyParam px-0"><span>No Comm.</span><span class="sort-arrow">▲</span><small>No comment</small></th>
+								<th data-k="noschedule" class="dashboardScrutinyParam px-0"><span>No Sch.</span><span class="sort-arrow">▲</span><small>No scheduler</small></th>
+								<th data-k="counselled" class="dashboardBasicParam px-0"><span>Couns.</span><span class="sort-arrow">▲</span><small>Leads ≥1 counselling</small></th>
+					            <th data-k="converted" class="dashboardBasicParam px-0"><span>Adm.</span><span class="sort-arrow">▲</span><small>Admissions done</small></th>
+					            <!--<th data-k="blank"><span>Blank</span><span class="sort-arrow">▲</span></th>
+					            <th data-k="couns"><span>Couns.</span><span class="sort-arrow">▲</span></th>
+					            <th data-k="adm"  ><span>Adm.</span><span class="sort-arrow">▲</span></th>
+					            <th data-k="cRate"><span>Couns.%</span><span class="sort-arrow">▲</span></th>
+					            <th data-k="aRate"><span>Adm.%</span><span class="sort-arrow">▲</span></th>-->
+					          </tr>
+					        </thead>
+					        <tbody id="perfBodyScrutiny">
+								<tr><td colspan="10" class="py-4 text-center">Loading…</td></tr></tbody>
+					      </table>
+					    </div>
+					  </div>
+				  </div>
+			  </div>
+			  
             </div>
           </div>
         </div>
-       <!-- <div class="col-lg-4 col-md-6 mt-4 mb-4">
-          <div class="card z-index-2  ">
-            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
-              <div class="bg-gradient-success shadow-success border-radius-lg py-3 pe-1">
-                <div class="chart">
-                  <canvas id="chart-line" class="chart-canvas" height="170"></canvas>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <h6 class="mb-0 "> Daily Leads </h6>
-              <p class="text-sm "> (<span class="font-weight-bolder">+15%</span>) increase in today leads. </p>
-              <hr class="dark horizontal">
-              <div class="d-flex ">
-                <i class="material-icons text-sm my-auto me-1">schedule</i>
-                <p class="mb-0 text-sm"> updated 4 min ago </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 mt-4 mb-3">
-          <div class="card z-index-2 ">
-            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
-              <div class="bg-gradient-dark shadow-dark border-radius-lg py-3 pe-1">
-                <div class="chart">
-                  <canvas id="chart-line-tasks" class="chart-canvas" height="170"></canvas>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <h6 class="mb-0 ">Completed Tasks</h6>
-              <p class="text-sm ">Last Campaign Performance</p>
-              <hr class="dark horizontal">
-              <div class="d-flex ">
-                <i class="material-icons text-sm my-auto me-1">schedule</i>
-                <p class="mb-0 text-sm">just updated</p>
-              </div>
-            </div>
-          </div>
-        </div>-->
+        
       </div>
-      <!--<div class="row mb-4">
-        <div class="col-12 mb-md-0 mb-4">
-          <div class="card">
-            <div class="card-header pb-0">
-              <div class="row">
-                <div class="col-lg-6 col-7">
-                  <h6>Projects</h6>
-                  <p class="text-sm mb-0">
-                    <i class="fa fa-check text-info" aria-hidden="true"></i>
-                    <span class="font-weight-bold ms-1">30 done</span> this month
-                  </p>
-                </div>
-                <div class="col-lg-6 col-5 my-auto text-end">
-                  <div class="dropdown float-lg-end pe-4">
-                    <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown" aria-expanded="false">
-                      <i class="fa fa-ellipsis-v text-secondary"></i>
-                    </a>
-                    <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
-                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Action</a></li>
-                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Another action</a></li>
-                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Something else here</a></li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="card-body px-0 pb-2">
-              <div class="table-responsive">
-                <table class="table align-items-center mb-0">
-                  <thead>
-                    <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Companies</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Members</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Budget</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Completion</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="/img/small-logos/logo-xd.svg" class="avatar avatar-sm me-3" alt="xd">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Material XD Version</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                            <img src="/img/team-1.jpg" alt="team1">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                            <img src="/img/team-2.jpg" alt="team2">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Alexander Smith">
-                            <img src="/img/team-3.jpg" alt="team3">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                            <img src="/img/team-4.jpg" alt="team4">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> $14,000 </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">60%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-info w-60" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="/img/small-logos/logo-atlassian.svg" class="avatar avatar-sm me-3" alt="atlassian">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Add Progress Track</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                            <img src="/img/team-2.jpg" alt="team5">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                            <img src="/img/team-4.jpg" alt="team6">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> $3,000 </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">10%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-info w-10" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="/img/small-logos/logo-slack.svg" class="avatar avatar-sm me-3" alt="team7">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Fix Platform Errors</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                            <img src="/img/team-3.jpg" alt="team8">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                            <img src="/img/team-1.jpg" alt="team9">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> Not set </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">100%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-success w-100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="/img/small-logos/logo-spotify.svg" class="avatar avatar-sm me-3" alt="spotify">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Launch our Mobile App</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                            <img src="/img/team-4.jpg" alt="user1">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                            <img src="/img/team-3.jpg" alt="user2">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Alexander Smith">
-                            <img src="/img/team-4.jpg" alt="user3">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                            <img src="/img/team-1.jpg" alt="user4">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> $20,500 </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">100%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-success w-100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="/img/small-logos/logo-jira.svg" class="avatar avatar-sm me-3" alt="jira">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Add the New Pricing Page</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                            <img src="/img/team-4.jpg" alt="user5">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> $500 </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">25%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-info w-25" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="25"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="/img/small-logos/logo-invision.svg" class="avatar avatar-sm me-3" alt="invision">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Redesign New Online Shop</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                            <img src="/img/team-1.jpg" alt="user6">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                            <img src="/img/team-4.jpg" alt="user7">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> $2,000 </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">40%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-info w-40" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="40"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>-->
-      
-      <div class="card mb-4" id="">
-            <div class="card-body px-0 pb-2">
-              <div class="table-responsive  p-0">
-              	<table class="table align-items-center mb-0">
-                  <thead>
-                    <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Sr No.</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Telecaller</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Not Processed</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Processed</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Counselling Done</th>
-                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Admission Done</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  	<tr th:each="telecaller,iStat:${xAxis}">
-                  		<td class="ps-4 d-flex justify-content-start align-items-center text-sm"  th:text="${iStat.index+1}">
-                  		</td>
-                  		<td class="text-sm font-weight-bold mb-0" th:text="${telecaller}">
-                  		</td>
-                  		<td class="align-middle text-center text-sm" th:text="${pendingLeadsByTelecaller[iStat.index]}">
-                  		</td>
-                  		<td class="align-middle text-center text-sm" th:text="${proccessedLeadsByTelecaller[iStat.index]}">
-                  		</td>
-                  		<td  class="align-middle text-center text-sm" th:text="${counselledLeadsByTelecaller[iStat.index]}">
-                  		</td>
-                  		<td class="align-middle text-center text-sm" th:text="${completedLeadsByTelecaller[iStat.index]}">
-                  		</td>
-                  	</tr>
-                  </tbody>
-    </div>
   </main>
 
    <script src="/js/core/popper.min.js"></script>
@@ -580,209 +340,49 @@
   <script src="/js/smooth-scrollbar.min.js"></script>
   <script src="/js/custom-sidebar.js"></script>
    <script src="/js/add-task.js"></script>
-  <script th:inline="javascript">
-	
-	var role=/*[[${role}]]*/''
-
-	/*$(document).ready(function(){
-		debugger
-		if(role=='supervisor'){
-			let allInputs=$(".graph_report")
-			for(let i=0;i<allInputs.length;i++){
-					allInputs[i].disabled=true
-			}
-		}
-	})*/
-  
-  var platforms=/*[[${platforms}]]*/''
-  var activeLeadsByPlatform=/*[[${activeLeadsByPlatform}]]*/''
-  var convertedLeadsByPlatform=/*[[${convertedLeadsByPlatform}]]*/''
-  var notConvertedLeadsByPlatform=/*[[${notConvertedLeadsByPlatform}]]*/''
-  
-  var xAxis=/*[[${xAxis}]]*/''
-  var pendingLeadsByTelecaller=/*[[${pendingLeadsByTelecaller}]]*/''
-  var proccessedLeadsByTelecaller=/*[[${proccessedLeadsByTelecaller}]]*/''
-  var completedLeadsByTelecaller=/*[[${completedLeadsByTelecaller}]]*/''
-  var counselledLeadsByTelecaller=/*[[${counselledLeadsByTelecaller}]]*/''
-  var labels=[]
-  var processedDataPoints=[]
-  var pendingDataPoints=[]
-  var completedDataPoints=[]
-  var counselledDataPoints=[]
-  
-  var chartRef
-  for(let i=0;i<xAxis.length;i++){
-	labels.push(xAxis[i])
-	let pendingDatapoint={}
-	let processedDatapoint={}
-	let completedDatapoint={}
-	let counselledDatapoint={}
-	
-	pendingDatapoint['label']=xAxis[i]
-	pendingDatapoint['y']=pendingLeadsByTelecaller[i]
-	
-	processedDatapoint['label']=xAxis[i]
-	processedDatapoint['y']=proccessedLeadsByTelecaller[i]
-	
-	completedDatapoint['label']=xAxis[i]
-	completedDatapoint['y']=completedLeadsByTelecaller[i]
-	
-	
-	counselledDatapoint['label']=xAxis[i]
-	counselledDatapoint['y']=counselledLeadsByTelecaller[i]
-	
-	
-	counselledDataPoints.push(counselledDatapoint)
-	
-	processedDataPoints.push(processedDatapoint)
-	pendingDataPoints.push(pendingDatapoint)
-	completedDataPoints.push(completedDatapoint)
-}
-
-	var chart;
-   showGraph()
-
-
-   /*function showGraph(){
-		var ctx = document.getElementById("chart-bars").getContext("2d");
-	
-	    chartRef=new Chart(ctx, {
-	      type: "bar",
-	      data: {
-	        labels: labels,
-	        datasets: [{
-	          label: "Not Processed",
-	          tension: 0.4,
-	          borderWidth: 0,
-	          borderRadius: 4,
-	          borderSkipped: false,
-	          backgroundColor: "rgba(255, 255, 255, .8)",
-	          data: pendingLeadsByTelecaller,
-	          maxBarThickness: 6
-	        },{
-	          label: "Processed",
-	          tension: 0.4,
-	          borderWidth: 0,
-	          borderRadius: 4,
-	          borderSkipped: false,
-	          backgroundColor: "green",
-	          data: proccessedLeadsByTelecaller,
-	          maxBarThickness: 6
-	        },
-	        {
-	          label: "Converted",
-	          tension: 0.4,
-	          borderWidth: 0,
-	          borderRadius: 4,
-	          borderSkipped: false,
-	          backgroundColor: "red",
-	          data: completedLeadsByTelecaller,
-	          maxBarThickness: 6
-	        }],
-	      },
-	      options: {
-	        responsive: true,
-	        maintainAspectRatio: false,
-	        plugins: {
-	          legend: {
-	            display: false,
-	          }
-	        },
-	        interaction: {
-	          intersect: false,
-	          mode: 'index',
-	        },
-	        scales: {
-	      x: {
-	        stacked: true,
-	        ticks:{
-		 		font: {
-	                size: 14,
-	                weight: 300,
-	                family: "Roboto",
-	                style: 'normal',
-	                lineHeight: 2
-	              },
-	              color: "#fff"
-				}
-	      },
-	      y: {
-	        stacked: true,
-	        ticks:{
-		 		font: {
-	                size: 14,
-	                weight: 300,
-	                family: "Roboto",
-	                style: 'normal',
-	                lineHeight: 2
-	              },
-	              color: "#fff"
-				}
-	      }
-	    }
-	      },
-	    });
-	}*/
-	function showGraph(){
-	chart = new CanvasJS.Chart("chartContainer", {
-	animationEnabled: true,
-	title:{
-		text: ""
-	},
-	
-	toolTip: {
-		shared: true
-	},
-	legend: {
-		reversed: true,
-		verticalAlign: "center",
-		horizontalAlign: "right"
-	},
-	data: [{
-		type: "stackedColumn100",
-		name: "Not Processed",
-		showInLegend: true,
-		xValueFormatString: "YYYY",
-      	indexLabel: "{y}",
-		dataPoints: 
-			pendingDataPoints
-		
-	}, 
-	{
-		type: "stackedColumn100",
-		name: "Processed",
-		color:'green',
-		showInLegend: true,
-		xValueFormatString: "YYYY",
-		
-      indexLabel: "{y}",
-		dataPoints: processedDataPoints
-	}, 
-	{
-		type: "stackedColumn100",
-		name: "Admission Done",
-		color:'#F9E076',
-		showInLegend: true,
-		xValueFormatString: "YYYY",
-		indexLabel: "{y}",
-		dataPoints: completedDataPoints
-	},
-	
-	{
-		type: "stackedColumn100",
-		name: "Counselling Done",
-		color:'red',
-		showInLegend: true,
-		xValueFormatString: "YYYY",
-		indexLabel: "{y}",
-		dataPoints: counselledDataPoints
-	}]
-	});
-	chart.render();
-
-}
-  </script>
   <script>
+	
+	$(document).ready(function() {
+		applyFilter()
+		populateCardData(true)
+	});
+	
+	
+	function setProfileImages(userName,index){
+			debugger
+			var request={
+			}
+			request['userName']=userName
+			$.ajax({
+				url:'/usermaster/get',
+				type:'POST',
+				data: JSON.stringify(request),
+				contentType : 'application/json',
+				success:function(data){
+					if(data){
+						if (data.image) {
+						    const img = document.getElementById('profilePic'+index);
+						    img.src = `data:image/jpeg;base64,${data.image}`;
+						    img.style.display = 'block';
+							$(".profile-icon").addClass("d-none")
+						}
+					}
+				},
+				error:function(err){
+					console.log(err)
+				}
+				
+			})
+		}
+	
+	function openTab(tabName) {
+	    document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+	    document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+	    document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
+	    document.getElementById(tabName).classList.remove('hidden');
+	  }
+	  
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
       var options = {
@@ -791,58 +391,177 @@
       Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
     
-   /* $("body").on("change",".user-select",function(e){
-		if($("#"+$(".role-select").val()).val()!=""){
-			$(".owner-select-label").removeClass("d-none")
+
+  	var iAsc = false
+	var paramter = 'userName'
+	var dateRange = 'all'
+	
+	var iAscScrutiny = false
+	var paramterScrutiny = 'userName'
+	$('body').on('click','.date-short-filter',function(e){
+			var currentRangeClicked =  $(this)
+			dateRange = currentRangeClicked.attr('data-range')
+			$(" .date-short-filter").removeClass("active")
+			currentRangeClicked.addClass("active")
+		})
+		
+	$('body').on('click','.dashboardBasicParam',function(e){
+		$("#perfBody").html('<tr><td colspan="5" class="py-4 text-center">Loading…</td></tr></tbody>')
+				
+		const currentParam = $(this).attr('data-k')
+		if(currentParam == paramter){
+			iAsc =! iAsc
 		}else{
-			$(".owner-select-label").addClass("d-none")
+			paramter = currentParam
+			iAsc = true
 		}
-	})*/
-   
-    
-    $("body").on("click",".dashboard-sumbit",function(e){
-		var filterRequests={}
-		filterRequests['role']=$(".role-select").val()
-		if($(".role-select").val()!="")
-			filterRequests['userName']=$("#"+$(".role-select").val()).val()
-		filterRequests['leadPlatform']=$("#platform").val()
-		filterRequests['courseName']=$("#course").val()
-		filterRequests['status']=$("#status").val()
-		filterRequests['isActive']=true
-		filterRequests['isOwner']=false
-		filterRequests['isScheduled']=$("#scheduleStatus").val()=='scheduled'?true:($("#scheduleStatus").val()=="not scheduled")?false:null
-		filterRequests['isCounselled']=$("#counsellingStatus").val()=='counselled'?true:($("#counsellingStatus").val()=="not counselled")?false:null
-		filterRequests['fromDate']=$("#fromDate").val()
-		filterRequests['toDate']=$("#toDate").val()
-		filterRequests['leadType']=$("#leadType").val()
-		filterRequests['isSeatConfirmed']=$('#seatConfirmed').is(':checked')
-		if($(".owner-select").val()=="Yes"){
-			filterRequests['isOwner']=true
+		if(dateRange=='all'){
+			filterRequests['fromDate']=$("#fromDate").val()
+			filterRequests['toDate']=$("#toDate").val()
+		}else if(dateRange=='month'){
+			filterRequests=setMonthRange(filterRequests)
+		}else if(dateRange=='week'){
+			filterRequests=setWeekRange(filterRequests)
+		}else if(dateRange=='today'){
+			// Get today's date
+			const today = new Date();
+
+			// Format the date as YYYY-MM-DD
+			const formattedToday = today.toISOString().split('T')[0];
+			filterRequests['fromDate']=formattedToday
+			filterRequests['toDate']=formattedToday
 		}
 		$.ajax({
-			url:"/admin/graphs/get",
+			url:"/admin/graphs/get?paramter="+paramter+"&isAsc="+iAsc,
 			type:"PUT",
 			data:JSON.stringify(filterRequests),
 			contentType:"application/json",
 			success:function(data){
 				console.log(data)
-				try{
+				debugger;
+				$("#perfBody").html(data)
+				//setProfileImageForFirstFive()
+				/*try{
 					showGraphAfterFilter(data['XPlots'],data['YPlots'])
 					$("#totalLeads").text(data['totalLeads'])
 				}catch(err){
 					console.log(err)
-				}
+				}*/
 				
 			},
 			error:function(err){
 				console.log(err)
 			}
 		})
+		
 	})
+	
+	$('body').on('click','.dashboardScrutinyParam',function(e){
+		$("#perfBodyScrutiny").html('<tr><td colspan="10" class="py-4 text-center">Loading…</td></tr></tbody>')
+			const currentParam = $(this).attr('data-k')
+			if(currentParam == paramterScrutiny){
+				iAscScrutiny =! iAscScrutiny
+			}else{
+				paramterScrutiny = currentParam
+				iAscScrutiny = true
+			}
+			if(dateRange=='all'){
+				filterRequests['fromDate']=$("#fromDate").val()
+				filterRequests['toDate']=$("#toDate").val()
+			}else if(dateRange=='month'){
+				filterRequests=setMonthRange(filterRequests)
+			}else if(dateRange=='week'){
+				filterRequests=setWeekRange(filterRequests)
+			}else if(dateRange=='today'){
+				// Get today's date
+				const today = new Date();
+	
+				// Format the date as YYYY-MM-DD
+				const formattedToday = today.toISOString().split('T')[0];
+				filterRequests['fromDate']=formattedToday
+				filterRequests['toDate']=formattedToday
+			}
+			$.ajax({
+				url:"/admin/graphs/get-scrutiny?paramter="+paramterScrutiny+"&isAsc="+iAscScrutiny,
+				type:"PUT",
+				data:JSON.stringify(filterRequests),
+				contentType:"application/json",
+				success:function(data){
+					console.log(data)
+					debugger;
+					$("#perfBodyScrutiny").html(data)
+					/*try{
+						showGraphAfterFilter(data['XPlots'],data['YPlots'])
+						$("#totalLeads").text(data['totalLeads'])
+					}catch(err){
+						console.log(err)
+					}*/
+					
+				},
+				error:function(err){
+					console.log(err)
+				}
+			})
+		})
+	
+	function setMonthRange(filterRequests){
+		// Get the current date
+		const now = new Date();
+	debugger;
+		// Get the start of the current month
+		const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+		// Get the end of the current month
+		const endOfMonth = new Date(now.getFullYear(), now.getMonth()+1 , 0);
+		// Format the dates as YYYY-MM-DD
+		const startDate = startOfMonth.getFullYear() + '-' +
+		                    String(startOfMonth.getMonth() + 1).padStart(2, '0') + '-' +
+		                    String(startOfMonth.getDate()).padStart(2, '0');
+		const endDate = endOfMonth.getFullYear() + '-' +
+				                    String(endOfMonth.getMonth() + 1).padStart(2, '0') + '-' +
+				                    String(endOfMonth.getDate()).padStart(2, '0');
+		filterRequests['fromDate']=startDate
+		filterRequests['toDate']=endDate
+		console.log("Today's date:", startDate);
+		return filterRequests;
+
+	}
+    function setWeekRange(filterRequests){
+		// Get the current date
+		const now = new Date();
+
+		// Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+		const currentDay = now.getDay();
+
+		// Calculate the start of the week (Monday)
+		const startOfWeek = new Date(now);
+		startOfWeek.setDate(now.getDate() - ((currentDay === 0 ? 7 : currentDay) - 1));
+
+		// Calculate the end of the week (Sunday)
+		const endOfWeek = new Date(startOfWeek);
+		endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+		// Format the dates as YYYY-MM-DD
+		const startDate = startOfWeek.toISOString().split('T')[0];
+		const endDate = endOfWeek.toISOString().split('T')[0];
+
+		filterRequests['fromDate']=startDate
+		filterRequests['toDate']=endDate
+		return filterRequests;		
+
+	}
+	
+    $("body").on("click",".dashboard-sumbit",function(e){
+		
+		applyFilter()
+		populateCardData(false)
+	})
+	
 	
 	 $("body").on("click",".graph_report",function(e){
 		var filterRequests={}
 		filterRequests['role']=$(".role-select").val()
+		filterRequests['assignee']=$(".role-select").val()
 		if($(".role-select").val()!="")
 			filterRequests['userName']=$("#"+$(".role-select").val()).val()
 		filterRequests['leadPlatform']=$("#platform").val()
@@ -854,8 +573,21 @@
 		filterRequests['isCounselled']=$("#counsellingStatus").val()=='counselled'?true:($("#counsellingStatus").val()=="not counselled")?false:null
 		filterRequests['fromDate']=$("#fromDate").val()
 		filterRequests['toDate']=$("#toDate").val()
+		if($("#dateType").val() && $("#dateType").val().length>0){
+			filterRequests['isDateTypeChanged']=true
+		}else{
+			filterRequests['isDateTypeChanged']=false
+		}
+		const today = new Date();
+
+					// Format the date as YYYY-MM-DD
+		const formattedToday = today.toISOString().split('T')[0];
+		//filterRequests['toDate']=formattedToday
 		filterRequests['leadType']=$("#leadType").val()
-		filterRequests['isSeatConfirmed']=$('#seatConfirmed').is(':checked')
+		if($('#seatConfirmed').is(':checked')){
+			filterRequests['isSeatConfirmed']=true
+		}
+		
 		if($(".owner-select").val()=="Yes"){
 			filterRequests['isOwner']=true
 		}
@@ -891,47 +623,199 @@
 		})
 	})
 	
-	
-	function showGraphAfterFilter(labelsForFilter,tasksCount){
+	var filterRequests={}
+	function applyFilter(){
 		debugger
-		//chart.destroy()
-		let datapoints=[]
-		for(let i=0;i<labelsForFilter.length;i++){
-			let pendingDatapoint={}
-			pendingDatapoint['label']=labelsForFilter[i]
-			pendingDatapoint['y']=tasksCount[i]
-			datapoints.push(pendingDatapoint)
+		filterRequests ={}
+		$("#perfBody").html('<tr><td colspan="5" class="py-4 text-center">Loading…</td></tr></tbody>')
+		$("#perfBodyScrutiny").html('<tr><td colspan="8" class="py-4 text-center">Loading…</td></tr></tbody>')
+		
+		let selectedRole = $(".role-select").val()
+		filterRequests['role']=$(".role-select").val()
+		filterRequests['assignee']=$(".role-select").val()
+		if($(".role-select").val()!=""){
+			filterRequests['userName']=$("#"+$(".role-select").val()).val()
+			selectedUser = $("#"+$(".role-select").val()).val()
+			var selectedOption2= $("#"+selectedRole+ " option[value='" + selectedUser + "']");
+			if (selectedOption2.length > 0) {
+		        var selectedOptionName2 = selectedOption2.attr("name");
+		    } 
+			filterRequests['userNameForUi']=selectedOptionName2
+		}
+			
+		
+		filterRequests['leadPlatform']=$("#platform").val()
+		filterRequests['courseName']=$("#course").val()
+		filterRequests['status']=$("#status").val()
+		filterRequests['isActive']=true
+		filterRequests['isOwner']=false
+		filterRequests['isScheduled']=$("#scheduleStatus").val()=='scheduled'?true:($("#scheduleStatus").val()=="not scheduled")?false:null
+		filterRequests['isCounselled']=$("#counsellingStatus").val()=='counselled'?true:($("#counsellingStatus").val()=="not counselled")?false:null
+		if(dateRange=='all'){
+			filterRequests['fromDate']=$("#fromDate").val()
+			filterRequests['toDate']=$("#toDate").val()
+		}else if(dateRange=='month'){
+			filterRequests=setMonthRange(filterRequests)
+		}else if(dateRange=='week'){
+			filterRequests=setWeekRange(filterRequests)
+		}else if(dateRange=='today'){
+			// Get today's date
+			const today = new Date();
+
+			// Format the date as YYYY-MM-DD
+			const formattedToday = today.toISOString().split('T')[0];
+			filterRequests['fromDate']=formattedToday
+			filterRequests['toDate']=formattedToday
 		}
 		
 		
 		
-		var chart = new CanvasJS.Chart("chartContainer", {
-		animationEnabled: true,
-		title:{
-			text: ""
-		},
+		filterRequests['leadType']=$("#leadType").val()
+		if($("#dateType").val() && $("#dateType").val().length>0){
+			filterRequests['isDateTypeChanged']=true
+		}else{
+			filterRequests['isDateTypeChanged']=false
+		}
+		if($('#seatConfirmed').is(':checked')){
+			filterRequests['isSeatConfirmed']=true
+		}
+		if($(".owner-select").val()=="Yes"){
+			filterRequests['isOwner']=true
+		}
+		$.ajax({
+			url:"/admin/graphs/get?paramter="+paramter+"&isAsc="+iAsc,
+			type:"PUT",
+			data:JSON.stringify(filterRequests),
+			contentType:"application/json",
+			success:function(data){
+				console.log(data)
+				debugger;
+				$("#perfBody").html(data)
+				
+				/*try{
+					showGraphAfterFilter(data['XPlots'],data['YPlots'])
+					$("#totalLeads").text(data['totalLeads'])
+				}catch(err){
+					console.log(err)
+				}*/
+				
+			},
+			error:function(err){
+				console.log(err)
+			}
+		})
 		
-		toolTip: {
-			shared: true
-		},
-		legend: {
-			reversed: true,
-			verticalAlign: "center",
-			horizontalAlign: "right"
-		},
-		data: [{
-			type: "stackedColumn100",
-			xValueFormatString: "",
-
-	      	indexLabel: "{y}",
-			dataPoints: 
-				datapoints
-			
-		}]
-		});
-		chart.render();
-		
+		$.ajax({
+			url:"/admin/graphs/get-scrutiny?paramter="+paramterScrutiny+"&isAsc="+iAscScrutiny,
+			type:"PUT",
+			data:JSON.stringify(filterRequests),
+			contentType:"application/json",
+			success:function(data){
+				console.log(data)
+				debugger;
+				$("#perfBodyScrutiny").html(data)
+				/*try{
+					showGraphAfterFilter(data['XPlots'],data['YPlots'])
+					$("#totalLeads").text(data['totalLeads'])
+				}catch(err){
+					console.log(err)
+				}*/
+				
+			},
+			error:function(err){
+				console.log(err)
+			}
+		})
 	}
+	
+	function populateCardData(isInitialLoad){
+		
+		
+		let selectedRole = $(".role-select").val()
+		if(!isInitialLoad){
+			filterRequests['role']=$(".role-select").val()
+			if($(".role-select").val()!=""){
+				filterRequests['userName']=$("#"+$(".role-select").val()).val()
+				selectedUser = $("#"+$(".role-select").val()).val()
+				var selectedOption2= $("#"+selectedRole+ " option[value='" + selectedUser + "']");
+				if (selectedOption2.length > 0) {
+			        var selectedOptionName2 = selectedOption2.attr("name");
+			    } 
+				filterRequests['userNameForUi']=selectedOptionName2
+			}
+		}
+		
+		filterRequests['leadPlatform']=$("#platform").val()
+		filterRequests['courseName']=$("#course").val()
+		filterRequests['isActive']=true
+		filterRequests['isOwner']=false
+		filterRequests['isScheduled']=$("#scheduleStatus").val()=='scheduled'?true:($("#scheduleStatus").val()=="not scheduled")?false:null
+		filterRequests['isCounselled']=$("#counsellingStatus").val()=='counselled'?true:($("#counsellingStatus").val()=="not counselled")?false:null
+		
+		debugger
+		if(dateRange=='all'){
+			
+			
+			if(!($("#fromDate").val() && !$("#toDate").val())){
+				const today = new Date();
+															
+				// Format the date as YYYY-MM-DD
+				const formattedToday = today.toISOString().split('T')[0];
+				filterRequests['fromDate']=formattedToday
+				filterRequests['toDate']=formattedToday
+				
+			}
+			if($("#fromDate").val()){
+				filterRequests['fromDate']=$("#fromDate").val()
+			}	
+			if($("#toDate").val()){
+				filterRequests['toDate']=$("#toDate").val()
+			}
+		}else if(dateRange=='month'){
+			filterRequests=setMonthRange(filterRequests)
+		}else if(dateRange=='week'){
+			filterRequests=setWeekRange(filterRequests)
+		}else if(dateRange=='today'){
+			// Get today's date
+			const today = new Date();
+	
+			// Format the date as YYYY-MM-DD
+			const formattedToday = today.toISOString().split('T')[0];
+			filterRequests['fromDate']=formattedToday
+			filterRequests['toDate']=formattedToday
+		}
+		if($("#leadType").val())
+			filterRequests['leadType']=$("#leadType").val()
+		if($(".owner-select").val()=="Yes"){
+			filterRequests['isOwner']=true
+		}
+		if($("#dateType").val() && $("#dateType").val().length>0){
+			filterRequests['isDateTypeChanged']=true
+		}else{
+			filterRequests['isDateTypeChanged']=false
+		}
+		$.ajax({
+			url:"/admin/graphs/carddata",
+			type:"PUT",
+			data:JSON.stringify(filterRequests),
+			contentType:"application/json",
+			success:function(data){
+				debugger;
+				console.log(data)
+				if(data){
+					$("#todaysLead").text(data.todaysLeads)
+					$("#todaysCounselled").text(data.todaysCounselled)
+					$("#todaysSeatConfirmed").text(data.todaysSeatConfirmed)
+					$("#totalAdmission").text(data.totalAdmission)
+					$("#totalLeads").text(data.totalLeads)
+				}
+			},
+			error:function(err){
+				console.log(err)
+			}
+		})
+	}
+	
   </script>
   <script src="/js/custom-sidebar.js"></script>
   <!-- Github buttons -->

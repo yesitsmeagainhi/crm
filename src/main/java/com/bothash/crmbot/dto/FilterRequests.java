@@ -1,11 +1,17 @@
 package com.bothash.crmbot.dto;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import lombok.Data;
 
 @Data
-public class FilterRequests {
+public class FilterRequests implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	private String leadPlatform;
 	
@@ -42,6 +48,8 @@ public class FilterRequests {
 	
 	private Boolean isScheduled;
 	
+	private Boolean isScheduledMissed;
+	
 	private String courseName;
 	
 	private String status;
@@ -53,6 +61,8 @@ public class FilterRequests {
 	private String leadType;
 	
 	private Boolean isSeatConfirmed;
+
+	private Boolean isClaimed;
 	
 	private Boolean isLeadTransfer;
 	
@@ -61,4 +71,22 @@ public class FilterRequests {
 	private String toUserName;
 	
 	private Integer numberOfLeads;
+	
+	private LocalDateTime scheduledTime;
+	
+	private Boolean isDashboardFilter;
+	
+	private Boolean hasComments;
+	
+	private Boolean isDustin;
+	
+	private String userNameForUi;
+
+	private Boolean noComments;
+	
+	private Boolean isLeadSummary;
+	
+	private String dateType;
+	
+	private Boolean isDateTypeChanged;
 }

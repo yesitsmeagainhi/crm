@@ -1,4 +1,9 @@
 <h5 class="text-center mt-2">Assigned Groups</h5>
+<th:block th:if="${access != null and !#lists.isEmpty(access)}"
+      th:with="
+        automationAccess=${#lists.isEmpty(access.?[modules.name == 'AUTOMATION']) ? null : access.?[modules.name == 'AUTOMATION'][0]}
+    
+      ">
 <div class="card w-100">
    <div class="card-body px-0 pb-2">
       <div class="assigned-user-table table-responsive p-0">
@@ -11,7 +16,7 @@
                   <th>
                      Group Name
                   </th>
-                  <th>
+                  <th th:if="${automationAccess != null and (automationAccess.isEdit == true)}">
                      Delete
                   </th>
                </tr>
@@ -22,7 +27,7 @@
                   </td>
                   <td th:text="${user.groupName}">
                   </td>
-                   <td >
+                   <td th:if="${automationAccess != null and (automationAccess.isEdit == true)}">
                    	<button th:id="${user.id}" class="btn btn-primary delete-assigned-group">Delete</button>
                   </td>
                </tr>

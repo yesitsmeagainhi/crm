@@ -122,12 +122,16 @@ public class ActiveTask implements Serializable {
 	
 	private String admissionDoneOthers;
 	
+	
 	@OneToMany(mappedBy="activeTask")
 	 @JsonManagedReference
     private List<DuplicateDetails> duplicateDetails;
 	
 	@CreationTimestamp
 	private LocalDateTime createdOn;
+	
+	@CreationTimestamp
+	private LocalDateTime createdOnDuplicate;
 	
 	@UpdateTimestamp
 	private LocalDateTime modifiedOn;

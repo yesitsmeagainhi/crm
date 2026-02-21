@@ -1,4 +1,9 @@
 <div class="card mb-4" id="">
+	<th:block th:if="${access != null and !#lists.isEmpty(access)}"
+	          th:with="
+	            adMgmtAccess=${#lists.isEmpty(access.?[modules.name == 'AD MANGEMENT']) ? null : access.?[modules.name == 'AD MANGEMENT'][0]}
+	        
+	          ">
             <div class="card-body px-0 pb-2">
               <div class="table-responsive  p-0">
               	<table class="table align-items-center mb-0">
@@ -10,7 +15,7 @@
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Campaign Name</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Message</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"></th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:if="${adMgmtAccess != null and (adMgmtAccess.isEdit == true)}"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -33,7 +38,7 @@
                        <td class="align-middle text-center ">
                         <span class="text-secondary text-sm  font-weight-bold" th:id="|message${facebookLeadConfig.id}|" th:text="${facebookLeadConfig.message}">Open</span>
                       </td>
-                      <td class="cursor-pointer">
+                      <td class="cursor-pointer" th:if="${adMgmtAccess != null and (adMgmtAccess.isEdit == true)}">
                       	<i  th:id="editConfig" th:name="${facebookLeadConfig.id}" class="material-icons m-0 opacity-10 cursor-pointer cd-popup-trigger2">edit</i>
                       </td>
                       

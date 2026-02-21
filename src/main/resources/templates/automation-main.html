@@ -5,6 +5,11 @@
     <!-- Navbar -->
     <th:block layout:replace="fragments/header"></th:block>
     <!-- End Navbar -->
+	<th:block th:if="${access != null and !#lists.isEmpty(access)}"
+			          th:with="
+			            automationAccess=${#lists.isEmpty(access.?[modules.name == 'AUTOMATION']) ? null : access.?[modules.name == 'AUTOMATION'][0]}
+			        
+			          ">
     <div class="container-fluid pb-4 automation-container">
     	<form id="automation-form">
 				<select id="automationParameter" class="mb-3 " autocomplete="off">
@@ -36,7 +41,8 @@
 				</option>
 			</select>
 			
-			<button id="automation-group-save" class="btn btn-primary text-center d-none mx-auto">Save</button>
+			<button id="automation-group-save" class="btn btn-primary text-center d-none mx-auto" 
+			th:if="${automationAccess != null and (automationAccess.isEdit == true)}">Save</button>
 			</form>
 			
 			<div class="" id="assigned-user-container">

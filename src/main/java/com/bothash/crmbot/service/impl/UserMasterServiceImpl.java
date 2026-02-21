@@ -1,5 +1,8 @@
 package com.bothash.crmbot.service.impl;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,27 @@ public class UserMasterServiceImpl implements UserMasterService{
 	@Override
 	public UserMaster getByUserName(String userName) {
 		return userMasterRepository.findByUserName(userName);
+	}
+
+	@Override
+	public Optional<UserMaster> findById(Long id) {
+		return this.userMasterRepository.findById(id);
+	}
+
+	@Override
+	public boolean existsById(Long id) {
+		return this.userMasterRepository.existsById(id);
+	}
+
+	@Override
+	public void deleteById(Long id) {
+		 this.userMasterRepository.deleteById(id);
+		
+	}
+
+	@Override
+	public List<UserMaster> findAll() {
+		return this.userMasterRepository.findAll();
 	}
 
 }

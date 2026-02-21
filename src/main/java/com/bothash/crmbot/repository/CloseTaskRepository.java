@@ -1,5 +1,7 @@
 package com.bothash.crmbot.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -10,7 +12,7 @@ import com.bothash.crmbot.entity.CloseTask;
 
 public interface CloseTaskRepository extends JpaRepository<CloseTask, Long>{
 
-	CloseTask findByActiveTaskId(Long taskId);
+	List<CloseTask> findByActiveTaskId(Long taskId);
 
 	Page<CloseTask> findByIsConverted(boolean b, Pageable requestedPage);
 

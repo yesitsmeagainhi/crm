@@ -1,5 +1,6 @@
-
 <th:block layout:replace="fragments/htmlhead"></th:block>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
 <link href="/css/pagination.css" rel="stylesheet" />
 <body class="g-sidenav-show  bg-gray-200">
   <th:block layout:replace="fragments/sidebar"></th:block>	
@@ -18,36 +19,43 @@
 						person
 						</i>
 					</label>
-					<input th:if="${(isAdmin || isManager || isTelecaller || isCounsellor)}" type="radio" th:id="${(isAdmin || isManager || isTelecaller || isCounsellor)?'radio-2':'radio-1'}" name="tabs" autocomplete="off"/>
-					<label th:if="${(isAdmin || isManager || isTelecaller || isCounsellor)}" class="tab" th:for="${(isAdmin || isManager || isTelecaller || isCounsellor)?'radio-2':'radio-1'}">
+					<input  type="radio" id="radio-2" name="tabs" autocomplete="off"/>
+					<label  class="tab" for="radio-2">
 						<span class="d-none d-md-inline">All Task</span>
 						<i class="material-icons opacity-10 d-md-none ms-2">
 						density_small
 						</i>
 					</label>
-					<input type="radio" th:id="${(isAdmin || isManager || isTelecaller || isCounsellor)?'radio-3':'radio-2'}" name="tabs" autocomplete="off"/>
-					<label class="tab" th:for="${(isAdmin || isManager || isTelecaller || isCounsellor)?'radio-3':'radio-2'}">
+					<input type="radio" id="radio-3" name="tabs" autocomplete="off"/>
+					<label class="tab" for="radio-3">
 						<span class="d-none d-md-inline">Completed Task</span>
 						<i class="material-icons opacity-10 d-md-none ms-3">
 						task_alt
 						</i>
 					</label>
-					<input type="radio" th:id="${(isAdmin || isManager || isTelecaller || isCounsellor)?'radio-4':'radio-4'}" name="tabs" autocomplete="off"/>
-					<label class="tab" th:for="${(isAdmin || isManager || isTelecaller || isCounsellor)?'radio-4':'radio-4'}">
+					<input type="radio" id="radio-4" name="tabs" autocomplete="off"/>
+					<label class="tab" for="radio-4">
 						<span class="d-none d-md-inline">Counselled Task</span>
 						<i class="material-icons opacity-10 d-md-none ms-3">
 						record_voice_over
 						</i>
 					</label>
-					<input type="radio" th:id="${(isAdmin || isManager || isTelecaller || isCounsellor)?'radio-5':'radio-5'}" name="tabs" autocomplete="off"/>
-					<label class="tab" th:for="${(isAdmin || isManager || isTelecaller || isCounsellor)?'radio-5':'radio-5'}">
+					<input type="radio" id="radio-5" name="tabs" autocomplete="off"/>
+					<label class="tab" for="radio-5">
 						<span class="d-none d-md-inline">Scheduled Task</span>
 						<i class="material-icons opacity-10 d-md-none ms-3">
 						timer
 						</i>
 					</label>
-					<input th:if="${isManager||isAdmin}" type="radio" th:id="${isAdmin || isManager ?'radio-6':'radio-6'}" name="tabs" autocomplete="off"/>
-					<label th:if="${isManager||isAdmin}" class="tab" th:for="${isAdmin || isManager ?'radio-6':'radio-6'}">
+					<input  type="radio" th:id="radio-6" name="tabs" autocomplete="off"/>
+						<label  class="tab" for="radio-6">
+							<span class="d-none d-md-inline">Search Lead</span>
+							<i class="material-icons opacity-10 d-md-none ms-3">
+							search
+							</i>
+						</label>
+					<input th:if="${isManager||isAdmin}" type="radio" th:id="${isAdmin || isManager ?'radio-7':'radio-7'}" name="tabs" autocomplete="off"/>
+					<label th:if="${isManager||isAdmin}" class="tab" th:for="${isAdmin || isManager ?'radio-7':'radio-7'}">
 						<span class="d-none d-md-inline">Meeting</span>
 						<i class="material-icons opacity-10 d-md-none ms-3">
 						groups
@@ -99,7 +107,12 @@
 			</select>
         	<select th:each="nextUser,istat:${nextUsers}" class="user-select w-80 mb-3 d-none" th:id="${nextRoles[istat.index]}" autocomplete="off">
 				<option value="" id="0">Select User</option>
-				<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
+				<option th:each="user:${nextUser}" th:value="${user.get('username')}" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" 
+				class="status-dot" th:classappend="${user['isActiveOnCRM'] != null and user['isActiveOnCRM']} ? ' active' : ' inactive'"
+				th:text="|${user.get('firstName')} ${user.get('lastName')} (${user['isActiveOnCRM'] != null and user['isActiveOnCRM'] ? 'Active' : 'Inactive'})|">
+					
+
+
 				</option>
 			</select>
 			
@@ -124,7 +137,7 @@
 	</div>
 		  <div class="row position-relative" id="tasktable-maincontainer">
 
-			<div class="col-12 task-container" th:if="${(isAdmin || isManager || isTelecaller  || isCounsellor)}" id="allTaskContainer">
+			<div class="col-12 task-container"  id="allTaskContainer">
 			  <div class="card mb-4" id="allTaskContainer_inner">
 			  </div>
 			</div>
@@ -143,6 +156,23 @@
 			
 			<div class="col-12 task-container" id="shceduledTaskContainer" >
 			  <div class="card mb-4" id="shceduledTaskContainer_inner">
+			  </div>
+			</div>
+			
+			<div class="col-12 task-container" id="searchTaskContainer" >
+			  <div class="card mb-4" id="searchTaskContainer_inner">
+					<div class="card">
+						 <div class="card-body px-0 pb-2">
+							<div class="input-group input-group-outline">
+				              <label class="form-label">Type here...</label>
+				              <input type="text" id="search-lead-box" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)" autocomplete="off">
+							  <button id="search-leadbtn" class="btn btn-primary">Search</button>
+				            </div>
+						 </div>
+					</div>
+					<div id="searchLeadContainer_inner">
+						
+					</div>
 			  </div>
 			</div>
 			
@@ -192,13 +222,19 @@
   <script src="/js/material-dashboard.min.js?v=3.0.4"></script>
   
   <script th:inline="javascript">
+	
+	
+
+	
+	
   	let isAdmin=/*[[${isAdmin}]]*/''
   	let isManager=/*[[${isManager}]]*/''
   	let isTelecaller=/*[[${isTelecaller}]]*/''
   	var role=/*[[${role}]]*/''
-  	let isCounsellor=/*[[${isCounsellor}]]*/
+  	let isCounsellor=/*[[${isCounsellor}]]*/''
+	var currTaskType=''
   	$(document).ready(function($){
-		
+		debugger
 		
 		
 		function intializeTable(isPagesizeClicked){
@@ -206,7 +242,9 @@
 			
 			let containers=['allTaskContainer_inner','myTaskContainer_inner','completedTaskContainer_inner',"counselledTaskContainer_inner","shceduledTaskContainer_inner","meetingTaskContainer_inner"]
 				let taskType=["allTask","myTask","completedTask","counselledTask","shceduledTask","meetingTask"]
+				
 				for(let i=0;i<containers.length;i++){
+					debugger
 					if(isPagesizeClicked){
 						//page=$(".pagination #"+taskType[i]+"Container_page .active span").text()
 					}
@@ -214,11 +252,12 @@
 					  filterRequests['leadPlatform']=''
 					  filterRequests['isActive']=true
 					  $.ajax({
-						url:'/crmbot/singletasktable?page='+(page)+"&size="+$("#pagesize").val()+"&sorting=createdOn&desc=true&taskType="+taskType[i],
+						url:'/crmbot/singletasktable?page='+(page)+"&size="+$("#pagesize").val()+"&sorting=createdOnDuplicate&desc=true&taskType="+taskType[i],
 						type:'PUT',
 						contentType:'application/json',
 						data:JSON.stringify(filterRequests),
 						success:function(data){
+							debugger
 							if(data){
 								$("#"+containers[i]).html(data)
 								if(taskType[i]=="myTask"){
@@ -258,7 +297,7 @@
 			console.log(this)
 			console.log(this.id)
 		    if (this.id == 'radio-2') {
-				if(isAdmin || isManager ||isTelecaller || isCounsellor){
+				
 					$("#myTaskContainer").hide()
 					$("#allTaskContainer").show()
 					currTaskType="allTask"
@@ -266,15 +305,18 @@
 					$("#shceduledTaskContainer").hide()
 					$("#counselledTaskContainer").hide()
 					$("#meetingTaskContainer").hide()
-				}else{
+					$("#searchTaskContainer").hide()
+					
+				/* }else{
 					$("#myTaskContainer").hide()
 					currTaskType="completedTask"
 					//$("#allTaskContainer").hide()
 					$("#counselledTaskContainer").hide()
 					$("#completedTaskContainer").show()
-				}
+					$("#searchTaskContainer").hide()
+				} */
 		    }else if (this.id == 'radio-1') {
-				if(isAdmin || isManager || isTelecaller ||isCounsellor){
+				//if(isAdmin || isManager || isTelecaller ||isCounsellor){
 					currTaskType="myTask"
 					$("#myTaskContainer").show()
 					$("#shceduledTaskContainer").hide()
@@ -282,23 +324,25 @@
 					$("#completedTaskContainer").hide()
 					$("#counselledTaskContainer").hide()
 					$("#meetingTaskContainer").hide()
-				}else{
+					$("#searchTaskContainer").hide()
+				/*}else{
 					currTaskType="myTask"
 					$("#myTaskContainer").show()
 					$("#completedTaskContainer").hide()
 					$("#counselledTaskContainer").hide()
-				}
+				}*/
 		    }
 		    else if (this.id == 'radio-3') {
-				if(isAdmin || isManager || isTelecaller || isCounsellor){
+				//if(isAdmin || isManager || isTelecaller || isCounsellor){
 					$("#myTaskContainer").hide()
 					$("#allTaskContainer").hide()
 					$("#completedTaskContainer").show()
 					$("#counselledTaskContainer").hide()
 					$("#shceduledTaskContainer").hide()
 					$("#meetingTaskContainer").hide()
+					$("#searchTaskContainer").hide()
 					currTaskType="completedTask"
-				}
+				//}
 		    }else if (this.id == 'radio-5') {
 					$("#myTaskContainer").hide()
 					$("#allTaskContainer").hide()
@@ -306,6 +350,7 @@
 					$("#counselledTaskContainer").hide()
 					$("#meetingTaskContainer").hide()
 					$("#shceduledTaskContainer").show()
+					$("#searchTaskContainer").hide()
 					currTaskType="shceduledTask"
 			}else if (this.id == 'radio-6') {
 					$("#myTaskContainer").hide()
@@ -313,7 +358,17 @@
 					$("#completedTaskContainer").hide()
 					$("#counselledTaskContainer").hide()
 					$("#shceduledTaskContainer").hide()
+					$("#meetingTaskContainer").hide()
+					$("#searchTaskContainer").show()
+					currTaskType="searchLead"
+			}else if (this.id == 'radio-7') {
+					$("#myTaskContainer").hide()
+					$("#allTaskContainer").hide()
+					$("#completedTaskContainer").hide()
+					$("#counselledTaskContainer").hide()
+					$("#shceduledTaskContainer").hide()
 					$("#meetingTaskContainer").show()
+					$("#searchTaskContainer").hide()
 					currTaskType="meetingTask"
 			}else{
 				$("#myTaskContainer").hide()
@@ -322,6 +377,7 @@
 				$("#counselledTaskContainer").show()
 				$("#shceduledTaskContainer").hide()
 				$("#meetingTaskContainer").hide()
+				$("#searchTaskContainer").hide()
 				currTaskType="counselledTask"
 			}
 		});
@@ -335,7 +391,7 @@
 			intializeTable()
 		})
 		
-		setInterval(checkForNewLead, 4500);
+	//	setInterval(checkForNewLead, 4500);
 
 		function checkForNewLead() {
 			 $.ajax({
@@ -358,6 +414,10 @@
 	
 	$("body").on("click","#report",function(e){
 		$(".overlay").removeClass("d-none")
+		let taskType = 'allTask'
+		if(currTaskType=='meetingTask'){
+			taskType = 'meetingTask'
+		}
 		isDownloadClicked=true
 		var filterRequests={}
 			  filterRequests['leadPlatform']=$("#leadPlatform").val()
@@ -368,7 +428,7 @@
 				 filterRequests['userName']=$("#"+$("#assignee").val()).val()
 				}
 			   	filterRequests['course']=$("#course").val()
-			   var url2='/crmbot/report?page=0&size=15&sorting=createdOn&desc=true&taskType=allTask&leadPlatform='+$("#leadPlatform").val()+"&assignee="+$("#assignee").val()+"&fromDate="+$("#fromDate").val()+"&toDate="+$("#toDate").val()
+			   var url2='/crmbot/report?page=0&size=15&sorting=createdOn&desc=true&taskType='+taskType+'&leadPlatform='+$("#leadPlatform").val()+"&assignee="+$("#assignee").val()+"&fromDate="+$("#fromDate").val()+"&toDate="+$("#toDate").val()
 			  $.ajax({
 				url:url2,
 				type:'GET',

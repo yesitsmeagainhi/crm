@@ -14,6 +14,61 @@ function formatDate(date){
 }
 
 $(document).ready(function($){
+	navigator.serviceWorker.getRegistrations().then(function(registrations) {
+	    registrations.forEach(function(registration) {
+	        registration.unregister();
+	    });
+	});
+
+	if ('serviceWorker' in navigator) {
+			    // Register the service worker at the correct path
+			    navigator.serviceWorker.register('/sw.js')
+			        .then(function(registration) {
+			            console.log('Service Worker registered with scope:', registration.scope);
+			        })
+			        .catch(function(error) {
+			            console.log('Service Worker registration failed:', error);
+			        });
+			}
+			
+			(async () => {
+			  // ----- SERVICE WORKER & PUSH -----
+			  const PUBLIC_KEY = "BGwlv_PnnimH8XKXj5MebSIbIgAQqI2Pl-pc1xi9HjQrbHX2rAkfZ_my80140TKJHQKdIpMGi21vwRJjEUeP2kQ";
+
+			  if ('serviceWorker' in navigator) {
+			    const reg = await navigator.serviceWorker.register('/sw.js');
+
+			    // ask permission once
+			    if (Notification.permission !== 'granted')
+			      await Notification.requestPermission();
+
+			    // create or get existing subscription
+			    let sub = await reg.pushManager.getSubscription();
+				debugger
+			    if (!sub) {
+			      sub = await reg.pushManager.subscribe({
+			        userVisibleOnly: true,
+			        applicationServerKey: urlB64ToUint8(PUBLIC_KEY)
+			      });
+			      await fetch('/api/push/subscribe', {
+			        method: 'POST',
+			        headers: {'Content-Type':'application/json'},
+			        body: JSON.stringify({
+			          endpoint: sub.endpoint,
+			          p256dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh')))),
+			          auth: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth'))))
+			        })
+			      });
+			    }
+			  }
+
+			})();
+			
+			function urlB64ToUint8(base64) {
+			    const padded = base64.replace(/-/g,'+').replace(/_/g,'/');
+			    const raw = atob(padded);
+			    return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+			  }
 	
 	$("#search-box").on('input', function (e) {
    // if (e.key === 'Enter' || e.keyCode === 13) {
@@ -41,19 +96,45 @@ $(document).ready(function($){
 	   // }
 	});
 	
-      
+	$("#search-leadbtn").on('click', function (e) {
+	   // if (e.key === 'Enter' || e.keyCode === 13) {
+		 if($("#search-lead-box").val()){
+			var filterRequests={}
+					
+		   filterRequests['leadName']=$("#search-lead-box").val()
+		   filterRequests['phoneNumber']=$("#search-lead-box").val()
+		   
+		  $.ajax({
+			url:'/crmbot/singletasktable?page='+(0)+"&size=25&sorting=createdOn&desc=true&taskType=searchLead",
+			type:'PUT',
+			contentType:'application/json',
+			data:JSON.stringify(filterRequests),
+			success:function(data){
+				
+				$("#searchLeadContainer_inner").html(data)
+			}
+		})	
+		 }else{
+			$("#searchLeadContainer_inner").empty()
+		 }
+		   // }
+		});
 	 
 	
 	
 	$('body').on('click','.open-detail',function(e){
 		$(".overlay").removeClass("d-none")
 		let isClosed=false
+		let isSearchLead=false
 		isMainPage=false
+		let searchLead = this.dataset.searchLead
 		if(this.classList.contains("completed-task"))
 			isClosed=true
-		
+		if(searchLead=='true'){
+			isSearchLead=true
+		}
 		$.ajax({
-			url:'/crmbot/detailpage?id='+this.id+"&role="+role+"&isClosed="+isClosed,
+			url:'/crmbot/detailpage?id='+this.id+"&role="+role+"&isClosed="+isClosed+"&isSearchLead="+isSearchLead,
 			success:function(data){
 				$(".overlay").addClass("d-none")
 				$(".task-list-container").addClass("d-none")
@@ -175,8 +256,10 @@ $(document).ready(function($){
 		}
 	})
 	
-	$('body').on('change', '.comment-search-dropwown', function(e) {
+	/*$('body').on('change', '.comment-search-dropwown', function(e) {
 		let selectedValue = this.value
+		$('.comment-dropdown-header').css("bottom","45px")
+		$(".comment-textarea").removeClass("d-none")
 		if(selectedValue == "Others"){
 			$('.comment-dropdown-header').css("bottom","45px")
 			$(".comment-textarea").removeClass("d-none")
@@ -184,7 +267,7 @@ $(document).ready(function($){
 			$('.comment-dropdown-header').css("bottom","8px")
 			$(".comment-textarea").addClass("d-none")
 		}
-	})
+	})*/
 	
 	
 	
@@ -198,13 +281,15 @@ $(document).ready(function($){
 		comments['userEmail']=userEmail
 		comments['userId']=userId
 		
-		let commentedText =$(".comment-search-dropwown").val()
+		let commentHeader =$(".comment-search-dropwown").val()
+		let commentedText=$(".comment-textarea").val()
 		
-		if($(".comment-search-dropwown").val()=="Others"){
+		/*if($(".comment-search-dropwown").val()=="Others"){
 			commentedText=$(".comment-textarea").val()
-		}
+		}*/
 		
 		comments['comment']=commentedText
+		comments['commentHeader']=commentHeader
 		$(".comments-send-button").attr("disabled",true)
 		$.ajax({
 			url:'/crmbot/comments/save/'+taskId,
@@ -220,7 +305,8 @@ $(document).ready(function($){
 				d=new Date(d)
 				let datestring = ("0" + d.getDate()).slice(-2) + "/" + ("0"+(d.getMonth()+1)).slice(-2) + "/" +d.getFullYear() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
 				let li='<li class="list-group-item border-0 d-flex p-4 mb-2 bg-gray-100 border-radius-lg" ><div class="d-flex flex-column w-100">'
-				li+='<span class="mb-2 text-xs  ">Name: <span class="text-dark font-weight-bold ms-sm-2 comment_name" >'+data.userName+'</span><span class=" ms-sm-2 font-weight-bold comment_date float-right" >'+datestring+'</span>'
+				li+='<span class="mb-1 text-xs  ">Name: <span class="text-dark font-weight-bold ms-sm-2 comment_name" >'+data.userName+'</span><span class=" ms-sm-2 font-weight-bold comment_date float-right" >'+datestring+'</span>'
+				li+='</span><span class="text-xs mb-1">Comment Type: <span class="text-dark ms-sm-2 font-weight-bold comment_data" >'+data.commentHeader+'</span></span> '
 				li+='</span><span class="text-xs">Comment: <span class="text-dark ms-sm-2 font-weight-bold comment_data" >'+data.comment+'</span></span> </div></li>'
 				$(".comments-ul-list").append(li)
 			}
@@ -313,7 +399,7 @@ $(document).ready(function($){
 					closeRequest['isConverted']=isChecked
 					closeRequest['closeTask']=false
 					closeRequest['isSeatConfirmed']=isSeatConfirmed
-					closeRequest['counsellingDoneBy']
+					closeRequest['admissionDoneBy'] = $("#counsellor_admission_done").val()
 					console.log(this.id)
 					debugger;
 					if(this.id!="saveClosingDetails" || isChecked=="true"){
@@ -505,85 +591,127 @@ $(document).ready(function($){
 	})
 	
 	$("body").on('click','.edit-field-data',function(e){
-		$(".edit-field-data-container").addClass("d-none")
-		$(".save-field-data-container").removeClass("d-none")
-		$(".field-data-value").attr("contentEditable","true")
-		$("#course_2").removeAttr("disabled")
-		$("#leadType").removeAttr("disabled")
+		var attr = $(this).attr('disabled');
+		debugger
+		if ( attr !== 'disabled' || typeof attr == 'undefined') {
+			$(".edit-field-data-container").addClass("d-none")
+			$(".save-field-data-container").removeClass("d-none")
+			$(".field-data-value").attr("contentEditable","true")
+			$("#course_2").removeAttr("disabled")
+			$("#leadType").removeAttr("disabled")
+		}
+		
 	})
 	
 	$("body").on('click','.save-field-data',function(e){
-		$(".save-field-data-container").addClass("d-none")
-		$(".edit-field-data-container").removeClass("d-none")
-		$("#course").attr("disabled",true)
-		let facebookLeadId=$(this).attr("id").replace("save-field-data-","")
-		let taskId=$(this).attr("name")
-		facebookLeadId=+facebookLeadId
-		let createTicketRequest={}
-		let activeTask={}
-		let facebookLeads={}
-		let fieldlabels=$(".field-data-label")
-		let fieldInputs=$(".field-data-value")
-		let fieldData=[]
-		for(let i=0;i<fieldlabels.length;i++){
-			let ele={}
-			let fielDataLabel=fieldlabels[i].innerText.replace(":","")
-			if(fielDataLabel!="state" && fielDataLabel!="city" && fielDataLabel!="area" && fielDataLabel!="college" && fielDataLabel!="course" 
-			&& fielDataLabel!="Lead type" && fielDataLabel!="10th Percentage" && fielDataLabel!="12th Percentage"  && fielDataLabel!="Neet Percentage" && fielDataLabel!="phoneNumber2" ){
-				console.log(fielDataLabel)
-				if(fielDataLabel=="full_name"|| fielDataLabel=="name"|| fielDataLabel=="first_name")
-					activeTask['leadName']=fieldInputs[i].innerText
-				else if(fielDataLabel=='phone_number'|| fielDataLabel=='number'){
-					activeTask['phoneNumber']=fieldInputs[i].innerText
+		var attr = $(this).attr('disabled');
+		debugger
+		if ( attr !== 'disabled' || typeof attr == 'undefined') {
+			$(".save-field-data-container").addClass("d-none")
+			$(".edit-field-data-container").removeClass("d-none")
+			$("#course").attr("disabled",true)
+			let facebookLeadId=$(this).attr("id").replace("save-field-data-","")
+			let taskId=$(this).attr("name")
+			facebookLeadId=+facebookLeadId
+			let createTicketRequest={}
+			let activeTask={}
+			let facebookLeads={}
+			let fieldlabels=$(".field-data-label")
+			let fieldInputs=$(".field-data-value")
+			let fieldData=[]
+			for(let i=0;i<fieldlabels.length;i++){
+				let ele={}
+				let fielDataLabel=fieldlabels[i].innerText.replace(":","")
+				if(fielDataLabel!="state" && fielDataLabel!="city" && fielDataLabel!="area" && fielDataLabel!="college" && fielDataLabel!="course" 
+				&& fielDataLabel!="Lead type" && fielDataLabel!="10th Percentage" && fielDataLabel!="12th Percentage"  && fielDataLabel!="Neet Percentage" && fielDataLabel!="phoneNumber2" ){
+					console.log(fielDataLabel)
+					if(fielDataLabel=="full_name"|| fielDataLabel=="name"|| fielDataLabel=="first_name")
+						activeTask['leadName']=fieldInputs[i].innerText
+					else if(fielDataLabel=='phone_number'|| fielDataLabel=='number'){
+						activeTask['phoneNumber']=fieldInputs[i].innerText
+					}
+					ele['name']=fielDataLabel
+					ele['values']=[fieldInputs[i].innerText]
+					if(fieldInputs[i].innerText.length>0)
+						fieldData.push(ele)
+				}else{
+					
 				}
-				ele['name']=fielDataLabel
-				ele['values']=[fieldInputs[i].innerText]
-				if(fieldInputs[i].innerText.length>0)
-					fieldData.push(ele)
-			}else{
 				
 			}
+			debugger;
+			facebookLeads['fieldData']=JSON.stringify(fieldData)
+			createTicketRequest['facebookLeads']=facebookLeads
+			activeTask['college']=$("#college").text()
+			activeTask['course']=$("#course_2").val()
+			activeTask['area']=$("#area_2").text()
+			activeTask['state']=$("#state").text()
+			activeTask['city']=$("#city").text()
+			activeTask['phoneNumber2']=$("#phoneNumber2").text()
+			activeTask['leadType']=$("#leadType").val()
+			if($("#10thPercent").text() && $("#10thPercent").text()!=""){
+				if(!validateNumber($("#10thPercent").text())){
+					alert("Enter 10th percentage as number only")		
+				}else{
+					activeTask['tenthPercent']=$("#10thPercent").text()
+				}
+			}
+			if($("#12thPercent").text() && $("#12thPercent").text()!=""){
+				if(!validateNumber($("#12thPercent").text())){
+					alert("Enter 12th percentage as number only")
+				}else{
+					activeTask['twelethPercent']=$("#12thPercent").text()
+				}		
+			}
+			if($("#neetPercent").text() && $("#neetPercent").text()!=""){
+				if(!validateNumber($("#neetPercent").text())){
+					alert("Enter neet percentage as number only")
+				}else{
+					activeTask['neetPercent']=$("#neetPercent").text()
+				}		
+			}
+				
 			
+			createTicketRequest['activeTask']=activeTask
+			createTicketRequest['userName']=userName
+			createTicketRequest['userEmail']=userEmail
+			createTicketRequest['userId']=userId
+			debugger
+			$.ajax({
+				url:"/crmbot/flow/update-field-data/"+facebookLeadId+"/"+taskId,
+				type:"PUT",
+				contentType:'application/json',
+				data:JSON.stringify(createTicketRequest),
+				success:function(data){
+					
+					$("#whatsapp-btn").attr("href","//api.whatsapp.com/send?phone="+$("#phoneNumber-field").text()+"&text=Hi")
+					$("#caller-btn").attr("href","tel:+91"+$("#phoneNumber-field").text())
+					
+					$("#whatsapp-btn2").attr("href","//api.whatsapp.com/send?phone="+$("#phoneNumber2").text()+"&text=Hi")
+					$("#caller-btn2").attr("href","tel:+91"+$("#phoneNumber2").text())
+					
+				},
+				error:function(err){
+					console.log(err)
+					if(err.status==400){
+						alert("The number you entered is duplicate")
+						$("#phoneNumber-field").text(err.responseJSON['adId'])
+					}
+					$("#whatsapp-btn2").attr("href","//api.whatsapp.com/send?phone="+$("#phoneNumber2").text()+"&text=Hi")
+					$("#caller-btn2").attr("href","tel:+91"+$("#phoneNumber2").text())
+				}
+			})
+			$(".field-data-value").removeAttr("contentEditable")
 		}
-		debugger;
-		facebookLeads['fieldData']=JSON.stringify(fieldData)
-		createTicketRequest['facebookLeads']=facebookLeads
-		activeTask['college']=$("#college").text()
-		activeTask['course']=$("#course_2").val()
-		activeTask['area']=$("#area_2").text()
-		activeTask['state']=$("#state").text()
-		activeTask['city']=$("#city").text()
-		activeTask['tenthPercent']=$("#10thPercent").text()
-		activeTask['twelethPercent']=$("#12thPercent").text()
-		activeTask['neetPercent']=$("#neetPercent").text()
-		activeTask['phoneNumber2']=$("#phoneNumber2").text()
-		activeTask['leadType']=$("#leadType").val()
-		
-		createTicketRequest['activeTask']=activeTask
-		createTicketRequest['userName']=userName
-		createTicketRequest['userEmail']=userEmail
-		createTicketRequest['userId']=userId
-		
-		$.ajax({
-			url:"/crmbot/flow/update-field-data/"+facebookLeadId+"/"+taskId,
-			type:"PUT",
-			contentType:'application/json',
-			data:JSON.stringify(createTicketRequest),
-			success:function(data){
-				console.log(data)
-				$("#whatsapp-btn").attr("href","//api.whatsapp.com/send?phone="+$("#phoneNumber-field").text()+"&text=Hi")
-				$("#caller-btn").attr("href","tel:+91"+$("#phoneNumber-field").text())
-				
-				$("#whatsapp-btn2").attr("href","//api.whatsapp.com/send?phone="+$("#phoneNumber2").text()+"&text=Hi")
-				$("#caller-btn2").attr("href","tel:+91"+$("#phoneNumber2").text())
-				
-			},
-			error:function(err){
-				console.log(err)
-			}
-		})
-		$(".field-data-value").removeAttr("contentEditable")
 	})
+	
+	function validateNumber(stringToValidate) {
+	  if (typeof stringToValidate !== 'string' || stringToValidate.trim() === '') {
+	    return false;
+	  }
+	  const numberPattern = /^\d+(\.\d+)?$/;
+	  return numberPattern.test(stringToValidate);
+	}
 	
 	$("body").on('click',".apply-filter",function(e){
      let taskType=["allTask","myTask","completedTask","counselledTask","shceduledTask","meetingTask"]
@@ -616,20 +744,7 @@ $(document).ready(function($){
 	
 })
 
-if ("serviceWorker" in navigator) {
-  // Register a service worker hosted at the root of the
-  // site using the default scope.
-  navigator.serviceWorker.register('/service-worker.js',{ scope: "./" }).then(
-    (registration) => {
-      console.log("Service worker registration succeeded:", registration);
-    },
-    (error) => {
-      console.error(`Service worker registration failed: ${error}`);
-    }
-  );
-} else {
-  console.error("Service workers are not supported.");
-}
+
 
 
 function showNotification() {

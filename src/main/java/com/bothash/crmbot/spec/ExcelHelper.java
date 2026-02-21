@@ -6,12 +6,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -36,6 +40,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bothash.crmbot.dto.CommentStats;
 import com.bothash.crmbot.entity.ActiveTask;
 import com.bothash.crmbot.entity.CloseTask;
 import com.bothash.crmbot.entity.Comments;
@@ -94,134 +99,141 @@ public class ExcelHelper {
 	}
 
 	public List<ActiveTask> excelToTasks(InputStream is) {
-		try {
-			Workbook workbook = new XSSFWorkbook(is);
+	    try {
+	        Workbook workbook = new XSSFWorkbook(is);
+	        Sheet sheet = workbook.getSheetAt(0);
+	        Iterator<Row> rows = sheet.iterator();
+	        List<ActiveTask> activeTasks = new ArrayList<>();
+	        int rowNumber = 0;
 
-			Sheet sheet = workbook.getSheetAt(0);
-			Iterator<Row> rows = sheet.iterator();
+	        while (rows.hasNext()) {
+	            Row currentRow = rows.next();
+	            // Skip header
+	            if (rowNumber == 0) {
+	                rowNumber++;
+	                continue;
+	            }
 
-			List<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
+	            ActiveTask activeTask = new ActiveTask();
+	            FacebookLeads facebookLeads = new FacebookLeads();
+	            JSONArray jsonArray = new JSONArray();
+	            int totalColumns = 8; // Adjust based on the number of columns you expect
 
-			int rowNumber = 0;
-			while (rows.hasNext()) {
-				Row currentRow = rows.next();
+	            for (int cellIdx = 0; cellIdx < totalColumns; cellIdx++) {
+	                try {
+	                    JSONObject jsonObject = new JSONObject();
+	                    Cell currentCell = currentRow.getCell(cellIdx, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
 
-				// skip header
-				if (rowNumber == 0) {
-					rowNumber++;
-					continue;
-				}
+	                    switch (cellIdx) {
+	                        case 0:
+	                            activeTask.setLeadPlatform(currentCell.getStringCellValue());
+	                            break;
 
-				Iterator<Cell> cellsInRow = currentRow.iterator();
+	                        case 1:
+	                            activeTask.setRefferenceName(currentCell.getStringCellValue());
+	                            break;
 
-				ActiveTask activeTask = new ActiveTask();
-				FacebookLeads facebookLeads = new FacebookLeads();
+	                        case 2:
+	                            activeTask.setArea(currentCell.getStringCellValue());
+	                            break;
 
-				JSONArray jsonArray = new JSONArray();
-				int cellIdx = 0;
-				while (cellsInRow.hasNext()) {
-					try {
-						JSONObject jsonObject = new JSONObject();
-						Cell currentCell = cellsInRow.next();
+	                        case 3:
+	                            String course = currentCell.getStringCellValue();
+	                            if (course != null) {
+	                                activeTask.setCourse(course.toUpperCase());
+	                            }
+	                            break;
 
-						switch (cellIdx) {
-						case 0:
-							activeTask.setLeadPlatform(currentCell.getStringCellValue());
+	                        case 4:
+	                            jsonObject.put("name", "phone_number");
+	                            try {
+	                                Double phoneNumber = currentCell.getNumericCellValue();
+	                                DecimalFormat df = new DecimalFormat("#");
+	                                df.setMaximumFractionDigits(11);
+	                                String formattedNumber = df.format(phoneNumber);
+	                                String values[] = new String[]{formattedNumber};
+	                                jsonObject.put("values", values);
+	                                activeTask.setPhoneNumber(formattedNumber);
+	                            } catch (Exception e) {
+	                                String phoneNumber = currentCell.getStringCellValue();
+	                                String values[] = new String[]{phoneNumber};
+	                                jsonObject.put("values", values);
+	                                activeTask.setPhoneNumber(phoneNumber);
+	                            }
+	                            break;
 
-							break;
+	                        case 5:
+	                            jsonObject.put("name", "full_name");
+	                            String fullName = currentCell.getStringCellValue();
+	                            String values2[] = new String[]{fullName};
+	                            activeTask.setLeadName(fullName);
+	                            jsonObject.put("values", values2);
+	                            break;
 
-						case 1:
-							activeTask.setRefferenceName(currentCell.getStringCellValue());
-							break;
+	                        case 6:
+	                            String telecallerName = currentCell.getStringCellValue();
+	                            activeTask.setAssignee("telecaller");
+	                            activeTask.setIsClaimed(false);
+	                            activeTask.setAssignedTime(LocalDateTime.now());
+	                            activeTask.setStatus("Assigned to " + telecallerName);
+	                            activeTask.setTelecallerName(telecallerName);
+	                            activeTask.setOwner(telecallerName);
+	                            break;
 
-						case 2:
-							activeTask.setArea(currentCell.getStringCellValue());
-							// tutorial.setDescription(currentCell.getStringCellValue());
-							break;
+	                        case 7:
+	                            String status = "Assigned to " + currentCell.getStringCellValue();
+	                            activeTask.setStatus(status);
+	                            break;
 
-						case 3:
-							activeTask.setCourse(currentCell.getStringCellValue().toUpperCase());
-							// activeTask.setCreatedOn(currentCell.getBooleanCellValue());
-							break;
+	                        default:
+	                            break;
+	                    }
 
-						case 4:
-							jsonObject.put("name", "phone_number");
-							try {
-								Double phoneNumber = currentCell.getNumericCellValue();
-								DecimalFormat df = new DecimalFormat("#");
-								df.setMaximumFractionDigits(11);
-								System.out.println(df.format(phoneNumber));
-								String values[] = new String[] { df.format(phoneNumber) };
-								jsonObject.put("values", values);
-								activeTask.setPhoneNumber( df.format(phoneNumber));
-							}catch(Exception e) {
-								try {
-									String phoneNumber = currentCell.getStringCellValue();
-									String values[] = new String[] { phoneNumber};
-									jsonObject.put("values", values);
-									activeTask.setPhoneNumber( phoneNumber);
-								}catch(Exception e2) {
-									e2.printStackTrace();
-								}
-							}
-							
-							
-							break;
+	                    if (!jsonObject.isEmpty()) {
+	                        jsonArray.put(jsonObject);
+	                    }
+	                } catch (Exception e) {
+	                    e.printStackTrace();
+	                }
+	            }
 
-						case 5:
-							jsonObject.put("name", "full_name");
-							String values2[] = new String[] { currentCell.getStringCellValue() };
-							activeTask.setLeadName(currentCell.getStringCellValue());
-							jsonObject.put("values", values2);
-							break;
-						/*
-						 * case 8: jsonObject.put("name", "full_name"); String values2[] =new String[]
-						 * {currentCell.getStringCellValue()}; jsonObject.put("values", values2); break;
-						 */
-						case 6:
-							activeTask.setAssignee("telecaller");
-							activeTask.setIsClaimed(false);
-							activeTask.setAssignedTime(LocalDateTime.now());
-							activeTask.setStatus("Assigned to "+currentCell.getStringCellValue());
-							activeTask.setTelecallerName(currentCell.getStringCellValue());
-							activeTask.setOwner(currentCell.getStringCellValue());
-							
-							break;
-						case 7:
-							activeTask.setStatus("Assigned to "+currentCell.getStringCellValue());
+	            facebookLeads.setFieldData(jsonArray.toString());
+	            activeTask.setFacebookLeads(facebookLeads);
+	            activeTasks.add(activeTask);
+	        }
 
-						default:
-							break;
-						}
-						if (!jsonObject.isEmpty()) {
-							jsonArray.put(jsonObject);
-						}
-						cellIdx++;
-					}catch(Exception e) {
-						e.printStackTrace();
-					}
-					
-				}
-
-				facebookLeads.setFieldData(jsonArray.toString());
-				// facebookLeads =this.facebookLeadsService.save(facebookLeads);
-				activeTask.setFacebookLeads(facebookLeads);
-				activeTasks.add(activeTask);
-			}
-
-			workbook.close();
-			// activeTaskService.saveAll(activeTasks);
-			return activeTasks;
-		} catch (IOException e) {
-			throw new RuntimeException("fail to parse Excel file: " + e.getMessage());
-		}
+	        workbook.close();
+	        return activeTasks;
+	    } catch (IOException e) {
+	        throw new RuntimeException("Failed to parse Excel file: " + e.getMessage());
+	    }
 	}
+	
+	public CommentStats getCommentStats(List<Comments> allComments, List<String> userNamesToMatch) {
+	    int count = 0;
+	    Comments mostRecent = null;
+
+	    for (Comments comment : allComments) {
+	        if (userNamesToMatch.contains(comment.getUserEmail())) {
+	            count++;
+
+	            if (mostRecent == null || comment.getCreatedOn().isAfter(mostRecent.getCreatedOn())) {
+	                mostRecent = comment;
+	            }
+	        }
+	    }
+
+	    return new CommentStats(count, mostRecent);
+	}
+
+
 
 	public ByteArrayInputStream taskToExcel(List<ActiveTask> activeTasks) throws IOException {
 		String[] COLUMNs = { "Sr. no", "Date & time", "Student name", "Mobile no", "Email", "Area", "Course Interested",
 				"Requirement", "College name", "Platform", "Campaign", "Reference name", "Reference contact",
 				"Latest remark", "Manager", "Telecaller", "Counsellor", "No. of counselling","Counselling Date","Scheduled date and time",
-				"Status", "Converted/ Npt Converted", "Closing remark", "UID","Admission Date","Last Comment","Comment User Name","Lead type","Seat Confirmed" };
+				"Status", "Converted/ Npt Converted", "Closing remark", "UID","Admission Date","Last Comment","Comment User Name",
+				"Lead type","Seat Confirmed","Supervisor Comment","Supervisor Comment Date","Total Comments Of Supervisor","Supervisor Name" };
 		try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream();) {
 			CreationHelper createHelper = workbook.getCreationHelper();
 
@@ -250,37 +262,55 @@ public class ExcelHelper {
 			// CellStyle for Age
 			CellStyle ageCellStyle = workbook.createCellStyle();
 			ageCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("#"));
-
+			
+			HttpHeaders header=new HttpHeaders();
+			MultiValueMap<String,String> body= new  LinkedMultiValueMap<>();
+			body.add("grant_type", "password");
+			body.add("client_secret", keycloackClientSecret);
+			body.add("username", adminUserName);
+			body.add("password", adminPassword);
+			body.add("client_id", "admin-cli");
+			
+			HttpEntity<MultiValueMap<String, String>> entity=new HttpEntity<>(body,header);
+			
+			@SuppressWarnings("rawtypes")
+			HashMap response=restTemplate.postForObject(keycloackUrl+"/realms/master/protocol/openid-connect/token",entity, HashMap.class);
+			
+			String adminAccessToken=response.get("access_token").toString();
+			
+			HttpHeaders httpHeaders=new HttpHeaders();
+			httpHeaders.set("Authorization", "Bearer "+adminAccessToken);
+			
+			ResponseEntity<Object> userResponse = restTemplate.exchange(
+					keycloackUrl + "/admin/realms/crmbot/clients/" + crmbotClientId + "/roles/" + "supervisor" + "/users",
+					HttpMethod.GET, new HttpEntity<>(httpHeaders), Object.class);
+			
+			List<String> supervisors = new ArrayList<>();
+			try {
+				@SuppressWarnings("unchecked")
+				List<LinkedHashMap<String, Object>> userList = (List<LinkedHashMap<String, Object>>) userResponse
+						.getBody();
+				for (LinkedHashMap<String, Object> userMap : userList) {
+					supervisors.add(userMap.get("username").toString());
+				}
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			
+			
 			int rowIdx = 1;
 			for (ActiveTask task : activeTasks) {
 				
 				List<Comments> comments=commentsService.getByActiveTask(task.getId());
-				//String phoneNumber = "";
-				//String email = "";
-				//String requirement = "";
-				/*try {
-					JSONArray array = new JSONArray(task.getFacebookLeads().getFieldData());
-					for (int i = 0; i < array.length(); i++) {
-						JSONObject jsonObject = array.getJSONObject(i);
-						if (jsonObject != null) {
-							if (jsonObject.get("name").toString().equalsIgnoreCase("phone_number")
-									|| jsonObject.get("name").toString().contains("number")) {
-								phoneNumber = jsonObject.getJSONArray("values").getString(0);
-							} else if (jsonObject.get("name").toString().contains("email")) {
-								email = jsonObject.getJSONArray("values").getString(0);
-							} else if (jsonObject.get("name").toString().contains("requirement")) {
-								requirement = jsonObject.getJSONArray("values").getString(0);
-							}
-						}
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}*/
+				CommentStats stats = getCommentStats(comments, supervisors);
+				
 
 				Row row = sheet.createRow(rowIdx++);
 				row.createCell(0).setCellValue(rowIdx - 1);
+				LocalDateTime createdOn = convertGmtToIst(task.getCreatedOn());
 				row.createCell(1)
-						.setCellValue(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(task.getCreatedOn()));
+						.setCellValue(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(createdOn));
 				row.createCell(2).setCellValue(task.getLeadName());
 				row.createCell(3).setCellValue(task.getPhoneNumber());
 				row.createCell(4).setCellValue("");
@@ -366,7 +396,18 @@ public class ExcelHelper {
 					row.createCell(17).setCellValue(counsellingDetails.size());
 					if(counsellingDetails.size()>0) {
 						row.createCell(18).setCellStyle(dateCellStyle);
-						row.getCell(18).setCellValue(counsellingDetails.get(counsellingDetails.size()-1).getCreatedOn());
+						try {
+							if(counsellingDetails.get(counsellingDetails.size()-1).getCreatedOn()!=null) {
+								LocalDateTime counsellingDate = convertGmtToIst(counsellingDetails.get(counsellingDetails.size()-1).getCreatedOn());
+								row.getCell(18).setCellValue(counsellingDate);
+							}else {
+								row.getCell(18).setCellValue("");
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
+						
 					}
 //						Cell cell = row.createCell(18);
 //						cell.setCellValue(counsellingDetails.get(counsellingDetails.size()-1).getCreatedOn()); 
@@ -374,9 +415,12 @@ public class ExcelHelper {
 //						cell.setCellStyle(dateCellStyle);
 				}
 
-				if (task.getScheduleTime() != null)
+				if (task.getScheduleTime() != null) {
+					//LocalDateTime scheduledTime = convertGmtToIst(task.getScheduleTime());
 					row.createCell(19).setCellValue(
 							DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(task.getScheduleTime()));
+				}
+					
 				else
 					row.createCell(19).setCellValue("");
 				row.createCell(20).setCellValue(task.getStatus());
@@ -389,7 +433,13 @@ public class ExcelHelper {
 					row.createCell(22).setCellValue(closedTask.getRemark());
 					row.createCell(23).setCellValue(closedTask.getClosingId()+closedTask.getId());
 					row.createCell(24).setCellStyle(dateCellStyle);
-					row.getCell(24).setCellValue(closedTask.getCreatedOn());
+					if(closedTask.getCreatedOn()!=null) {
+						LocalDateTime admissionDate = convertGmtToIst(closedTask.getCreatedOn());
+						row.getCell(24).setCellValue(admissionDate);
+					}else {
+						row.getCell(24).setCellValue("");
+					}
+					
 				}
 				if(comments.size()>0) {
 					row.createCell(25).setCellValue(comments.get(comments.size()-1).getComment());
@@ -400,11 +450,29 @@ public class ExcelHelper {
 					row.createCell(28).setCellValue("Not Confirmed");
 				}else
 					row.createCell(28).setCellValue(task.getIsSeatConfirmed()?"Confirmed":"Not Confirmed");
+				
+				if(stats!=null && stats.getMostRecent()!=null && stats.getCount()>0) {
+					row.createCell(29).setCellValue(stats.getMostRecent().getComment());
+					LocalDateTime commentCreatedOn = convertGmtToIst(stats.getMostRecent().getCreatedOn());
+					row.createCell(30)
+							.setCellValue(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(commentCreatedOn));
+					row.createCell(31).setCellValue(stats.getCount());
+					row.createCell(32).setCellValue(stats.getMostRecent().getUserName());
+				}
 			}
 			
 			workbook.write(out);
 			return new ByteArrayInputStream(out.toByteArray());
 		}
 	}
+	public LocalDateTime convertGmtToIst(LocalDateTime gmtDateTime) {
+        // Convert LocalDateTime in GMT to ZonedDateTime
+        ZonedDateTime gmtZoned = gmtDateTime.atZone(ZoneId.of("GMT"));
 
+        // Convert to IST
+        ZonedDateTime istZoned = gmtZoned.withZoneSameInstant(ZoneId.of("Asia/Kolkata"));
+
+        // Return as LocalDateTime in IST (without zone info)
+        return istZoned.toLocalDateTime();
+    }
 }

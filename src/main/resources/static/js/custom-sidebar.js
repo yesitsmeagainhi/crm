@@ -1,6 +1,6 @@
 var ticketForwarded=false
 $(document).ready(function($){
-	
+	debugger
 	var userDetails=/*[[${userDetails}]]*/
 	console.log($("#prefferedUserName").text())
 	console.log($("#isUserActive").text())
@@ -8,11 +8,78 @@ $(document).ready(function($){
 	if($("#isUserActive").text()=="true"){
 		if(!($(".userActiveCheckBox").is(":checked"))){
 			$(".userActiveCheckBox").click()
-		}
-		
-		
+		}	
 		
 	}
+	$('body').on('click', '.edit-icon', function(e) {
+		$("#profile-popup").removeClass("d-none")
+	})
+	
+	$('body').on('click', '.remove-profile-btn', function(e) {
+		let userName = $("#prefferedUserName").text()
+		var request={
+		}
+		request['userName']=userName
+		$.ajax({
+			url:'/usermaster/delete-image',
+			type:'DELETE',
+			data: JSON.stringify(request),
+			contentType : 'application/json',
+			success:function(data){
+				const img = document.getElementById('profilePreview');
+			    img.src = ``;
+				
+				const modalImg = document.getElementById('modal-profile-image');
+				modalImg.src = ``;
+				$(".profile-icon").removeClass("d-none")
+				$("#profilePreview").addClass("d-none")
+				alert("Image removed");
+				const imgElement = document.getElementById('modal-profile-image');
+						
+				if (imgElement && imgElement.src && imgElement.src.trim() !== '' && !imgElement.src.endsWith('default-profile.jpg')) {
+				  console.log("Image source is set:", imgElement.src);
+				} else {
+				  $(".cd-popup-close-profile").click()
+				}
+			},
+			error:function(err){
+				alert("Failed to remove image");
+			}
+		})
+	  
+	})
+
+	setProfileImage()
+	
+	function setProfileImage(){
+		let userName = $("#prefferedUserName").text()
+		var request={
+		}
+		request['userName']=userName
+		$.ajax({
+			url:'/usermaster/get',
+			type:'POST',
+			data: JSON.stringify(request),
+			contentType : 'application/json',
+			success:function(data){
+				if(data){
+					if (data.image) {
+					    const img = document.getElementById('profilePreview');
+					    img.src = `data:image/jpeg;base64,${data.image}`;
+						
+						const modalImg = document.getElementById('modal-profile-image');
+						modalImg.src = `data:image/jpeg;base64,${data.image}`;
+					    
+						img.style.display = 'block';
+						$("#profilePreview").removeClass("d-none")
+						$(".profile-icon").addClass("d-none")
+					}
+				}
+			}
+			
+		})
+	}
+	
 	$('body').on('change', '.userActiveCheckBox', function(e) {
 		var userMaster={}
 		userMaster['isActive']=$(".userActiveCheckBox").is(":checked")
@@ -63,17 +130,39 @@ $(document).ready(function($){
 	})
 	
 	//open popup
-	$('body').on('click','.cd-popup-trigger', function(event){
+	$('body').on('click','.cd-popup-trigger-profile', function(event){
 		event.preventDefault();
-		$('.cd-popup').addClass('is-visible');
-		if($(event.target).is(".close-schedule-btn")){
-			$(".logout-btn").addClass('complete-schedule')
-			$("#logout-popup-title").text('Are you sure you want to close the scheduler')
-			$(".logout-btn").removeClass('logout-btn')
-		}
-		console.log(ticketForwarded+"3")
+		$('.cd-popup-profile').addClass('is-visible');
+		const imgElement = document.getElementById('modal-profile-image');
+								
+			if (imgElement && imgElement.src && imgElement.src.trim() !== '' && !imgElement.src.endsWith('default-profile.jpg') 
+				&& !imgElement.src.includes("localhost") && !imgElement.src.includes("vmedify")) {
+			  console.log("Image source is set:", imgElement.src);
+			} else {
+			  $("#profile-popup").removeClass("d-none")
+			}
+		
+							  
+		
 	});
 	
+	$('body').on('click','.cd-popup-trigger', function(event){
+			event.preventDefault();
+			$('.cd-popup').addClass('is-visible');
+			if($(event.target).is(".close-schedule-btn")){
+				$(".logout-btn").addClass('complete-schedule')
+				$("#logout-popup-title").text('Are you sure you want to close the scheduler')
+				$(".logout-btn").removeClass('logout-btn')
+			}
+			console.log(ticketForwarded+"3")
+		});
+		$('body').on('click','.cd-popup-profile', function(event){
+			if( $(event.target).is('.cd-popup-close-profile') || $(event.target).is('.cd-popup-profile')){
+				event.preventDefault();
+				$(this).removeClass('is-visible');
+				$("#profile-popup").addClass("d-none")
+			}
+		})
 	//close popup
 	$('body').on('click','.cd-popup', function(event){
 		if( $(event.target).is('.cd-popup-close') || $(event.target).is('.cd-popup') ||  $(event.target).is('.cd-popup-close2')  ) {
@@ -150,6 +239,40 @@ $(document).ready(function($){
 			}
 		}
 	});
+	
+	$('body').on('click','.profile-upload',function(e){
+        e.preventDefault();
+		$(".overlay").removeClass("d-none")
+        const formData = new FormData();
+
+        formData.append('userName', $("#prefferedUserName").text());
+		var input = document.getElementById('profile-upload-input');
+		var file = input.files[0];
+        if (file) {
+            formData.append('file', file);
+        }
+		$.ajax({
+
+           type:'POST',
+           url:'/usermaster/image',
+             //contentType: 'application/json',
+			data:formData, 
+			// enctype: 'multipart/form-data',
+			processData : false,
+           cache : false,
+           contentType : false,
+           //cache:false,
+           success:function(data){
+			$(".overlay").addClass("d-none")
+			setProfileImage()
+			$(".cd-popup-close-profile").click()
+		   },
+		   error:function(err){
+			
+		   }
+		 });
+        
+    });
 	
     
     

@@ -1,6 +1,7 @@
 package com.bothash.crmbot.controller;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,14 +9,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.apache.http.HttpResponse;
+import org.jose4j.lang.JoseException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.representations.AccessToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -53,7 +61,11 @@ import com.bothash.crmbot.entity.CounsellingDetails;
 import com.bothash.crmbot.entity.DuplicateDetails;
 import com.bothash.crmbot.entity.FacebookLeads;
 import com.bothash.crmbot.entity.HistoryEvents;
+import com.bothash.crmbot.entity.NotificationToken;
+import com.bothash.crmbot.entity.PushSubscription;
 import com.bothash.crmbot.repository.ActiveTaskRepository;
+import com.bothash.crmbot.repository.NotificationTokenRepository;
+import com.bothash.crmbot.repository.SubscriptionRepository;
 import com.bothash.crmbot.service.ActiveTaskService;
 import com.bothash.crmbot.service.AutomationByCampaignService;
 import com.bothash.crmbot.service.AutomationByCourseService;
@@ -72,6 +84,10 @@ import com.bothash.crmbot.spec.ExcelHelper;
 import com.bothash.crmbot.spec.FilterSpecification;
 
 import lombok.extern.slf4j.Slf4j;
+import nl.martijndwars.webpush.Notification;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Subscription;
+import nl.martijndwars.webpush.Subscription.Keys;
 
 @RestController
 @RequestMapping("/crmbot/flow")
@@ -129,200 +145,268 @@ public class FlowController {
 	@Autowired
 	private ActiveTaskRepository activeTaskRepository;
 	
+//	@Autowired
+//	private PushNotificationService pushNotificationService;
+	
+	@Autowired
+    private NotificationTokenRepository notificationTokenRepository;
+	
+	@Autowired
+	private  SubscriptionRepository subs;
+	
+	@Autowired
+	private  PushService push;
+	
 	@Value("${facebook.access.token}")
 	private String facebookAccessToken;
 	
 	@PostMapping("/add")
 	public ResponseEntity<ActiveTask> addTicket(@RequestBody CreateTicketRequest createTicketRequest,Principal principal){
-		KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) principal;
-		AccessToken accessToken = token.getAccount().getKeycloakSecurityContext().getToken();
-		
-		Set<String> roles=token.getAccount().getRoles();
-		String userName=accessToken.getPreferredUsername();
-		
-		String currentUserRole="";
-		if(roles.contains("admin")) {
-			currentUserRole="admin";
-		}else if(roles.contains("manager")) {
-			currentUserRole="manager";
-		}else if(roles.contains("telecaller")) {
-			currentUserRole="telecaller";
-		}else if(roles.contains("counsellor")) {
-			currentUserRole="counsellor";
-		}
-		String phoneNumber=createTicketRequest.getPhoneNumber();
-		phoneNumber=phoneNumber.replaceAll("\\+91", "");
-		phoneNumber=phoneNumber.replaceAll(" ", "");
-		List<ActiveTask> existingTask =this.activeTaskService.getTaskByPhoneNumber(phoneNumber);
-		existingTask.addAll(this.activeTaskService.getTaskByPhoneNumber("+91"+phoneNumber));
-			FacebookLeads facebookLead=createTicketRequest.getFacebookLeads();
+		String userName = "";
+		try {
 			
-			FacebookLeads savedFacebookLead=this.facebookLeadsService.save(facebookLead);
+			KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) principal;
+			AccessToken accessToken = token.getAccount().getKeycloakSecurityContext().getToken();
 			
-			ActiveTask activeTask=createTicketRequest.getActiveTask();
-			if(activeTask.getLeadPlatform().equals("0")) {
-				activeTask.setLeadPlatform("Offline");
+			Set<String> roles=token.getAccount().getRoles();
+			userName=accessToken.getPreferredUsername();
+			
+			String currentUserRole="";
+			if(roles.contains("admin")) {
+				currentUserRole="admin";
+			}else if(roles.contains("manager")) {
+				currentUserRole="manager";
+			}else if(roles.contains("telecaller")) {
+				currentUserRole="telecaller";
+			}else if(roles.contains("counsellor")) {
+				currentUserRole="counsellor";
 			}
-			if(createTicketRequest.getAssignToMe()) {
-				activeTask.setAssignee(currentUserRole);
-				activeTask.setOwner(accessToken.getPreferredUsername());
-			}
-			
-			if(existingTask!=null && existingTask.size()>0){
-				activeTask.setIsDuplicate(true);
+			String phoneNumber=createTicketRequest.getPhoneNumber();
+			phoneNumber=phoneNumber.replaceAll("\\+91", "");
+			phoneNumber=phoneNumber.replaceAll(" ", "");
+			List<ActiveTask> existingTask =this.activeTaskService.getTaskByPhoneNumber(phoneNumber);
+			existingTask.addAll(this.activeTaskService.getTaskByPhoneNumber("+91"+phoneNumber));
+				FacebookLeads facebookLead=createTicketRequest.getFacebookLeads();
+				
+				FacebookLeads savedFacebookLead=this.facebookLeadsService.save(facebookLead);
+				
+				ActiveTask activeTask=createTicketRequest.getActiveTask();
+				if(activeTask.getLeadPlatform().equals("0")) {
+					activeTask.setLeadPlatform("Offline");
+				}
+				if(createTicketRequest.getAssignToMe()) {
+					activeTask.setAssignee(currentUserRole);
+					activeTask.setOwner(accessToken.getPreferredUsername());
+				}
+				
+				if(existingTask!=null && existingTask.size()>0){
+					activeTask.setIsDuplicate(true);
+					try {
+						DuplicateDetails duplicateDetails = new DuplicateDetails();
+			    		duplicateDetails.setActiveTask(existingTask.get(0));
+			    		duplicateDetails.setPlatform("G");
+			    		
+			    		this.duplicateDetailsService.save(duplicateDetails);
+			    		HistoryEvents hisEvents=new HistoryEvents();
+						hisEvents.setActiveTask(existingTask.get(0));
+						hisEvents.setUserName(createTicketRequest.getUserName());
+						hisEvents.setUserEmail(createTicketRequest.getUserEmail());
+						hisEvents.setUserId(createTicketRequest.getUserId());
+						hisEvents.setEvent(createTicketRequest.getUserName() +" tried creating duplicate task");
+						historyEventsService.save(hisEvents);
+						
+						for(ActiveTask existing:existingTask) {
+							try {
+								//existing.setModifiedOn(LocalDateTime.now());
+								existing.setCreatedOnDuplicate(LocalDateTime.now());
+							}catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						this.activeTaskRepository.saveAll(existingTask);
+			    		return null;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+//					for(ActiveTask existing:existingTask) {
+//						if(existing.getAssignee()!=null && existing.getAssignee()!="") {
+//							if(existing.getOwner()!=null && existing.getOwner()!="") {
+//								activeTask.setOwner(existing.getOwner());
+//								activeTask.setAssignee(existing.getAssignee());
+//								try {
+//									activeTask.setStatus(existing.getStatus());
+//					    			activeTask.setAssignee(existing.getAssignee());
+//									activeTask.setOwner(existing.getOwner());
+//									activeTask.setManagerName(existing.getManagerName());
+//									activeTask.setTelecallerName(existing.getTelecallerName());
+//									activeTask.setCounsellorName(existing.getCounsellorName());
+//					    		}catch(Exception e) {
+//					    			e.printStackTrace();
+//					    		}
+//								break;
+//							}
+//						}
+//					}
+				}
+				
+				
+				if(activeTask.getAssignee()==null ) {
+					List<Automation> automationList=automationService.getByIsActive(true);
+					if(automationList.size()>0) {
+						for(Automation automationParamter:automationList) {
+							Map<String,String> userToAllocate =new HashMap<String,String>();
+							if(automationParamter.getParamter().equals("Source")) {
+								userToAllocate=this.automationBySourceService.allocate(activeTask.getLeadPlatform());
+								
+								
+							}else if(automationParamter.getParamter().equals("Course")) {
+								userToAllocate=this.automationByCourseService.allocate(activeTask.getCourse());
+								
+							}else if(automationParamter.getParamter().equals("Random")) {
+								userToAllocate=this.activeTaskService.randomlyAssgin(activeTask, currentUserRole);
+								
+							}else if(automationParamter.getParamter().equals("Campaign")) {
+								userToAllocate=this.automationByCampaignService.allocate(activeTask.getCampaign());
+								
+							}
+							try {
+								if(userToAllocate!=null && userToAllocate.size()>0) {
+									activeTask.setAssignee("telecaller");
+									activeTask.setIsClaimed(false);
+									try {
+										if(userToAllocate.containsKey("managerName"))
+											activeTask.setManagerName(userToAllocate.get("managerName"));
+									}catch(Exception e3) {
+										e3.printStackTrace();
+									}
+									activeTask.setStatus("Assigned to "+userToAllocate.get("userName"));
+									activeTask.setAssignedTime(LocalDateTime.now());
+									activeTask.setTelecallerName(userToAllocate.get("userEmail"));
+									activeTask.setOwner(userToAllocate.get("userEmail"));
+									break;
+								}
+							}catch(Exception e) {
+								e.printStackTrace();
+							}
+						}
+						//Automation automationParamter=automationList.get(0);
+						
+						
+					}
+				}
+				
+				if(activeTask.getAssignee()==null) {
+					activeTask.setAssignee("admin");
+					activeTask.setTaskGroup("admin");
+				}else if(activeTask.getAssignee().equals("manager")) {
+					activeTask.setManagerName(activeTask.getOwner());
+				}else if(activeTask.getAssignee().equals("telecaller")) {
+					activeTask.setTelecallerName(activeTask.getOwner());
+				}else if(activeTask.getAssignee().equals("counsellor")) {
+					activeTask.setCounsellorName(activeTask.getOwner());
+				}
+				
+				activeTask.setPhoneNumber(phoneNumber);	
+				activeTask.setFacebookLeads(savedFacebookLead);
+				activeTask.setLeadName(createTicketRequest.getLeadName());
+				
+				if(activeTask.getOwner()!=null && createTicketRequest.getOwnerName()!=null &&  createTicketRequest.getOwnerName().length()>0) {
+					activeTask.setStatus("Assgined to "+createTicketRequest.getOwnerName());
+				}
+				
+				activeTask=this.activeTaskService.save(activeTask);
+//				PushSubscription s =subs.findByUserName(userName);
+				PushSubscription s =subs.findByUserName(activeTask.getOwner());
+				String payload = "{"
+				        + "\"title\": \"🎉 New Admission Lead!\","
+				        + "\"body\": \"New lead is added with number"+activeTask.getPhoneNumber()+". Tap to review.\","
+				        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+				        + "\"url\": \"https://www.vmedify.com\""
+				        + "}";
+			    try {
+			    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+		    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+		        
+			        HttpResponse response = push.send(new Notification(sub,payload));
+			        log.info("pushed");
+			    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+			        // 404 / 410 ⇒ subscription no longer valid – prune it
+			        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+			          subs.delete(s);
+			      }
+//				subs.findAll().forEach(s -> {
+//				      try {
+//				    	  Keys k = new Keys(s.getP256dh(), s.getAuth());
+//				        Subscription sub = new Subscription(s.getEndpoint(), k);
+//				        
+//				        HttpResponse response = push.send(new Notification(sub, "NEW LEAD"));
+//				        log.info("pushed");
+//				      } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+//				        // 404 / 410 ⇒ subscription no longer valid – prune it
+//				        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+//				          subs.delete(s);
+//				      }
+//				    });
+				
+//				List<NotificationToken> notifications = this.notificationTokenRepository.findByUserName(activeTask.getOwner());
+//				if(notifications!=null && !notifications.isEmpty()) {
+//					try {
+//						this.pushNotificationService.sendPushNotification(notifications.get(0).getToken(), "TEST", "TESTING TEXT");
+//					} catch (Exception e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				}
+				
+				HistoryEvents hisEvents=new HistoryEvents();
+				hisEvents.setActiveTask(activeTask);
+				hisEvents.setUserName(createTicketRequest.getUserName());
+				hisEvents.setUserEmail(createTicketRequest.getUserEmail());
+				hisEvents.setUserId(createTicketRequest.getUserId());
+				hisEvents.setEvent("Task created by "+createTicketRequest.getUserName());
+				historyEventsService.save(hisEvents);
+				
+				if(activeTask.getIsScheduled()!=null && activeTask.getIsScheduled()) {
+					HistoryEvents hisEvents2=new HistoryEvents();
+					hisEvents2.setActiveTask(activeTask);
+					hisEvents2.setUserName(createTicketRequest.getUserName());
+					hisEvents2.setUserEmail(createTicketRequest.getUserEmail());
+					hisEvents2.setUserId(createTicketRequest.getUserId());
+					hisEvents2.setEvent("Task scheduled by "+createTicketRequest.getUserName());
+					hisEvents2.setRemark(activeTask.getScheduleComment());
+					historyEventsService.save(hisEvents2);
+				}
 				try {
-					DuplicateDetails duplicateDetails = new DuplicateDetails();
-		    		duplicateDetails.setActiveTask(existingTask.get(0));
-		    		duplicateDetails.setPlatform("G");
-		    		
-		    		this.duplicateDetailsService.save(duplicateDetails);
-		    		HistoryEvents hisEvents=new HistoryEvents();
-					hisEvents.setActiveTask(existingTask.get(0));
-					hisEvents.setUserName(createTicketRequest.getUserName());
-					hisEvents.setUserEmail(createTicketRequest.getUserEmail());
-					hisEvents.setUserId(createTicketRequest.getUserId());
-					hisEvents.setEvent(createTicketRequest.getUserName() +" tried creating duplicate task");
-					historyEventsService.save(hisEvents);
-		    		return null;
-				} catch (Exception e) {
+					
+					JSONArray fieldData=new JSONArray(savedFacebookLead.getFieldData().toString());
+					if(fieldData.length()>2) {
+						JSONObject fieldObject=fieldData.getJSONObject(2);
+						if(fieldObject.has("name") && fieldObject.getString("name").equalsIgnoreCase("email")) {
+							JSONArray mails=new JSONArray(fieldObject.get("values").toString());
+							taskListener.sendTicketCreationMai(activeTask.getCampaign(), mails.get(0).toString());
+						}
+						
+					}
+				}catch(Exception e) {
 					e.printStackTrace();
 				}
-				for(ActiveTask existing:existingTask) {
-					if(existing.getAssignee()!=null && existing.getAssignee()!="") {
-						if(existing.getOwner()!=null && existing.getOwner()!="") {
-							activeTask.setOwner(existing.getOwner());
-							activeTask.setAssignee(existing.getAssignee());
-							try {
-								activeTask.setStatus(existing.getStatus());
-				    			activeTask.setAssignee(existing.getAssignee());
-								activeTask.setOwner(existing.getOwner());
-								activeTask.setManagerName(existing.getManagerName());
-								activeTask.setTelecallerName(existing.getTelecallerName());
-								activeTask.setCounsellorName(existing.getCounsellorName());
-				    		}catch(Exception e) {
-				    			e.printStackTrace();
-				    		}
-							break;
-						}
-					}
-				}
-			}
-			
-			
-			if(activeTask.getAssignee()==null ) {
-				List<Automation> automationList=automationService.getByIsActive(true);
-				if(automationList.size()>0) {
-					for(Automation automationParamter:automationList) {
-						Map<String,String> userToAllocate =new HashMap<String,String>();
-						if(automationParamter.getParamter().equals("Source")) {
-							userToAllocate=this.automationBySourceService.allocate(activeTask.getLeadPlatform());
-							
-							
-						}else if(automationParamter.getParamter().equals("Course")) {
-							userToAllocate=this.automationByCourseService.allocate(activeTask.getCourse());
-							
-						}else if(automationParamter.getParamter().equals("Random")) {
-							userToAllocate=this.activeTaskService.randomlyAssgin(activeTask, currentUserRole);
-							
-						}else if(automationParamter.getParamter().equals("Campaign")) {
-							userToAllocate=this.automationByCampaignService.allocate(activeTask.getCampaign());
-							
-						}
-						try {
-							if(userToAllocate!=null && userToAllocate.size()>0) {
-								activeTask.setAssignee("telecaller");
-								activeTask.setIsClaimed(false);
-								try {
-									if(userToAllocate.containsKey("managerName"))
-										activeTask.setManagerName(userToAllocate.get("managerName"));
-								}catch(Exception e3) {
-									e3.printStackTrace();
-								}
-								activeTask.setStatus("Assigned to "+userToAllocate.get("userName"));
-								activeTask.setAssignedTime(LocalDateTime.now());
-								activeTask.setTelecallerName(userToAllocate.get("userEmail"));
-								activeTask.setOwner(userToAllocate.get("userEmail"));
-								break;
-							}
-						}catch(Exception e) {
-							e.printStackTrace();
-						}
-					}
-					//Automation automationParamter=automationList.get(0);
-					
-					
-				}
-			}
-			
-			if(activeTask.getAssignee()==null) {
-				activeTask.setAssignee("admin");
-				activeTask.setTaskGroup("admin");
-			}else if(activeTask.getAssignee().equals("manager")) {
-				activeTask.setManagerName(activeTask.getOwner());
-			}else if(activeTask.getAssignee().equals("telecaller")) {
-				activeTask.setTelecallerName(activeTask.getOwner());
-			}else if(activeTask.getAssignee().equals("counsellor")) {
-				activeTask.setCounsellorName(activeTask.getOwner());
-			}
-			
-			activeTask.setPhoneNumber(phoneNumber);	
-			activeTask.setFacebookLeads(savedFacebookLead);
-			activeTask.setLeadName(createTicketRequest.getLeadName());
-			
-			if(activeTask.getOwner()!=null && createTicketRequest.getOwnerName()!=null &&  createTicketRequest.getOwnerName().length()>0) {
-				activeTask.setStatus("Assgined to "+createTicketRequest.getOwnerName());
-			}
-			
-			activeTask=this.activeTaskService.save(activeTask);
-			
-			
-			HistoryEvents hisEvents=new HistoryEvents();
-			hisEvents.setActiveTask(activeTask);
-			hisEvents.setUserName(createTicketRequest.getUserName());
-			hisEvents.setUserEmail(createTicketRequest.getUserEmail());
-			hisEvents.setUserId(createTicketRequest.getUserId());
-			hisEvents.setEvent("Task created by "+createTicketRequest.getUserName());
-			historyEventsService.save(hisEvents);
-			
-			if(activeTask.getIsScheduled()!=null && activeTask.getIsScheduled()) {
-				HistoryEvents hisEvents2=new HistoryEvents();
-				hisEvents2.setActiveTask(activeTask);
-				hisEvents2.setUserName(createTicketRequest.getUserName());
-				hisEvents2.setUserEmail(createTicketRequest.getUserEmail());
-				hisEvents2.setUserId(createTicketRequest.getUserId());
-				hisEvents2.setEvent("Task scheduled by "+createTicketRequest.getUserName());
-				hisEvents2.setRemark(activeTask.getScheduleComment());
-				historyEventsService.save(hisEvents2);
-			}
-			try {
 				
-				JSONArray fieldData=new JSONArray(savedFacebookLead.getFieldData().toString());
-				if(fieldData.length()>2) {
-					JSONObject fieldObject=fieldData.getJSONObject(2);
-					if(fieldObject.has("name") && fieldObject.getString("name").equalsIgnoreCase("email")) {
-						JSONArray mails=new JSONArray(fieldObject.get("values").toString());
-						taskListener.sendTicketCreationMai(activeTask.getCampaign(), mails.get(0).toString());
+	
+				if(activeTask.getLeadName()!=null && activeTask.getLeadName().toLowerCase().contains("naresh")) {
+					try {
+						twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");
+					}catch(Exception e2) {
+						e2.printStackTrace();
 					}
-					
 				}
-			}catch(Exception e) {
-				e.printStackTrace();
-			}
-			
-//			try {
-//				whatsappService.sendMessage(activeTask.getCampaign(),phoneNumber);
-//			}catch(Exception e2) {
-//				e2.printStackTrace();
-//			}
-			if(activeTask.getLeadName().toLowerCase().contains("naresh")) {
-				try {
-					twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");
-				}catch(Exception e2) {
-					e2.printStackTrace();
-				}
-			}
-			return new ResponseEntity<ActiveTask>(activeTask,HttpStatus.OK);
+				return new ResponseEntity<ActiveTask>(activeTask,HttpStatus.OK);
+		}catch (Exception e) {
+			log.error("error unable to create ticket");
+			e.printStackTrace();
+		}
 		
+		
+		return new ResponseEntity<ActiveTask>(new ActiveTask(),HttpStatus.OK);
 	}
 	
 	@PostMapping(value="/upload-excel",consumes = {"multipart/form-data"})
@@ -446,8 +530,7 @@ public class FlowController {
 		activeTask.setTwelethPercent(createTicketRequest.getActiveTask().getTwelethPercent());
 		activeTask.setNeetPercent(createTicketRequest.getActiveTask().getNeetPercent());
 		activeTask.setPhoneNumber2(createTicketRequest.getActiveTask().getPhoneNumber2());
-		if(createTicketRequest.getActiveTask().getPhoneNumber() !=null)
-			activeTask.setPhoneNumber(createTicketRequest.getActiveTask().getPhoneNumber());
+	
 		activeTask.setLeadType(createTicketRequest.getActiveTask().getLeadType());
 		this.activeTaskService.save(activeTask);
 		
@@ -459,9 +542,56 @@ public class FlowController {
 		hisEvents.setEvent("Field data updated by "+createTicketRequest.getUserName());
 		historyEventsService.save(hisEvents);
 		
+		if(createTicketRequest.getActiveTask().getPhoneNumber() !=null) {
+			String existingPhoneNumber = activeTask.getPhoneNumber();	
+			String newPhoneNumber = createTicketRequest.getActiveTask().getPhoneNumber();			
+			if (!areSamePhoneNumbers(existingPhoneNumber, newPhoneNumber)) {
+	            System.out.println("Phone numbers are not same.");
+	            List<ActiveTask> existingTask = this.activeTaskService.getTaskByPhoneNumber(newPhoneNumber);
+	            if(existingTask.size()>0) {
+	            	log.info("duplicate number entered");
+	            	currFacebookLead.setAdId(activeTask.getPhoneNumber());
+	            	return new ResponseEntity<FacebookLeads>(currFacebookLead,HttpStatus.BAD_REQUEST);
+	            }else{
+	            	activeTask.setPhoneNumber(newPhoneNumber);
+	            	this.activeTaskService.save(activeTask);
+	            }
+			}
+//	        } else {
+//	            System.out.println("Phone numbers are different.");
+//	        }
+			
+		}
+		
 		return new ResponseEntity<FacebookLeads>(currFacebookLead,HttpStatus.OK);
 	}
 	
+	public static String normalize(String phoneNumber) {
+        // Remove all spaces, hyphens, or parentheses if any
+        try {
+        	phoneNumber = phoneNumber.replaceAll("[^\\d+]", "");
+
+            // Remove +91 or 91 prefix
+            if (phoneNumber.startsWith("+91")) {
+                phoneNumber = phoneNumber.substring(3);
+            } else if (phoneNumber.startsWith("91") && phoneNumber.length() > 10) {
+                phoneNumber = phoneNumber.substring(2);
+            }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+
+//        // Final fallback: keep only last 10 digits
+//        if (phoneNumber.length() > 10) {
+//            phoneNumber = phoneNumber.substring(phoneNumber.length() - 10);
+//        }
+
+        return phoneNumber;
+    }
+	public static boolean areSamePhoneNumbers(String number1, String number2) {
+        return normalize(number1).equals(normalize(number2));
+    }
 	@PutMapping("/fwd")
 	public ResponseEntity<ActiveTask> fwdTicket(@RequestBody TicketFwdRequest ticketFwdRequest){
 		
@@ -559,14 +689,14 @@ public class FlowController {
 		hisEvents.setUserName(closeRequest.getUserName());
 		hisEvents.setUserEmail(closeRequest.getUserEmail());
 		hisEvents.setUserId(closeRequest.getUserId());
-		hisEvents.setRemark("Admission done by "+closeRequest.getCounsellingDoneBy()+" with remark: "+closeRequest.getRemark());
+		hisEvents.setRemark("Admission done by "+closeRequest.getAdmissionDoneBy()+" with remark: "+closeRequest.getRemark());
 		
 		Comments comments = new Comments();
 		comments.setCommentDateTime(LocalDateTime.now());
 		comments.setUserName(closeRequest.getUserName());
 		comments.setUserEmail(closeRequest.getUserEmail());
 		
-		comments.setComment("Admission done by "+closeRequest.getCounsellingDoneBy()+" with remark: "+closeRequest.getRemark());
+		comments.setComment("Admission done by "+closeRequest.getAdmissionDoneBy()+" with remark: "+closeRequest.getRemark());
 		comments.setActiveTask(activeTask);
 		Comments saveComment=commentsService.save(comments);
 		
@@ -712,6 +842,7 @@ public class FlowController {
 		String phoneNumber=justDialCreateRequest.getMobile();
 		phoneNumber=phoneNumber.replaceAll("\\+91", "");
 		phoneNumber=phoneNumber.replaceAll(" ", "");
+		phoneNumber = normalize(phoneNumber);
 		List<ActiveTask> existingTask =this.activeTaskService.getTaskByPhoneNumber(phoneNumber);
 		
 		FacebookLeads facebookLead=new FacebookLeads();
@@ -759,12 +890,12 @@ public class FlowController {
 		//activeTask.setState(justDialCreateRequest.gets());
 		activeTask.setRequirement(justDialCreateRequest.getCategory());
 		activeTask.setLeadPlatform("J");
-		if(existingTask!=null && existingTask.size()>0){
+		if(existingTask!=null && existingTask.size()>0 && phoneNumber!=null && phoneNumber!=""){
 			activeTask.setIsDuplicate(true);
 			try {
 				DuplicateDetails duplicateDetails = new DuplicateDetails();
 	    		duplicateDetails.setActiveTask(existingTask.get(0));
-	    		duplicateDetails.setPlatform("G");
+	    		duplicateDetails.setPlatform("J");
 	    		
 	    		this.duplicateDetailsService.save(duplicateDetails);
 	    		HistoryEvents hisEvents=new HistoryEvents();
@@ -774,29 +905,57 @@ public class FlowController {
 				hisEvents.setUserId("Just Dial");
 				hisEvents.setEvent("Just Dial" +" tried creating duplicate task");
 				historyEventsService.save(hisEvents);
+				
+				for(ActiveTask existing:existingTask) {
+					try {
+						//existing.setModifiedOn(LocalDateTime.now());
+						existing.setCreatedOnDuplicate(LocalDateTime.now());
+					}catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				this.activeTaskRepository.saveAll(existingTask);
+				PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
+				String payload = "{"
+				        + "\"title\": \"🎉 New Admission Lead!\","
+				        + "\"body\": \"New lead is added with number"+activeTask.getPhoneNumber()+". Tap to review.\","
+				        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+				        + "\"url\": \"https://www.vmedify.com\""
+				        + "}";
+			    try {
+			    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+		    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+		        
+			        HttpResponse response = push.send(new Notification(sub,payload));
+			        log.info("pushed");
+			    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+			        // 404 / 410 ⇒ subscription no longer valid – prune it
+			        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+			          subs.delete(s);
+			      }
 	    		return null;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			
-			for(ActiveTask existing:existingTask) {
-				if(existing.getAssignee()!=null && existing.getAssignee()!="") {
-					if(existing.getOwner()!=null && existing.getOwner()!="") {
-						activeTask.setOwner(existing.getOwner());
-						activeTask.setAssignee(existing.getAssignee());
-						try {
-			    			activeTask.setAssignee(existing.getAssignee());
-							activeTask.setOwner(existing.getOwner());
-							activeTask.setManagerName(existing.getManagerName());
-							activeTask.setTelecallerName(existing.getTelecallerName());
-							activeTask.setCounsellorName(existing.getCounsellorName());
-			    		}catch(Exception e) {
-			    			e.printStackTrace();
-			    		}
-						break;
-					}
-				}
-			}
+//			for(ActiveTask existing:existingTask) {
+//				if(existing.getAssignee()!=null && existing.getAssignee()!="") {
+//					if(existing.getOwner()!=null && existing.getOwner()!="") {
+//						activeTask.setOwner(existing.getOwner());
+//						activeTask.setAssignee(existing.getAssignee());
+//						try {
+//			    			activeTask.setAssignee(existing.getAssignee());
+//							activeTask.setOwner(existing.getOwner());
+//							activeTask.setManagerName(existing.getManagerName());
+//							activeTask.setTelecallerName(existing.getTelecallerName());
+//							activeTask.setCounsellorName(existing.getCounsellorName());
+//			    		}catch(Exception e) {
+//			    			e.printStackTrace();
+//			    		}
+//						break;
+//					}
+//				}
+//			}
 		}
 		
 		
@@ -865,7 +1024,6 @@ public class FlowController {
 		activeTask.setIsClaimed(false);
 		activeTask.setTaskGroup("admin");
 		activeTask.setTaskName("");
-		activeTask.setStatus("Open");
 		activeTask.setAssignedTime(LocalDateTime.now().plusHours(5).plusMinutes(30));
 		
 		//if(activeTask.getOwner()!=null && justDialCreateRequest.getOwnerName()!=null &&  justDialCreateRequest.getOwnerName().length()>0) {
@@ -873,19 +1031,39 @@ public class FlowController {
 		//}
 		
 		activeTask=this.activeTaskService.save(activeTask);
-		if(activeTask.getLeadName().toLowerCase().contains("naresh")) {
-			try {
-				twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");
-			}catch(Exception e2) {
-				e2.printStackTrace();
-			}
-		}
+		
+		PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
+		String payload = "{"
+		        + "\"title\": \"🎉 New Admission Lead!\","
+		        + "\"body\": \"New lead is added with number"+activeTask.getPhoneNumber()+". Tap to review.\","
+		        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+		        + "\"url\": \"https://www.vmedify.com\""
+		        + "}";
+	    try {
+	    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+        
+	        HttpResponse response = push.send(new Notification(sub,payload));
+	        log.info("pushed");
+	    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+	        // 404 / 410 ⇒ subscription no longer valid – prune it
+	        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+	          subs.delete(s);
+	      }
+//		if(activeTask.getLeadName().toLowerCase().contains("naresh")) {
+//			try {
+//				twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");
+//			}catch(Exception e2) {
+//				e2.printStackTrace();
+//			}
+//		}
 		
 		HistoryEvents hisEvents=new HistoryEvents();
-		hisEvents.setUserName("Email");
-		hisEvents.setUserEmail("Email");
-		hisEvents.setUserId("Email");
-		hisEvents.setEvent("Task created through email");
+		hisEvents.setUserName("API");
+		hisEvents.setUserEmail("API");
+		hisEvents.setUserId("API");
+		hisEvents.setEvent("Task created through Just dial API");
+		hisEvents.setActiveTask(activeTask);
 		historyEventsService.save(hisEvents);
 		
 		
@@ -904,45 +1082,75 @@ public class FlowController {
 			e.printStackTrace();
 		}
 		
-		try {
-			whatsappService.sendMessage(activeTask.getCampaign(),phoneNumber);
-		}catch(Exception e2) {
-			e2.printStackTrace();
-		}
+//		try {
+//			whatsappService.sendMessage(activeTask.getCampaign(),phoneNumber);
+//		}catch(Exception e2) {
+//			e2.printStackTrace();
+//		}
 		return new ResponseEntity<ActiveTask>(activeTask,HttpStatus.OK);
 		
 	}
 	
 	@PutMapping("/transfer-leads")
-	public  ResponseEntity<String> transferLeads(@RequestBody FilterRequests filterRequests,Principal principal){
-		List<ActiveTask> tasks = this.activeTaskRepository.findAll(FilterSpecification.filter(filterRequests));
+	public  ResponseEntity<Page<ActiveTask>> transferLeads(@RequestBody FilterRequests filterRequests,Principal principal){
+		Pageable pageable = PageRequest.of(0, filterRequests.getNumberOfLeads(),Sort.by("createdOn").descending()); 
+		Page<ActiveTask> tasks = this.activeTaskRepository.findAll(FilterSpecification.filter(filterRequests),pageable);
 		if(filterRequests.getToRole().equalsIgnoreCase("telecaller")) {
-			tasks.stream()
+			tasks.getContent().stream()
 		    .limit(filterRequests.getNumberOfLeads()).forEach(task ->{
 				task.setAssignee(filterRequests.getToRole());
 				task.setIsClaimed(false);
 				task.setOwner(filterRequests.getToUserName());
 				task.setTelecallerName(filterRequests.getToUserName());
+				task.setStatus("Assigned to "+filterRequests.getUserNameForUi());
 			});
 		}else if(filterRequests.getToRole().equalsIgnoreCase("manager")) {
-			tasks.stream()
+			tasks.getContent().stream()
 		    .limit(filterRequests.getNumberOfLeads()).forEach(task ->{
 				task.setAssignee(filterRequests.getToRole());
 				task.setOwner(filterRequests.getToUserName());
 				task.setIsClaimed(false);
 				task.setManagerName(filterRequests.getToUserName());
+				task.setStatus("Assigned to "+filterRequests.getUserNameForUi());
 			});
 		}if(filterRequests.getToRole().equalsIgnoreCase("counsellor")) {
-			tasks.stream()
+			tasks.getContent().stream()
 		    .limit(filterRequests.getNumberOfLeads()).forEach(task ->{
 				task.setAssignee(filterRequests.getToRole());
 				task.setOwner(filterRequests.getToUserName());
 				task.setIsClaimed(false);
 				task.setCounsellorName(filterRequests.getToUserName());
+				task.setStatus("Assigned to "+filterRequests.getUserNameForUi());
 			});
 		}
 		this.activeTaskRepository.saveAll(tasks);
-		return new ResponseEntity<String>("success",HttpStatus.OK);
+		return new ResponseEntity<Page<ActiveTask>>(tasks,HttpStatus.OK);
+	}
+	
+	@PutMapping("/add-event")
+	public String addEvent(@RequestBody List<ActiveTask> tasks,@RequestParam String fromUser,Principal principal) {
+		KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) principal;
+		AccessToken accessToken = token.getAccount().getKeycloakSecurityContext().getToken();
+		
+		Set<String> roles=token.getAccount().getRoles();
+		String userName=accessToken.getPreferredUsername();
+		List<HistoryEvents> historyEvents = new ArrayList<>();
+		for(ActiveTask task:tasks) {
+			try {
+				log.info("adding event to task with id: "+task.getId());
+				HistoryEvents hisEvents=new HistoryEvents();
+				hisEvents.setActiveTask(task);
+				hisEvents.setUserName("Admin");
+				hisEvents.setUserEmail("Admin");
+				hisEvents.setUserId(userName);
+				hisEvents.setEvent("Task assigned using transfer leads from "+fromUser);
+				historyEvents.add(hisEvents);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		historyEventsService.saveAll(historyEvents);
+		return null;
 	}
 	
 	@PostMapping("/total-leads")

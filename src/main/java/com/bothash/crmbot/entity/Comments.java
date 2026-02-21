@@ -30,12 +30,16 @@ public class Comments implements Serializable{
 	
 	private String comment;
 	
+	private String commentHeader;
+	
 	private String userName;
 	
 	private String userEmail;
 	
 	private String userId;
 	
+	private String role;
+		
 	private LocalDateTime commentDateTime;
 	
 	@ManyToOne

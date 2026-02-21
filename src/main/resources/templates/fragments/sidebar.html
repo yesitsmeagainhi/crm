@@ -9,6 +9,21 @@
 		<a href="#0" class="cd-popup-close img-replace">Close</a>
 	</div> <!-- cd-popup-container -->
 </div> <!-- cd-popup -->
+<th:block th:if="${access != null and !#lists.isEmpty(access)}"
+		          th:with="
+		            dashAccess=${#lists.isEmpty(access.?[modules.name == 'DASHBORAD']) ? null : access.?[modules.name == 'DASHBORAD'][0]},
+		            automationAccess=${#lists.isEmpty(access.?[modules.name == 'AUTOMATION']) ? null : access.?[modules.name == 'AUTOMATION'][0]},
+		            adMgmtAccess=${#lists.isEmpty(access.?[modules.name == 'AD MANGEMENT']) ? null : access.?[modules.name == 'AD MANGEMENT'][0]},
+		            mailConfigAccess=${#lists.isEmpty(access.?[modules.name == 'MAIL CONFIGURATION']) ? null : access.?[modules.name == 'MAIL CONFIGURATION'][0]},
+		            leadsSummaryAccess=${#lists.isEmpty(access.?[modules.name == 'LEAD SUMMARY']) ? null : access.?[modules.name == 'LEAD SUMMARY'][0]},
+		            leadsTransferAccess=${#lists.isEmpty(access.?[modules.name == 'LEAD TRANSFER']) ? null : access.?[modules.name == 'LEAD TRANSFER'][0]},
+		            messageMasterAccess=${#lists.isEmpty(access.?[modules.name == 'MESSAGE MASTER']) ? null : access.?[modules.name == 'MESSAGE MASTER'][0]},
+		            sourceMasterAccess=${#lists.isEmpty(access.?[modules.name == 'SOURCE MASTER']) ? null : access.?[modules.name == 'SOURCE MASTER'][0]},
+		            courseMasterAccess=${#lists.isEmpty(access.?[modules.name == 'COURSE MASTER']) ? null : access.?[modules.name == 'COURSE MASTER'][0]},
+					commentMasterAccess=${#lists.isEmpty(access.?[modules.name == 'COMMENT MASTER']) ? null : access.?[modules.name == 'COMMENT MASTER'][0]},
+		            accessMgmtAccess=${#lists.isEmpty(access.?[modules.name == 'ACCESS MANAGEMENT']) ? null : access.?[modules.name == 'ACCESS MANAGEMENT'][0]},
+					addTaskAccess=${#lists.isEmpty(access.?[modules.name == 'ADD TASK']) ? null : access.?[modules.name == 'ADD TASK'][0]}
+		          ">
 <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3 bg-gradient-white bg-white" id="sidenav-main">
     <div class="sidenav-header1 text-center">
       <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
@@ -22,11 +37,11 @@
     <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
       <ul class="navbar-nav">
       <li class="nav-item text-center mb-4">
-          <div class="avatar avatar-xl position-relative text-dark">
-              <span class="material-icons opacity-10" style="font-size: 3rem;">
+          <div class="avatar avatar-xl position-relative text-dark cd-popup-trigger-profile my-0">
+              <span class="material-icons opacity-10 profile-icon" style="font-size: 3rem;">
 				account_circle
 				</span>
-				
+				<img src="" class="d-none" id="profilePreview" alt="profile image">
             </div>
             <div class="d-none" th:text="${prefferedUserName}" id="prefferedUserName"> </div>
              <div class="d-none" th:text="${isUserActive}" id="isUserActive"></div>
@@ -50,7 +65,7 @@
             <span class="nav-link-text ms-1">Tasks</span>
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item"  th:if="${addTaskAccess != null and (addTaskAccess.isEdit == true)}">
           <a class="nav-link text-dark  " th:if="${role!='supervisor'}"  th:classappend="${addtask}? 'active bg-gradient-primary' : ''" href="/crmbot/add-task">
             <div class=" text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">add</i>
@@ -58,63 +73,155 @@
             <span class="nav-link-text ms-1">Add Task</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark " th:if="${isAdmin}"  th:classappend="${dashboard}? 'active bg-gradient-primary' : ''"  href="/admin/dashboard">
-            <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">table_view</i>
-            </div>
-            <span class="nav-link-text ms-1">Dashboard</span>
-          </a>
-        </li>
-         <li class="nav-item">
-          <a class="nav-link text-dark " th:if="${isAdmin && role!='supervisor'}"  th:classappend="${automation}? 'active bg-gradient-primary' : ''"  href="/crmbot/automation">
-            <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">table_view</i>
-            </div>
-            <span class="nav-link-text ms-1">Automation</span>
-          </a>
-        </li>
-       
-        <li class="nav-item">
-          <a class="nav-link text-dark " th:if="${isAdmin}" th:classappend="${addManagement}? 'active bg-gradient-primary' : ''"  href="/admin/add-management">
-            <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">add_chart</i>
-            </div>
-            <span class="nav-link-text ms-1">Ad management</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark " th:if="${isAdmin}" th:classappend="${mailConfiguration}? 'active bg-gradient-primary' : ''"  href="/admin/mail-configuration">
-            <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">add_chart</i>
-            </div>
-            <span class="nav-link-text ms-1">Mail Configuration</span>
-          </a>
-        </li>
-		<li class="nav-item">
-          <a class="nav-link text-dark"  target="_blank" href="/crmbot/leads-summary">
-            <div class=" text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">add_chart</i>
-            </div>
-            <span class="nav-link-text ms-1">Leads Summary</span>
-          </a>
-	        </li>
-		<li class="nav-item">
-          <a class="nav-link text-dark" th:if="${isAdmin && role!='supervisor'}" th:classappend="${leadsTransfer}? 'active bg-gradient-primary' : ''" href="/crmbot/leads-transfer">
-            <div class=" text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">add_chart</i>
-            </div>
-            <span class="nav-link-text ms-1">Leads Transfer</span>
-          </a>
-	        </li>
-			<li class="nav-item">
-	          <a class="nav-link text-dark" th:if="${isAdmin}" th:classappend="${messageMaster}? 'active bg-gradient-primary' : ''" href="/messages">
-	            <div class=" text-center me-2 d-flex align-items-center justify-content-center">
-	              <i class="material-icons opacity-10">add_chart</i>
-	            </div>
-	            <span class="nav-link-text ms-1">Message Master</span>
-	          </a>
-		        </li>
+		
+		
+
+
+		  <!-- Dashboard -->
+		  <li class="nav-item">
+		    <a class="nav-link text-dark"
+		       th:if="${dashAccess != null and (dashAccess.isEdit == true or dashAccess.isView == true)}"
+		       th:classappend="${dashboard} ? 'active bg-gradient-primary' : ''"
+		       href="/admin/dashboard">
+		      <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
+		        <i class="material-icons opacity-10">table_view</i>
+		      </div>
+		      <span class="nav-link-text ms-1">Dashboard</span>
+		    </a>
+		  </li>
+
+		  <!-- Automation -->
+		  <li class="nav-item">
+		    <a class="nav-link text-dark"
+		       th:if="${automationAccess != null and (automationAccess.isEdit == true or automationAccess.isView == true)}"
+		       th:classappend="${automation} ? 'active bg-gradient-primary' : ''"
+		       href="/crmbot/automation">
+		      <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
+		        <i class="material-icons opacity-10">table_view</i>
+		      </div>
+		      <span class="nav-link-text ms-1">Automation</span>
+		    </a>
+		  </li>
+
+		  <!-- Ad Management -->
+		  <li class="nav-item">
+		    <a class="nav-link text-dark"
+		       th:if="${adMgmtAccess != null and (adMgmtAccess.isEdit == true or adMgmtAccess.isView == true)}"
+		       th:classappend="${addManagement} ? 'active bg-gradient-primary' : ''"
+		       href="/admin/add-management">
+		      <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
+		        <i class="material-icons opacity-10">add_chart</i>
+		      </div>
+		      <span class="nav-link-text ms-1">Ad Management</span>
+		    </a>
+		  </li>
+
+		  <!-- Mail Configuration -->
+		  <li class="nav-item">
+		    <a class="nav-link text-dark"
+		       th:if="${mailConfigAccess != null and (mailConfigAccess.isEdit == true or mailConfigAccess.isView == true)}"
+		       th:classappend="${mailConfiguration} ? 'active bg-gradient-primary' : ''"
+		       href="/admin/mail-configuration">
+		      <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
+		        <i class="material-icons opacity-10">add_chart</i>
+		      </div>
+		      <span class="nav-link-text ms-1">Mail Configuration</span>
+		    </a>
+		  </li>
+
+		  <!-- Leads Summary -->
+		  <li class="nav-item">
+		    <a class="nav-link text-dark"
+		       th:if="${leadsSummaryAccess != null and (leadsSummaryAccess.isEdit == true or leadsSummaryAccess.isView == true)}"
+		       target="_blank"
+		       href="/crmbot/leads-summary">
+		      <div class="text-center me-2 d-flex align-items-center justify-content-center">
+		        <i class="material-icons opacity-10">add_chart</i>
+		      </div>
+		      <span class="nav-link-text ms-1">Leads Summary</span>
+		    </a>
+		  </li>
+
+		  <!-- Leads Transfer -->
+		  <li class="nav-item">
+		    <a class="nav-link text-dark"
+		       th:if="${leadsTransferAccess != null and (leadsTransferAccess.isEdit == true or leadsTransferAccess.isView == true)}"
+		       th:classappend="${leadsTransfer} ? 'active bg-gradient-primary' : ''"
+		       href="/crmbot/leads-transfer">
+		      <div class="text-center me-2 d-flex align-items-center justify-content-center">
+		        <i class="material-icons opacity-10">add_chart</i>
+		      </div>
+		      <span class="nav-link-text ms-1">Leads Transfer</span>
+		    </a>
+		  </li>
+
+		  <!-- Message Master -->
+		  <li class="nav-item">
+		    <a class="nav-link text-dark"
+		       th:if="${messageMasterAccess != null and (messageMasterAccess.isEdit == true or messageMasterAccess.isView == true)}"
+		       th:classappend="${messageMaster} ? 'active bg-gradient-primary' : ''"
+		       href="/messages">
+		      <div class="text-center me-2 d-flex align-items-center justify-content-center">
+		        <i class="material-icons opacity-10">add_chart</i>
+		      </div>
+		      <span class="nav-link-text ms-1">Message Master</span>
+		    </a>
+		  </li>
+
+		  <!-- Course Master -->
+		  <li class="nav-item">
+		    <a class="nav-link text-dark"
+		       th:if="${courseMasterAccess != null and (courseMasterAccess.isEdit == true or courseMasterAccess.isView == true)}"
+		       th:classappend="${courseMaster} ? 'active bg-gradient-primary' : ''"
+		       href="/admin/coursemaster">
+		      <div class="text-center me-2 d-flex align-items-center justify-content-center">
+		        <i class="material-icons opacity-10">add_chart</i>
+		      </div>
+		      <span class="nav-link-text ms-1">Course Master</span>
+		    </a>
+		  </li>
+
+		  <!-- Source Master -->
+		  <li class="nav-item">
+		    <a class="nav-link text-dark"
+		       th:if="${sourceMasterAccess != null and (sourceMasterAccess.isEdit == true or sourceMasterAccess.isView == true)}"
+		       th:classappend="${sourceMaster} ? 'active bg-gradient-primary' : ''"
+		       href="/admin/sourcemaster">
+		      <div class="text-center me-2 d-flex align-items-center justify-content-center">
+		        <i class="material-icons opacity-10">add_chart</i>
+		      </div>
+		      <span class="nav-link-text ms-1">Source Master</span>
+		    </a>
+		  </li>
+		  
+		  <!-- Source Master -->
+  		  <li class="nav-item">
+  		    <a class="nav-link text-dark"
+  		       th:if="${commentMasterAccess != null and (commentMasterAccess.isEdit == true or commentMasterAccess.isView == true)}"
+  		       th:classappend="${commentMaster} ? 'active bg-gradient-primary' : ''"
+  		       href="/admin/commentmaster">
+  		      <div class="text-center me-2 d-flex align-items-center justify-content-center">
+  		        <i class="material-icons opacity-10">add_chart</i>
+  		      </div>
+  		      <span class="nav-link-text ms-1">Comment Master</span>
+  		    </a>
+  		  </li>
+
+		  <!-- Access Management -->
+		  <li class="nav-item">
+		    <a class="nav-link text-dark"
+		       th:if="${accessMgmtAccess != null and (accessMgmtAccess.isEdit == true or accessMgmtAccess.isView == true)}"
+		       th:classappend="${accessManagement} ? 'active bg-gradient-primary' : ''"
+		       href="/admin/accessManagement">
+		      <div class="text-center me-2 d-flex align-items-center justify-content-center">
+		        <i class="material-icons opacity-10">add_chart</i>
+		      </div>
+		      <span class="nav-link-text ms-1">Access Mgmt</span>
+		    </a>
+		  </li>
+
+		</th:block>
+
         <!--<li class="nav-item">
           <a class="nav-link text-dark ">
             <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
@@ -145,5 +252,41 @@
         
       </ul>
     </div>
+	  <div class="cd-popup-profile " role="alert">
+		<div class="d-flex" style="max-width: 200px;
+		  margin: auto;
+		    margin-top: auto;
+		  margin-top: 6em;">
+		  <span id="modal-profile-image-wrapper">
+			<img src="" id="modal-profile-image" width="200" style=" border-radius: 50%">
+			<button class="remove-profile-btn" >	
+				<span class="material-icons opacity-10 delete-icon" style="font-size: 1rem;">
+							delete
+				</span>
+			</button>
+			<button class="edit-profile-btn" >	
+				<span class="material-icons opacity-10 edit-icon" style="font-size: 1rem;">
+											edit
+								</span>
+				</button>
+		  </span>
+			
+		</div>
+			
+		<div class="cd-popup-container2 text-dark mt-2 d-none" id="profile-popup" style="min-width: 200px;">
+		<div class="card-header text-lg py-2" style="background: #e3e3e3;border-radius: 5px 5px 0px 0px;">Upload File</div>
+			<form id="excel-form">
+				<p id="profile-upload-input-p">
+				<input class="" id="profile-upload-input" type="file" autocomplete="off">
+				</p>
+				<ul class="cd-buttons2 ps-0" id="cd-main-buttons">
+					<li class=""><a  class="cd-popup-close-profile">Cancel</a></li>
+					<li class=""><a  class="profile-upload">Submit</a></li>
+				</ul>
+			</form>
+			
+		</div>
+		
+	  </div>
     
   </aside>

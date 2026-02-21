@@ -24,4 +24,6 @@ public class CloseRequest {
 	private String userId;
 	
 	private String counsellingDoneBy;
+	
+	private String admissionDoneBy;
 }

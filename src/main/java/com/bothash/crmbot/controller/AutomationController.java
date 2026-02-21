@@ -45,6 +45,7 @@ import com.bothash.crmbot.entity.Course;
 import com.bothash.crmbot.entity.FacebookLeadConfigs;
 import com.bothash.crmbot.entity.HistoryEvents;
 import com.bothash.crmbot.entity.Platforms;
+import com.bothash.crmbot.entity.RoleModuleAccess;
 import com.bothash.crmbot.repository.ActiveTaskRepository;
 import com.bothash.crmbot.service.ActiveTaskService;
 import com.bothash.crmbot.service.AutomationByCampaignService;
@@ -56,6 +57,7 @@ import com.bothash.crmbot.service.CourseService;
 import com.bothash.crmbot.service.FacebookLeadConfigService;
 import com.bothash.crmbot.service.HistoryEventsService;
 import com.bothash.crmbot.service.PlatformService;
+import com.bothash.crmbot.service.RoleModuleAccessService;
 
 @Controller
 @RequestMapping("/automation/")
@@ -96,6 +98,9 @@ public class AutomationController {
 	@Autowired
 	private ActiveTaskRepository activeTaskRepository;
 	
+	@Autowired
+	private RoleModuleAccessService roleModuleAccessService;
+	
 	
 	@Value("${keycloak.auth-server-url}")
 	private String keycloackUrl;
@@ -114,29 +119,56 @@ public class AutomationController {
 	private String crmbotClientId;
 	
 	@GetMapping("course-assigned-user")
-	public ModelAndView assignedUserByCourse(@RequestParam Long courseId){
+	public ModelAndView assignedUserByCourse(@RequestParam Long courseId,Principal principal){
+		KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) principal;
+		AccessToken accessToken = token.getAccount().getKeycloakSecurityContext().getToken();
+		Set<String> roles=token.getAccount().getRoles();
+		String role = roles.stream().findFirst().orElse(null);
+		
+		
 		List<AutomationByCourse> allocatedUsers= automationByCourseService.getByCourseId(courseId);
 		ModelAndView model= new ModelAndView();
 		model.addObject("allocatedUsers", allocatedUsers);
 		model.setViewName("automation-assigned-users");
+		
+		List<RoleModuleAccess> access = this.roleModuleAccessService.getByRole(role);
+		model.addObject("access", access);
 		return model;
 	}
 	
 	@GetMapping("source-assigned-user")
-	public ModelAndView assignedUserBySource(@RequestParam Long sourceId){
+	public ModelAndView assignedUserBySource(@RequestParam Long sourceId,Principal principal){
+		
+		KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) principal;
+		AccessToken accessToken = token.getAccount().getKeycloakSecurityContext().getToken();
+		Set<String> roles=token.getAccount().getRoles();
+		String role = roles.stream().findFirst().orElse(null);
+		
 		List<AutomationBySource> allocatedUsers= automationBySourceService.getBySourceId(sourceId);
 		ModelAndView model= new ModelAndView();
 		model.addObject("allocatedUsers", allocatedUsers);
 		model.setViewName("automation-assigned-users");
+		
+		List<RoleModuleAccess> access = this.roleModuleAccessService.getByRole(role);
+		model.addObject("access", access);
 		return model;
 	}
 	
 	@GetMapping("campaign-assigned-user")
-	public ModelAndView assignedUserByCampaign(@RequestParam Long campaignId){
+	public ModelAndView assignedUserByCampaign(@RequestParam Long campaignId,Principal principal){
+		
+		KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) principal;
+		AccessToken accessToken = token.getAccount().getKeycloakSecurityContext().getToken();
+		Set<String> roles=token.getAccount().getRoles();
+		String role = roles.stream().findFirst().orElse(null);
+		
 		List<AutomationByCampaign> allocatedUsers= automationByCampaignService.getByCampaignId(campaignId);
 		ModelAndView model= new ModelAndView();
 		model.addObject("allocatedUsers", allocatedUsers);
 		model.setViewName("automation-assigned-users");
+		
+		List<RoleModuleAccess> access = this.roleModuleAccessService.getByRole(role);
+		model.addObject("access", access);
 		return model;
 	}
 	

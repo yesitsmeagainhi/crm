@@ -16,9 +16,11 @@ import com.bothash.crmbot.dto.Constants;
 import com.bothash.crmbot.entity.Automation;
 import com.bothash.crmbot.entity.AutomationUsers;
 import com.bothash.crmbot.entity.Message;
+import com.bothash.crmbot.entity.RoleModuleAccess;
 import com.bothash.crmbot.entity.UserMaster;
 import com.bothash.crmbot.service.AutomationService;
 import com.bothash.crmbot.service.AutomationUserService;
+import com.bothash.crmbot.service.RoleModuleAccessService;
 import com.bothash.crmbot.service.UserMasterService;
 import com.bothash.crmbot.service.impl.MessageService;
 
@@ -37,6 +39,9 @@ public class MessageController {
     
     @Autowired
 	private UserMasterService userMasterService;
+    
+    @Autowired
+	private RoleModuleAccessService roleModuleAccessService;
 
     @GetMapping
     public String listMessages(@RequestParam(defaultValue = "1") int page,
@@ -55,35 +60,25 @@ public class MessageController {
 		Boolean isManager=false;
 		Boolean isTelecaller=false;
 		Boolean isCounsellor=false;
-		String role="";
 		
         Set<String> roles=token.getAccount().getRoles();
+        String role = roles.stream().findFirst().orElse(null);
+        
 		String userName=accessToken.getPreferredUsername();
 		Boolean isAutomated=false;
-		if(roles.contains("admin") || roles.contains("supervisor")) {
-			isAdmin=true;
+		if(role.equalsIgnoreCase("admin")) {
 			List<Automation> autoamtions=this.automationService.getByIsActive(true);
 			if(autoamtions.size()>0) {
 				isAutomated=true;
 			}
-			role="admin";
-			if (roles.contains(Constants.supervisor)) {
-				role="supervisor";
-			}
-		}else if(roles.contains("manager")) {
+			
+			
+		}else if(role.equalsIgnoreCase("manager")) {
 			
 			AutomationUsers automationUser=automationUserService.getByUserId(userName);
 			if(automationUser!=null) {
 				isAutomated=true;
 			}
-			role="manager";
-			isManager=true;
-		}else if(roles.contains("telecaller")) {
-			role="telecaller";
-			isTelecaller=true;
-		}else if(roles.contains("counsellor")) {
-			role="counsellor";
-			isCounsellor=true;
 		}
 		model.addAttribute("isAutomated", isAutomated);
 		model.addAttribute("role", role);
@@ -96,11 +91,13 @@ public class MessageController {
 			model.addAttribute("isUserActive", true);
 		
 		model.addAttribute("prefferedUserName", userName);
-		model.addAttribute("isAdmin", isAdmin);
-		model.addAttribute("isManager", isManager);
 		model.addAttribute("isTelecaller", isTelecaller);
 		model.addAttribute("isCounsellor", isCounsellor);
 		model.addAttribute("messageMaster", true);
+		
+		List<RoleModuleAccess> access = this.roleModuleAccessService.getByRole(role);
+		model.addAttribute("access", access);
+		
         return "messages";
     }
 

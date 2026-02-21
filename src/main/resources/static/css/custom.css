@@ -458,6 +458,9 @@ border-radius: var(--bs-card-border-radius);
 .tabs input[id=radio-6]:checked ~ .glider {
   transform: translateX(510%);
 }
+.tabs input[id=radio-7]:checked ~ .glider {
+  transform: translateX(610%);
+}
 
 .glider {
   position: absolute;
@@ -473,7 +476,7 @@ border-radius: var(--bs-card-border-radius);
 
 @media (max-width: 700px) {
   .tab,.glider {
-    width:16%;
+    width:13.5%;
   }
   .tabs{
 	width:100%;
@@ -509,6 +512,29 @@ border-radius: var(--bs-card-border-radius);
 xpopup 
 
 -------------------------------- */
+
+.cd-popup-profile {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(85, 89, 96, 0.37);
+  opacity: 0;
+  visibility: hidden;
+  z-index: 99999999;
+  -webkit-transition: opacity 0.3s 0s, visibility 0s 0.3s;
+  -moz-transition: opacity 0.3s 0s, visibility 0s 0.3s;
+  transition: opacity 0.3s 0s, visibility 0s 0.3s;
+}
+.cd-popup-profile.is-visible {
+  opacity: 1;
+  visibility: visible;
+  -webkit-transition: opacity 0.3s 0s, visibility 0s 0s;
+  -moz-transition: opacity 0.3s 0s, visibility 0s 0s;
+  transition: opacity 0.3s 0s, visibility 0s 0s;
+}
+
 .cd-popup2 {
   position: fixed;
   left: 0;
@@ -776,4 +802,64 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.status-dot.active {
+  background-color: #28a745; /* green */
+}
+
+.status-dot.inactive {
+  background-color: #dc3545; /* red */
+}
+
+#search-lead-box{
+	height: 2.5rem;
+}
+#profilePreview{
+	border-radius: 35px;
+}
+
+#modal-profile-image-wrapper:hover {
+  filter: brightness(0.7);
+}
+
+.remove-profile-btn {
+  position: absolute;
+  bottom: 5px;
+  left: 42%;
+  transform: translateX(-50%);
+  color: rgba(255, 0, 0, 0.8);
+  border: none;
+  background: #ffffff29;
+  border-radius: 50%;
+  padding: 5px 10px;
+  font-size: 12px;
+  display: none;
+  cursor: pointer;
+}
+.edit-profile-btn{
+position: absolute;
+  bottom: 5px;
+  left: 62%;
+  transform: translateX(-50%);
+  color: black;
+  border: none;
+  background: #ffffff29;
+  border-radius: 50%;
+  padding: 5px 10px;
+  font-size: 12px;
+  display: none;
+  cursor: pointer;
+}
+
+#modal-profile-image-wrapper:hover .remove-profile-btn,.edit-profile-btn {
+  display: block;
 }
