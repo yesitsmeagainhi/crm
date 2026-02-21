@@ -16,7 +16,11 @@ public class LastAllocatedUserServiceImpl implements LastAllocatedUserService{
 	@Override
 	public LastAllocatedUser getFirst() {
 		try {
-			return lastAllocatedUserRepository.findAll().get(0);
+			java.util.List<LastAllocatedUser> all = lastAllocatedUserRepository.findAll();
+			if(all.isEmpty()) {
+				return null;
+			}
+			return all.get(0);
 		}
 		catch(Exception e) {
 			e.printStackTrace();

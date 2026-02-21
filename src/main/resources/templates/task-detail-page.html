@@ -16,7 +16,7 @@
             <div class="col-md-6 mb-3 mb-md-0">
             
 	          <div class="card h-100">
-	          <a class="nav-link text-dark task-back " id="task-back-btn">
+	          <a class="nav-link text-dark task-back cursor-pointer" id="task-back-btn">
               		<i class="material-icons opacity-10 p-2">arrow_back</i>
          		 </a>
 	            <div class="card-header pb-0 px-3 pt-1 d-flex" >
@@ -26,7 +26,7 @@
 	                    <a class="btn btn-link edit-field-data text-dark px-3 mb-0" href="javascript:;"><i class="material-icons text-sm me-2">edit</i>Edit</a>
 	                  </div>
 	                  <div class="ms-auto text-end d-none save-field-data-container" th:if="${fieldAccess != null and (fieldAccess.isEdit == true)}">
-	                    <a class="btn btn-link save-field-data text-dark px-3 mb-0" th:id="|save-field-data-${task.facebookLeads.id}|" th:name="${task.id}" href="javascript:;"><i class="material-icons text-sm me-2">save</i>Save</a>
+	                    <a class="btn btn-link save-field-data text-dark px-3 mb-0" th:id="|save-field-data-${task.facebookLeads?.id}|" th:name="${task.id}" href="javascript:;"><i class="material-icons text-sm me-2">save</i>Save</a>
 	                  </div>
 	            </div>
 	            <div class="card-body pt-4 p-3" th:if="${fieldAccess != null and (fieldAccess.isEdit == true or fieldAccess.isView == true)}">
@@ -191,7 +191,7 @@
 	              <ul class="list-group pb-4 comments-ul-list" th:if="${comments}" >
 	                <li class="list-group-item border-0 d-flex p-4 mb-2 bg-gray-100 border-radius-lg" th:each="comment,istat2:${comments}">
 	                  <div class="d-flex flex-column w-100">
-	                    <span class="mb-1 text-xs  ">Name: <span class="text-dark font-weight-bold ms-sm-2 comment_name" th:text="${comment.userName}">Viking Burrito</span><span class=" ms-sm-2 font-weight-bold comment_date float-right" th:text="${#temporals.format(comment.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yyyy HH:mm')}">oliver@burrito.com</span></span>
+	                    <span class="mb-1 text-xs  ">Name: <span class="text-dark font-weight-bold ms-sm-2 comment_name" th:text="${comment.userName}">Viking Burrito</span><span class=" ms-sm-2 font-weight-bold comment_date float-right" th:text="${#temporals.format(comment.createdOn, 'dd/MM/yyyy HH:mm')}">oliver@burrito.com</span></span>
 						<span th:if="${comment.commentHeader}" class="text-xs mb-1">Comment Type: <span class="text-dark ms-sm-2 font-weight-bold comment_data" th:text="${comment.commentHeader}">FRB1235476</span></span>
 						<span class="text-xs">Comment: <span class="text-dark ms-sm-2 font-weight-bold comment_data" th:text="${comment.comment}">FRB1235476</span></span>
 	                  </div>
@@ -332,10 +332,12 @@
 		                </div>
 						
 						
-						<select th:each="users:${counsellors}" class="mb-3 counselling-done-counsellors w-40" id="counselling_done_by_dropdwon" >
+						<select class="mb-3 counselling-done-counsellors w-40" id="counselling_done_by_dropdwon" >
 					  			<option value="" id="">Counselling Done by</option>
+					  			<th:block th:each="users:${counsellors}">
 					  			<option th:each="user:${users}" th:value="|${user.get('firstName')} ${user.get('lastName')}|" th:id="${#strings.arraySplit(user.get('username'),'@')[0]}" th:name="|${user.get('firstName')} ${user.get('lastName')}|" th:text="|${user.get('firstName')} ${user.get('lastName')}|">
 					  			</option>
+					  			</th:block>
 								<option value="Other" >Other</option>
 					  		</select>
 						  
@@ -347,10 +349,24 @@
 	                  </form>
 	                </li>
 	              </ul>
+	              <div th:if="${#lists.size(counsellingDetails) > 0}" class="px-3 pb-3">
+	                <hr class="my-2">
+	                <h6 class="mb-2 text-xs text-uppercase text-secondary">Latest Counselling Update</h6>
+	                <th:block th:with="latest=${counsellingDetails[#lists.size(counsellingDetails)-1]}">
+	                  <div class="bg-gray-100 border-radius-lg p-3">
+	                    <span class="d-block text-xs mb-1">Status: <span class="text-dark font-weight-bold" th:text="${latest.isCounselled ? 'Counselling Done' : 'Counselling Not Done'}"></span></span>
+	                    <span class="d-block text-xs mb-1" th:if="${latest.isCounselled}">Course: <span class="text-dark font-weight-bold" th:text="${latest.course}"></span></span>
+	                    <span class="d-block text-xs mb-1" th:if="${latest.isCounselled}">Fees Pitched: <span class="text-dark font-weight-bold" th:text="${latest.feesPitched}"></span></span>
+	                    <span class="d-block text-xs mb-1">Remark: <span class="text-dark font-weight-bold" th:text="${latest.remark}"></span></span>
+	                    <span class="d-block text-xs mb-1">Done by: <span class="text-dark font-weight-bold" th:text="${latest.userName}"></span></span>
+	                    <span class="d-block text-xs">Date: <span class="text-dark font-weight-bold" th:text="${#temporals.format(latest.createdOn, 'dd/MM/yyyy HH:mm')}"></span></span>
+	                  </div>
+	                </th:block>
+	              </div>
 	            </div>
 	          </div>
         	</div>
-        	
+
         	
         	<div class="col-md-12 mt-2" >
 	          <div class="card" th:if="${closingInputFullAccess != null and (closingInputFullAccess.isEdit == true)}">
@@ -444,7 +460,7 @@
 	              </ul>
 	            </div>
 	          </div>
-	          <div class="card" th:if="${closingInputPartialAccess != null and (closingInputPartialAccess.isEdit == true)}">
+	          <div class="card" th:if="${closingInputPartialAccess != null and (closingInputPartialAccess.isEdit == true) and (closingInputFullAccess == null or closingInputFullAccess.isEdit != true)}">
 	            <div class="card-header pb-0 px-3">
 	              <h6 class="mb-0"><span th:text="${isClosed?'Closed':'Closing'}">Closing</span>  <span th:if="${isClosed}" th:text="| - ${closeTask.closingId}${closeTask.id}|"></span></h6>
 	            </div>
@@ -548,7 +564,7 @@
 	                <li class="list-group-item border-0 d-flex justify-content-between p-4 mb-2 border-radius-lg bg-gray-100" th:each="event,istat:${historyEvents}">
 	                 <div class="d-flex flex-column w-100">
 	                    <span class="mb-2 text-xs"  th:if="${event.userName}">Assignor: <span class="text-dark font-weight-bold ms-sm-2 comment_name"  th:text="${event.userName}">Viking Burrito</span></span>
-	                    <span class="mb-2 text-xs">Date & Time: <span class="text-dark ms-sm-2 font-weight-bold comment_date" th:text="${#temporals.format(event.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yyyy HH:mm')}">oliver@burrito.com</span></span>
+	                    <span class="mb-2 text-xs">Date & Time: <span class="text-dark ms-sm-2 font-weight-bold comment_date" th:text="${#temporals.format(event.createdOn, 'dd/MM/yyyy HH:mm')}">oliver@burrito.com</span></span>
 	                    <span class="mb-2 text-xs">Event Status: <span class="text-dark ms-sm-2 font-weight-bold comment_data" th:text="${event.event}">FRB1235476</span></span>
 	                    <span class="text-xs" th:if="${event.remark}">Remark: <span class="text-dark ms-sm-2 font-weight-bold comment_remark" th:text="${event.remark}">FRB1235476</span></span>
 	                  </div>
@@ -574,7 +590,7 @@
 	                <li class="list-group-item border-0 d-flex justify-content-between p-4 mb-2 border-radius-lg bg-gray-100" th:each="counsellingDetail:${counsellingDetails}">
 	                 <div class="d-flex flex-column w-100">
 	                    <span class="mb-2 text-xs" >Counsellor: <span class="text-dark font-weight-bold ms-sm-2 comment_name"  th:text="${counsellingDetail.userName}">Viking Burrito</span></span>
-	                    <span class="mb-2 text-xs">Date & Time: <span class="text-dark ms-sm-2 font-weight-bold comment_date" th:text="${#temporals.format(counsellingDetail.createdOn.plusHours('5').plusMinutes('30'), 'dd/MM/yyyy HH:mm')}">oliver@burrito.com</span></span>
+	                    <span class="mb-2 text-xs">Date & Time: <span class="text-dark ms-sm-2 font-weight-bold comment_date" th:text="${#temporals.format(counsellingDetail.createdOn, 'dd/MM/yyyy HH:mm')}">oliver@burrito.com</span></span>
 	                    <span class="mb-2 text-xs">Status: <span class="text-dark ms-sm-2 font-weight-bold comment_data" th:text="${counsellingDetail.isCounselled?'Counselling Done':'Counselling Not Done'}">FRB1235476</span></span>
 	                    <span class="text-xs" th:if="${counsellingDetail.isCounselled}">Course: <span class="text-dark ms-sm-2 font-weight-bold comment_remark" th:text="${counsellingDetail.course}">FRB1235476</span></span>
 	                    <span class="text-xs" th:if="${counsellingDetail.isCounselled}">Fees Pitched: <span class="text-dark ms-sm-2 font-weight-bold comment_remark" th:text="${counsellingDetail.feesPitched}">FRB1235476</span></span>
@@ -668,9 +684,7 @@ $(document).ready(function(){
 });
 
 debugger
-	if(((isClosed=="true" || isSearchLead=="true") && role!="admin" && !hasEditAccess)){
-		
-		
+	if(isSearchLead=="true"){
 		let allInputs=$("input,select,textarea,button,i")
 		for(let i=0;i<allInputs.length;i++){
 			if(allInputs[i].id!="iconNavbarSidenav2" && allInputs[i].id!="search-box" && allInputs[i].getAttribute("name")!="tabs")
@@ -678,12 +692,16 @@ debugger
 		}
 		$(".edit-field-data").attr("disabled",true)
 		$(".save-field-data").attr("disabled",true)
-		if(isClosed!="true" && isSearchLead!="true"){
-			$(".comment-search-dropwown").removeAttr("disabled")
-			$(".comments-send-button").removeAttr("disabled")
-			$(".comment-textarea").removeAttr("disabled")
-			
+		$(".move-popup-button").hide()
+		$(".close-schedule-btn").hide()
+	} else if((isClosed=="true" && role!="admin" && !hasEditAccess)){
+		let allInputs=$("input,select,textarea,button,i")
+		for(let i=0;i<allInputs.length;i++){
+			if(allInputs[i].id!="iconNavbarSidenav2" && allInputs[i].id!="search-box" && allInputs[i].getAttribute("name")!="tabs")
+				allInputs[i].disabled=true
 		}
+		$(".edit-field-data").attr("disabled",true)
+		$(".save-field-data").attr("disabled",true)
 	}
 	
 	$('body').on("change",'.admission-done-counsellors',function(){

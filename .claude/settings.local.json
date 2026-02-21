@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 9000 | Select-Object OwningProcess | ForEach-Object { Get-Process -Id $_.OwningProcess } | Select-Object Id, ProcessName, Path\")"
+    ]
+  }
+}

@@ -8,7 +8,7 @@
     <!-- End Navbar -->
 	<th:block th:if="${access != null and !#lists.isEmpty(access)}"
           th:with="
-            adMgmtAccess=${#lists.isEmpty(access.?[modules.name == 'AD MANGEMENT']) ? null : access.?[modules.name == 'AD MANGEMENT'][0]}
+            adMgmtAccess=${#lists.isEmpty(access.?[modules.name == 'AD MANAGEMENT']) ? null : access.?[modules.name == 'AD MANAGEMENT'][0]}
         
           ">
     <div class="container-fluid pb-4 task-main-container">

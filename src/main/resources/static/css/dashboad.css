@@ -1,0 +1,69 @@
+/* Table Styling */
+    .table {
+      border-collapse: separate;
+      border-spacing: 0 12px;
+    }
+    
+    .table th {
+      font-weight: 600;
+      color: #333;
+      background-color: transparent;
+    }
+    
+    .table td {
+      /*background: #fff;*/
+      border: none;
+      border-radius: 8px;
+      padding: 16px;
+      vertical-align: middle;
+      color: #333333;
+      font-size: 15px;
+    }
+    
+    .table tbody tr:hover td {
+      background-color: #f0f8ff;
+      transition: background-color 0.2s ease-in-out;
+    }
+    
+    /* Badge Base Style */
+    .badge {
+      border-radius: 10px;
+      padding: 6px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-block;
+      background-clip: padding-box;
+      -webkit-background-clip: padding-box;
+      color: #000000;
+      -webkit-text-fill-color: #000000; /* Ensures no background color on text */
+      text-shadow: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .badge {
+      font-size: 1em;
+      padding: 0.5em;
+    }
+	small{
+		display: block;
+	  font-size: .65rem;
+	  color: #6c757d;
+	}
+	
+	.fistRank {
+	  background-color: #FFD700; /* Gold */
+	  color: black;
+	}
+
+	.secondRank {
+	  background-color: #C0C0C0; /* Silver */
+	  color: black;
+	}
+
+	.thirdRank,.fourthRank,.fifthRank {
+	  background-color: #CD7F32; /* Bronze */
+	  color: white;
+	 }
+
+	

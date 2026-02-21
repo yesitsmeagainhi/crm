@@ -263,7 +263,8 @@ public class ActiveTaskServiceImpl implements ActiveTaskService{
 			e.printStackTrace();
 		}
 		LastAllocatedUser lastAllocatedUser=this.lastAllocatedUserService.getFirst();
-		Boolean lastAllocatedUserFound=false;
+		// When no previous allocation exists, treat as if last user was found so first telecaller gets assigned
+		Boolean lastAllocatedUserFound=(lastAllocatedUser==null);
 		Boolean userAllocated=false;
 		Map<String,String> responseList =new HashMap<String,String>();
 		int groupsIndex=0;
@@ -313,7 +314,7 @@ public class ActiveTaskServiceImpl implements ActiveTaskService{
 								if(lastAllocatedUser!=null && !lastAllocatedUserFound) {
 									if(lastAllocatedUser.getUserId().equals(user.get("email").toString())) {
 										lastAllocatedUserFound=true;
-										if(i==users.size()-1) {
+										if(i==users.size()-1 && activeTaskRepository.countByIsActiveAndOwner(true, users.get(0).get("username").toString()) < 500) {
 											responseList.put("userEmail", users.get(0).get("username").toString());
 											responseList.put("userName",users.get(0).get("firstName").toString()+users.get(0).get("lastName").toString());
 											userAllocated=true;
@@ -322,7 +323,7 @@ public class ActiveTaskServiceImpl implements ActiveTaskService{
 											LastAllocatedUser savedUser=this.lastAllocatedUserService.save(lasUserAllocatedNew);
 										}
 									}
-								}else if(lastAllocatedUserFound && !userAllocated && (existing==null || existing.getIsActive())){ // check if user kept as active for lead distribution or not
+								}else if(lastAllocatedUserFound && !userAllocated && (existing==null || existing.getIsActive()) && activeTaskRepository.countByIsActiveAndOwner(true, user.get("username").toString()) < 500){ // check if user kept as active for lead distribution and under 500 task cap
 									
 									responseList.put("userEmail", user.get("username").toString());
 									responseList.put("userName",user.get("firstName").toString()+user.get("lastName").toString());
@@ -333,7 +334,7 @@ public class ActiveTaskServiceImpl implements ActiveTaskService{
 								}if(i==users.size()-1 && groupsIndex == group.size()-1 && !userAllocated) {
 									for(int userIndex=0;userIndex<users.size();userIndex++) {
 										UserMaster existing2=userMasterService.getByUserName(users.get(userIndex).get("username").toString());
-										if(existing2==null || existing2.getIsActive()) {
+										if((existing2==null || existing2.getIsActive()) && activeTaskRepository.countByIsActiveAndOwner(true, users.get(userIndex).get("username").toString()) < 500) {
 											responseList.put("userEmail", users.get(userIndex).get("username").toString());
 											responseList.put("userName",users.get(userIndex).get("firstName").toString()+users.get(userIndex).get("lastName").toString());
 											userAllocated=true;

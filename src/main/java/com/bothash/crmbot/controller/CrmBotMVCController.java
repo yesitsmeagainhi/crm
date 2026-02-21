@@ -675,63 +675,65 @@ public class CrmBotMVCController {
 			this.activeTaskService.save(task);
 		}
 
-		HttpHeaders header = new HttpHeaders();
-		MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-		body.add("grant_type", "password");
-		body.add("client_secret", keycloackClientSecret);
-		body.add("username", adminUserName);
-		body.add("password", adminPassword);
-		body.add("client_id", "admin-cli");
-
-		HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, header);
-
-		@SuppressWarnings("rawtypes")
-		HashMap response = restTemplate.postForObject(keycloackUrl + "/realms/master/protocol/openid-connect/token",
-				entity, HashMap.class);
-		log.info(response + " TOLEN");
-		String adminAccessToken = response.get("access_token").toString();
-
-		HttpHeaders httpHeaders = new HttpHeaders();
-		httpHeaders.set("Authorization", "Bearer " + adminAccessToken);
-
 		List<Object> nextUsers = new ArrayList<>();
+		List<Object> counsellors = new ArrayList<>();
+		try {
+			HttpHeaders header = new HttpHeaders();
+			MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+			body.add("grant_type", "password");
+			body.add("client_secret", keycloackClientSecret);
+			body.add("username", adminUserName);
+			body.add("password", adminPassword);
+			body.add("client_id", "admin-cli");
 
-//		for(String nextRole:nextRoles) {
-//			@SuppressWarnings("rawtypes")
-//			ResponseEntity<Object> userResponse=restTemplate.exchange(keycloackUrl+"/admin/realms/crmbot/clients/"+crmbotClientId+"/roles/"+nextRole+"/users",HttpMethod.GET,new HttpEntity<>(httpHeaders),Object.class);
-//			nextUsers.add(userResponse.getBody());
-//		}
-		for (String nextRole : nextRoles) {
-			ResponseEntity<Object> userResponse = restTemplate.exchange(
-					keycloackUrl + "/admin/realms/crmbot/clients/" + crmbotClientId + "/roles/" + nextRole + "/users",
-					HttpMethod.GET, new HttpEntity<>(httpHeaders), Object.class);
-			try {
-				List<LinkedHashMap<String, Object>> userList = (List<LinkedHashMap<String, Object>>) userResponse
-						.getBody();
-				for (LinkedHashMap<String, Object> userMap : userList) {
-					try {
-						UserMaster user = this.userMasterService.getByUserName(userMap.get("username").toString());
-						if (user != null) {
-							userMap.put("isActiveOnCRM", user.getIsActive());
+			HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, header);
+
+			@SuppressWarnings("rawtypes")
+			HashMap response = restTemplate.postForObject(keycloackUrl + "/realms/master/protocol/openid-connect/token",
+					entity, HashMap.class);
+			log.info(response + " TOLEN");
+			String adminAccessToken = response.get("access_token").toString();
+
+			HttpHeaders httpHeaders = new HttpHeaders();
+			httpHeaders.set("Authorization", "Bearer " + adminAccessToken);
+
+			for (String nextRole : nextRoles) {
+				try {
+					ResponseEntity<Object> userResponse = restTemplate.exchange(
+							keycloackUrl + "/admin/realms/crmbot/clients/" + crmbotClientId + "/roles/" + nextRole + "/users",
+							HttpMethod.GET, new HttpEntity<>(httpHeaders), Object.class);
+					List<LinkedHashMap<String, Object>> userList = (List<LinkedHashMap<String, Object>>) userResponse
+							.getBody();
+					if (userList != null) {
+						for (LinkedHashMap<String, Object> userMap : userList) {
+							try {
+								UserMaster user = this.userMasterService.getByUserName(userMap.get("username").toString());
+								if (user != null) {
+									userMap.put("isActiveOnCRM", user.getIsActive());
+								}
+							} catch (Exception e) {
+								e.printStackTrace();
+								userMap.put("isActiveOnCRM", false);
+							}
 						}
-					} catch (Exception e) {
-						e.printStackTrace();
-						userMap.put("isActiveOnCRM", false);
 					}
-
+					nextUsers.add(userResponse.getBody());
+				} catch (Exception e) {
+					log.warn("Failed to fetch users for role: " + nextRole, e);
 				}
-				nextUsers.add(userResponse.getBody());
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
 
+			try {
+				ResponseEntity<Object> userResponse = restTemplate.exchange(
+						keycloackUrl + "/admin/realms/crmbot/clients/" + crmbotClientId + "/roles/" + "counsellor" + "/users",
+						HttpMethod.GET, new HttpEntity<>(httpHeaders), Object.class);
+				counsellors.add(userResponse.getBody());
+			} catch (Exception e) {
+				log.warn("Failed to fetch counsellors", e);
+			}
+		} catch (Exception e) {
+			log.warn("Failed to connect to Keycloak admin API for user lists", e);
 		}
-
-		List<Object> counsellors = new ArrayList<>();
-		ResponseEntity<Object> userResponse = restTemplate.exchange(
-				keycloackUrl + "/admin/realms/crmbot/clients/" + crmbotClientId + "/roles/" + "counsellor" + "/users",
-				HttpMethod.GET, new HttpEntity<>(httpHeaders), Object.class);
-		counsellors.add(userResponse.getBody());
 		model.addObject("counsellors", counsellors);
 		UserMaster userDetails = this.userMasterService.getByUserName(accessToken.getPreferredUsername());
 		if (userDetails != null)

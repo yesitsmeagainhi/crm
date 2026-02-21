@@ -1,0 +1,22 @@
+<tr th:each="dashboardResponse,iStat:${dashboardResponseList}" >
+	<td >
+		<span th:text="${dashboardResponse.userId}" class="d-none" th:id="|userName${iStat.index}|"></span>
+		<span th:text="${iStat.index+1}"></span> 
+		<span th:if="${iStat.index==0}"><img src="/img/gold-medal.png" width="40"></span>
+		<span th:if="${iStat.index==1}"><img src="/img/silver-medal.png" width="40"></span>
+		<span th:if="${iStat.index==2}"><img src="/img/bronze-medal.png" width="40"></span>
+		<span th:if="${iStat.index==3 || iStat.index==4}"><img src="/img/consellation-medal.png" width="40"></span>
+		<span >		<img th:if="${dashboardResponse.image != null}" 
+		     th:src="'data:image/jpeg;base64,' + ${dashboardResponse.image}" 
+		     alt="Profile Image"
+			 th:id="|profilePic${iStat.index}|" 
+			 width="40" height="40"
+			 style="border-radius: 50%;"
+		     class="profile-img"/>  </span> 
+	</td>
+	<td th:text="${dashboardResponse.userName}"></td>
+	<td th:text="${dashboardResponse.todaysScheduled}"></td>
+	<td th:text="${dashboardResponse.missedSchedule}"></td>
+	<td th:text="${dashboardResponse.counselled}"></td>
+	<td th:text="${dashboardResponse.converted}"></td>
+</tr>

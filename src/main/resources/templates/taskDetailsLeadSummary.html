@@ -1,0 +1,53 @@
+
+    <h2 class="text-xl font-bold mb-4 text-gray-700">Lead Details</h2>
+   
+        <div><span class="font-semibold">ID:</span> <span th:text="${activeTask.id}"></span></div>
+        <div><span class="font-semibold">Task Name:</span> <span th:text="${activeTask.taskName}"></span></div>
+        <div><span class="font-semibold">Task Group:</span> <span th:text="${activeTask.taskGroup}"></span></div>
+        <div><span class="font-semibold">Assignee:</span> <span th:text="${activeTask.assignee}"></span></div>
+        <div><span class="font-semibold">Owner:</span> <span th:text="${activeTask.owner}"></span></div>
+        <div><span class="font-semibold">Claimed:</span> <span th:text="${activeTask.isClaimed}"></span></div>
+        <div><span class="font-semibold">Lead Platform:</span> <span th:text="${activeTask.leadPlatform}"></span></div>
+        <div><span class="font-semibold">Campaign:</span> <span th:text="${activeTask.campaign}"></span></div>
+        <div><span class="font-semibold">Active:</span> <span th:text="${activeTask.isActive}"></span></div>
+        <div><span class="font-semibold">Status:</span> <span th:text="${activeTask.status}"></span></div>
+        <div><span class="font-semibold">Scheduled:</span> <span th:text="${activeTask.isScheduled}"></span></div>
+        <div><span class="font-semibold">Schedule Comment:</span> <span th:text="${activeTask.scheduleComment}"></span></div>
+        <div><span class="font-semibold">Schedule Time:<span th:if="${activeTask.scheduleTime}" th:text="${#temporals.format(activeTask.scheduleTime, 'dd MMM yyyy HH:mm')}"></span></div>
+        <div><span class="font-semibold">Scheduler Name:</span> <span th:text="${activeTask.schedulerName}"></span></div>
+        <div><span class="font-semibold">Scheduler Email:</span> <span th:text="${activeTask.schedulerEmail}"></span></div>
+        <div><span class="font-semibold">Scheduler UserId:</span> <span th:text="${activeTask.schedulerUserId}"></span></div>
+        <div><span class="font-semibold">Manager:</span> <span th:text="${activeTask.managerName}"></span></div>
+        <div><span class="font-semibold">Telecaller:</span> <span th:text="${activeTask.telecallerName}"></span></div>
+        <div><span class="font-semibold">Counsellor:</span> <span th:text="${activeTask.counsellorName}"></span></div>
+        <div><span class="font-semibold">Lead Name:</span> <span th:text="${activeTask.leadName}"></span></div>
+        <div><span class="font-semibold">College:</span> <span th:text="${activeTask.college}"></span></div>
+        <div><span class="font-semibold">Course:</span> <span th:text="${activeTask.course}"></span></div>
+        <div><span class="font-semibold">Area:</span> <span th:text="${activeTask.area}"></span></div>
+        <div><span class="font-semibold">City:</span> <span th:text="${activeTask.city}"></span></div>
+        <div><span class="font-semibold">State:</span> <span th:text="${activeTask.state}"></span></div>
+        <div><span class="font-semibold">Requirement:</span> <span th:text="${activeTask.requirement}"></span></div>
+        <div><span class="font-semibold">Reference Name:</span> <span th:text="${activeTask.refferenceName}"></span></div>
+        <div><span class="font-semibold">Reference No:</span> <span th:text="${activeTask.rerefferenceNo}"></span></div>
+        <div><span class="font-semibold">Converted:</span> <span th:text="${activeTask.isConverted}"></span></div>
+        <div><span class="font-semibold">Counselling Done:</span> <span th:text="${activeTask.isCounsellingDone}"></span></div>
+        <div><span class="font-semibold">Closing Remark:</span> <span th:text="${activeTask.closingRemark}"></span></div>
+        <div><span class="font-semibold">Remark:</span> <span th:text="${activeTask.remark}"></span></div>
+        <div><span class="font-semibold">Claim Time:</span> <span th:if="${activeTask.claimTime}" th:text="${#temporals.format(activeTask.claimTime, 'dd MMM yyyy HH:mm')}"></span></div>
+        <div><span class="font-semibold">Assigned Time:</span> <span th:text="${activeTask.assignedTime}"></span></div>
+        <div><span class="font-semibold">Phone Number:</span> <span th:text="${activeTask.phoneNumber}"></span></div>
+        <div><span class="font-semibold">Phone Number 2:</span> <span th:text="${activeTask.phoneNumber2}"></span></div>
+        <div><span class="font-semibold">Duplicate:</span> <span th:text="${activeTask.isDuplicate}"></span></div>
+        <div><span class="font-semibold">Lead Type:</span> <span th:text="${activeTask.leadType}"></span></div>
+        <div><span class="font-semibold">10th %:</span> <span th:text="${activeTask.tenthPercent}"></span></div>
+        <div><span class="font-semibold">12th %:</span> <span th:text="${activeTask.twelethPercent}"></span></div>
+        <div><span class="font-semibold">NEET %:</span> <span th:text="${activeTask.neetPercent}"></span></div>
+        <div><span class="font-semibold">Seat Confirmed:</span> <span th:text="${activeTask.isSeatConfirmed}"></span></div>
+        <div><span class="font-semibold">Admission Done By:</span> <span th:text="${activeTask.admissionDoneBy}"></span></div>
+        <div><span class="font-semibold">Admission Done Others:</span> <span th:text="${activeTask.admissionDoneOthers}"></span></div>
+        <div><span class="font-semibold">Duplicate Details:</span> <span th:text="${activeTask.duplicateDetails}"></span></div>
+        <div><span class="font-semibold">Created On:</span> <span th:if="${activeTask.createdOn}" th:text="${#temporals.format(activeTask.createdOn, 'dd MMM yyyy HH:mm')}"></div>
+        <div><span class="font-semibold">Modified On:</span> <span th:if="${activeTask.modifiedOn}" th:text="${#temporals.format(activeTask.modifiedOn, 'dd MMM yyyy HH:mm')}"></div>
+        <div><span class="font-semibold">Modified By:</span> <span th:text="${activeTask.modifiedBy}"></span></div>
+        <div><span class="font-semibold">Created By:</span> <span th:text="${activeTask.createdBy}"></span></div>
+    

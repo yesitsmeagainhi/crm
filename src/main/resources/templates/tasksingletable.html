@@ -13,7 +13,7 @@
                       <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="status">Current User</th>
                       <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="assignee">Assignee</th>
                       <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="remark">Remark</th>
-                      <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="campaign" th:if="${role=='admin'}">Campaign</th>
+                      <th class="cursor-pointer sort px-1 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" th:name="${taskType}" id="campaign">Campaign</th>
                     </tr>
                   </thead>
                   <tbody th:if="${!isClosedTask && tasks!=null && tasks.content!=null}">
@@ -53,7 +53,7 @@
                        
                       
                       <td class="align-middle text-center text-sm px-1">
-                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.campaign}" th:if="${role=='admin'}"></span>
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.campaign}"></span>
                       </td>
                       <!--<td class="align-middle text-center">
                         <a href="javascript:;" class="text-secondary font-weight-bold text-sm" data-toggle="tooltip" data-original-title="Edit user">
@@ -98,7 +98,7 @@
                        
                       
                       <td class="align-middle text-center text-sm px-1">
-                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.campaign}" th:if="${role=='admin'}"></span>
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${activeTask.campaign}"></span>
                       </td>
                       <!--<td class="align-middle text-center">
                         <a href="javascript:;" class="text-secondary font-weight-bold text-sm" data-toggle="tooltip" data-original-title="Edit user">
@@ -141,7 +141,7 @@
                         <span class="text-secondary text-sm font-weight-bold" th:text="${completedTask.activeTask.remark}">23/04/18</span>
                       </td>
                        <td class="align-middle text-center text-sm">
-                        <span class="text-secondary text-sm  font-weight-bold" th:text="${completedTask.activeTask.campaign}" th:if="${role=='admin'}"></span>
+                        <span class="text-secondary text-sm  font-weight-bold" th:text="${completedTask.activeTask.campaign}"></span>
                       </td>
                     </tr>
                     

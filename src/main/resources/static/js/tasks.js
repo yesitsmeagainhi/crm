@@ -388,6 +388,9 @@ $(document).ready(function($){
 		if(admissionDone=='Other'){
 			admissionDone = $("#admission-done-others").val()
 		}
+		if(!admissionDone && $(".admission-done-counsellors").length === 0){
+			admissionDone = userName
+		}
 		if(( isChecked=="true" || isChecked=="false" || isSeatConfirmed) && ($("#closing-remark").val().length>0)){
 			if((isChecked == 'true' && admissionDone) || isChecked=="false"|| isSeatConfirmed){
 				let closeRequest={}
@@ -399,7 +402,7 @@ $(document).ready(function($){
 					closeRequest['isConverted']=isChecked
 					closeRequest['closeTask']=false
 					closeRequest['isSeatConfirmed']=isSeatConfirmed
-					closeRequest['admissionDoneBy'] = $("#counsellor_admission_done").val()
+					closeRequest['admissionDoneBy'] = $("#counsellor_admission_done").length ? $("#counsellor_admission_done").val() : userName
 					console.log(this.id)
 					debugger;
 					if(this.id!="saveClosingDetails" || isChecked=="true"){
@@ -415,10 +418,10 @@ $(document).ready(function($){
 						success:function(data){
 							ticketForwarded=true
 							let alertText=data
-							
-							
-							$(".cd-popup-trigger3").click()	
-							$(".cd-popup-trigger2").click()	
+
+
+							$(".cd-popup-trigger3").click()
+							$(".cd-popup-trigger2").click()
 							$(".cd-popup-container2").addClass("d-none")
 							$("#ticket-acknowledgement").text(alertText)
 							$(".ack-popup").removeClass("d-none")
@@ -428,6 +431,9 @@ $(document).ready(function($){
 									if(allInputs[i].id!="iconNavbarSidenav2" )
 										allInputs[i].disabled=true
 								}
+						},
+						error:function(xhr, status, error){
+							alert("Failed to save closing details: " + (xhr.responseText || error))
 						}
 				})
 			}			
@@ -533,14 +539,24 @@ $(document).ready(function($){
 					success:function(data){
 						ticketForwarded=true
 						let alertText="Details Saved"
-						
-						
-						$(".cd-popup-trigger3").click()	
-						$(".cd-popup-trigger2").click()	
+
+						$(".cd-popup-trigger3").click()
+						$(".cd-popup-trigger2").click()
 						$(".cd-popup-container2").addClass("d-none")
 						$("#ticket-acknowledgement").text(alertText)
 						$(".ack-popup").removeClass("d-none")
 						$(".closing-popup").addClass("d-none")
+
+						// Reload the task detail page to show updated counselling details
+						$.ajax({
+							url:'/crmbot/detailpage?id='+taskId+'&role='+role+'&isClosed=false&isSearchLead=false',
+							success:function(pageData){
+								$(".task-detail-page").html(pageData)
+							}
+						})
+					},
+					error:function(xhr, status, error){
+						alert("Failed to save counselling details: " + (xhr.responseText || error))
 					}
 				})
 			}else{

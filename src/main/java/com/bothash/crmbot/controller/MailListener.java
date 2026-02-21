@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +34,8 @@ import javax.mail.Store;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.search.FlagTerm;
 
+import org.apache.http.HttpResponse;
+import org.jose4j.lang.JoseException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -47,7 +51,9 @@ import com.bothash.crmbot.entity.DuplicateDetails;
 import com.bothash.crmbot.entity.FacebookLeadConfigs;
 import com.bothash.crmbot.entity.FacebookLeads;
 import com.bothash.crmbot.entity.HistoryEvents;
+import com.bothash.crmbot.entity.PushSubscription;
 import com.bothash.crmbot.entity.TargetMails;
+import com.bothash.crmbot.repository.SubscriptionRepository;
 import com.bothash.crmbot.service.ActiveTaskService;
 import com.bothash.crmbot.service.AutomationByCampaignService;
 import com.bothash.crmbot.service.AutomationByCourseService;
@@ -62,6 +68,11 @@ import com.bothash.crmbot.service.impl.TaskListener;
 import com.bothash.crmbot.service.impl.TwilioWhatsAppService;
 import com.bothash.crmbot.service.impl.WhatsappService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import nl.martijndwars.webpush.Notification;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Subscription;
+import nl.martijndwars.webpush.Subscription.Keys;
 
 @Controller
 public class MailListener {
@@ -105,12 +116,22 @@ public class MailListener {
 	@Autowired
     private TwilioWhatsAppService twilioWhatsAppService;
 	
+	@Autowired
+	private  SubscriptionRepository subs;
+	
+	@Autowired
+	private  PushService push;
+	
 	@Value("${email.user.name}")
 	private String userName;
 	
 	@Value("${email.password}")
 	private String password;
-	
+
+	// Flag to prevent double-processing when multipart email has both text/plain and text/html
+	private boolean plainTextProcessed = false;
+
+
 	private Properties getServerProperties() {
 		Properties properties = new Properties();
 		properties.put("mail.pop3.host", "pop.gmail.com");
@@ -158,8 +179,8 @@ public class MailListener {
 
 			      for (int i = 0, n = messages.length; i < n; i++) {
 			         Message message = messages[i];
-			        
-			         
+		         plainTextProcessed = false;
+
 		        	 System.out.println("Mail from just dial");
 		        	 System.out.println("---------------------------------");
 			         System.out.println("Email Number " + (i + 1));
@@ -214,20 +235,25 @@ public class MailListener {
 	        	 
 	         else if(googleCampaings.contains(mainSubject)) {
 	        	 System.out.println("This is " +mainSubject);
-	         }else if(subject.contains("Google Ads Lead")) {
+	         }else if(subject.toLowerCase().contains("google ads lead")) {
 	        	 generateCustomeGoogleLead((String) p.getContent(), subject);
+	        	 plainTextProcessed = true;
 	         }
 	      } else if (p.isMimeType("TEXT/HTML") ) {
-		         System.out.println("This is plain text");
+		         System.out.println("This is HTML");
 		         System.out.println("---------------------------");
+		         if(plainTextProcessed) {
+		        	 System.out.println("Skipping HTML - already processed plain text");
+		         } else {
 		         System.out.println((String) p.getContent());
 		         if(from.contains("Just Dial"))
 		        	 System.out.println(p.getContent().toString());
 		        	 //generateJustDialLead((String) p.getContent(), subject);
 		         else if(googleCampaings.contains(mainSubject)) {
 		        	 generateGoogleLead((String) p.getContent(), subject);
-		         }else if(subject.contains("Google Ads Lead") || subject.contains("PWD")) {
+		         }else if(subject.toLowerCase().contains("google ads lead") || subject.contains("PWD")) {
 		        	 generateCustomeGoogleLead((String) p.getContent(), subject);
+		         }
 		         }
 		      } 
 	      //check if the content has attachment
@@ -275,9 +301,16 @@ public class MailListener {
         while (matcher.find()) {
         	try {
 		    	String fullName=matcher.group(2);
-		    	fullName=fullName.split("\n")[0];
-		    	fullName=fullName.split("<br />")[1];
-		    	fullName=fullName.split("</li>")[0];
+		    	fullName=fullName.trim();
+		    	if(fullName.contains("<br />")) {
+		    		fullName=fullName.split("<br />")[1];
+		    		fullName=fullName.split("</li>")[0];
+		    	} else {
+		    		// Plain text email - first line after trim has the value
+		    		String[] lines = fullName.split("\n");
+		    		fullName = lines[0];
+		    	}
+		    	fullName=fullName.trim();
 		    	System.out.println("fullName   "+ fullName);
 		    	activeTask.setLeadName(fullName.trim());
 		    	
@@ -297,10 +330,16 @@ public class MailListener {
         while (matcher.find()) {
         	try {
 		    	phoneNumber=matcher.group(2);
+		    	phoneNumber=phoneNumber.trim();
 		    	System.out.println("fullName   "+ phoneNumber);
-		    	phoneNumber=phoneNumber.split("\n")[0];
-		    	phoneNumber=phoneNumber.split("<br />")[1];
-		    	phoneNumber=phoneNumber.split("</li>")[0];
+		    	if(phoneNumber.contains("<br />")) {
+		    		phoneNumber=phoneNumber.split("<br />")[1];
+		    		phoneNumber=phoneNumber.split("</li>")[0];
+		    	} else {
+		    		// Plain text email - first line after trim has the value
+		    		String[] lines = phoneNumber.split("\n");
+		    		phoneNumber = lines[0];
+		    	}
 		    	phoneNumber=phoneNumber.trim();
 		    	phoneNumber=phoneNumber.replaceAll(" ", "");
 		    	phoneNumber=phoneNumber.replace("\\+91", "");
@@ -338,6 +377,30 @@ public class MailListener {
 							}
 						}
 						this.activeTaskService.saveAll(existingTask);
+						try {
+							PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
+							String payload = "{"
+							        + "\"title\": \"🎉 New Admission Lead!\","
+							        + "\"body\": \"New lead is added with number "+existingTask.get(0).getPhoneNumber()+". Tap to review.\","
+							        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+							        + "\"url\": \"https://www.vmedify.com\""
+							        + "}";
+						    try {
+						    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+					    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+					        
+						        HttpResponse notiResponse = push.send(new Notification(sub,payload));
+						        log.info("pushed");
+						    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+						        // 404 / 410 ⇒ subscription no longer valid – prune it
+						    	log.error(ex.getMessage());
+//						        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+//						          subs.delete(s);
+						      }
+						} catch (Exception e) {
+							log.error("unable to send noti from mail");
+						}
+						
 			    		return ;
 		    		}catch(Exception e) {
 		    			e.printStackTrace();
@@ -377,16 +440,23 @@ public class MailListener {
         	}
         }
         
-        regex= "(Checkbox)((?:\\S*\\s*\\n?){1,10})";
+        regex= "(Checkbox|Email[^\\w]*Address|Email)((?:\\S*\\s*\\n?){1,10})";
 		pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(content);
         while (matcher.find()) {
         	try {
 		    	String email=matcher.group(2);
+		    	email=email.trim();
 		    	System.out.println("email   "+ email);
-		    	email=email.split("\n")[0];
-		    	email=email.split("<br />")[1];
-		    	email=email.split("</li>")[0];
+		    	if(email.contains("<br />")) {
+		    		email=email.split("<br />")[1];
+		    		email=email.split("</li>")[0];
+		    	} else {
+		    		// Plain text email - first line after trim has the value
+		    		String[] lines = email.split("\n");
+		    		email = lines[0];
+		    	}
+		    	email=email.trim();
 		    	System.out.println("phoneNumber   "+ email);
 		    	//activeTask.setLeadName(email.trim());
 		    	activeTask.setCourse(email);
@@ -407,6 +477,64 @@ public class MailListener {
         	}
         }
         
+        // Parse Area field
+        regex= "(Area)((?:\\S*\\s*\\n?){1,10})";
+		pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+        matcher = pattern.matcher(content);
+        while (matcher.find()) {
+        	try {
+		    	String area=matcher.group(2);
+		    	area=area.trim();
+		    	if(area.contains("<br />")) {
+		    		area=area.split("<br />")[1];
+		    		area=area.split("</li>")[0];
+		    	} else {
+		    		String[] lines = area.split("\n");
+		    		area = lines[0];
+		    	}
+		    	area=area.trim();
+		    	System.out.println("area   "+ area);
+		    	activeTask.setArea(area);
+		    	JSONObject areaJson=new JSONObject();
+		    	areaJson.put("name", "area");
+				String values[]=new  String[1];
+				values[0]= area;
+				areaJson.put("values", values);
+				fieldValues.put(areaJson);
+        	}catch(Exception e) {
+        		e.printStackTrace();
+        	}
+        }
+
+        // Parse Requirement field
+        regex= "(Requirement)((?:\\S*\\s*\\n?){1,10})";
+		pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+        matcher = pattern.matcher(content);
+        while (matcher.find()) {
+        	try {
+		    	String requirement=matcher.group(2);
+		    	requirement=requirement.trim();
+		    	if(requirement.contains("<br />")) {
+		    		requirement=requirement.split("<br />")[1];
+		    		requirement=requirement.split("</li>")[0];
+		    	} else {
+		    		String[] lines = requirement.split("\n");
+		    		requirement = lines[0];
+		    	}
+		    	requirement=requirement.trim();
+		    	System.out.println("requirement   "+ requirement);
+		    	activeTask.setRequirement(requirement);
+		    	JSONObject reqJson=new JSONObject();
+		    	reqJson.put("name", "requirement_field");
+				String values[]=new  String[1];
+				values[0]= requirement;
+				reqJson.put("values", values);
+				fieldValues.put(reqJson);
+        	}catch(Exception e) {
+        		e.printStackTrace();
+        	}
+        }
+
         FacebookLeads facebookLeads=new FacebookLeads();
 		facebookLeads.setFieldData(fieldValues.toString());
 		facebookLeads=this.facebookLeadsService.save(facebookLeads);
@@ -456,27 +584,51 @@ public class MailListener {
 						e.printStackTrace();
 					}
 				}
-				
+				// Fallback to admin if no automation rule could allocate a user
+				if(activeTask.getAssignee()==null) {
+					activeTask.setAssignee("admin");
+					log.info("Automation could not allocate user, defaulting to admin");
+				}
 			}else {
 				activeTask.setAssignee("admin");
 			}
 		}
-		
-//		try {
-//			whatsappService.sendMessage(activeTask.getCampaign(),activeTask.getPhoneNumber());
-//		}catch(Exception e2) {
-//			e2.printStackTrace();
-//		}
-		if(activeTask.getLeadName().toLowerCase().contains("naresh")) {
+
+		if(activeTask.getLeadName()!=null && activeTask.getLeadName().toLowerCase().contains("naresh")) {
 			try {
 				twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");
 			}catch(Exception e2) {
 				e2.printStackTrace();
 			}
 		}
-		
+
 		this.activeTaskService.save(activeTask);
-		
+		log.info("Email lead saved successfully: name={}, phone={}, assignee={}", activeTask.getLeadName(), activeTask.getPhoneNumber(), activeTask.getAssignee());
+		try {
+			PushSubscription s =subs.findByUserName(activeTask.getOwner());
+			String payload = "{"
+			        + "\"title\": \"🎉 New Admission Lead!\","
+			        + "\"body\": \"New lead is added with number "+activeTask.getPhoneNumber()+". Tap to review.\","
+			        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+			        + "\"url\": \"https://www.vmedify.com\""
+			        + "}";
+		    try {
+		    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+	    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+
+		        HttpResponse notiResponse = push.send(new Notification(sub,payload));
+		        log.info("pushed");
+		    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+		        // 404 / 410 ⇒ subscription no longer valid – prune it
+		    	log.error(ex.getMessage());
+//		        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+//		          subs.delete(s);
+		      }
+		} catch (Exception e) {
+			log.error("mail noficiation not sent");
+		}
+
+
 		HistoryEvents hisEvents=new HistoryEvents();
 		hisEvents.setActiveTask(activeTask);
 		hisEvents.setUserName("Email");
@@ -559,6 +711,29 @@ public class MailListener {
 							}
 						}
 						this.activeTaskService.saveAll(existingTask);
+						try {
+							PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
+							String payload = "{"
+							        + "\"title\": \"🎉 New Admission Lead!\","
+							        + "\"body\": \"New lead is added with number "+existingTask.get(0).getPhoneNumber()+". Tap to review.\","
+							        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+							        + "\"url\": \"https://www.vmedify.com\""
+							        + "}";
+						    try {
+						    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+					    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+					        
+						        HttpResponse notiResponse = push.send(new Notification(sub,payload));
+						        log.info("pushed");
+						    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+						        // 404 / 410 ⇒ subscription no longer valid – prune it
+						    	log.error(ex.getMessage());
+//						        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+//						          subs.delete(s);
+						      }
+						} catch (Exception e) {
+							log.error("unable to send noti from mail");
+						}
 			    		return ;
 		    		}catch(Exception e){
 		    			e.printStackTrace();
@@ -689,6 +864,29 @@ public class MailListener {
 		}
 		
 		this.activeTaskService.save(activeTask);
+		try {
+			PushSubscription s =subs.findByUserName(activeTask.getOwner());
+			String payload = "{"
+			        + "\"title\": \"🎉 New Admission Lead!\","
+			        + "\"body\": \"New lead is added with number "+activeTask.getPhoneNumber()+". Tap to review.\","
+			        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+			        + "\"url\": \"https://www.vmedify.com\""
+			        + "}";
+		    try {
+		    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+	    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+	        
+		        HttpResponse notiResponse = push.send(new Notification(sub,payload));
+		        log.info("pushed");
+		    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+		        // 404 / 410 ⇒ subscription no longer valid – prune it
+		    	log.error(ex.getMessage());
+//		        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+//		          subs.delete(s);
+		      }
+		} catch (Exception e) {
+			log.error("ubalt to sned nto");
+		}
 		
 		HistoryEvents hisEvents=new HistoryEvents();
 		hisEvents.setActiveTask(activeTask);

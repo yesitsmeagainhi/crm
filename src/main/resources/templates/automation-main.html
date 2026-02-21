@@ -124,17 +124,18 @@
 			$(".user-select").val("0")
 			$(".parameter-dropdown").val("")
 			$("#automation-group-save").addClass("d-none")
-			if($("#automationParameter").val()=="Source"){
+			$(".parameter-dropdown").addClass("d-none")
+			if($("#automationParameter").val()=="Random"){
+				selectedParamter="Random"
+				$(".role-select").removeClass("d-none")
+			}else if($("#automationParameter").val()=="Source"){
 				selectedParamter="Source"
-				$(".parameter-dropdown").addClass("d-none")
 				$("#sourceDropDown").removeClass("d-none")
 			}else if($("#automationParameter").val()=="Course"){
 				selectedParamter="Course"
-				$(".parameter-dropdown").addClass("d-none")
 				$("#courseDropDown").removeClass("d-none")
 			}else if($("#automationParameter").val()=="Campaign"){
 				selectedParamter="Campaign"
-				$(".parameter-dropdown").addClass("d-none")
 				$("#campaignDropDown").removeClass("d-none")
 			}
 		})

@@ -1,0 +1,67 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.3)
+
+2026-02-21 16:51:15.041  INFO 22356 --- [           main] com.bothash.crmbot.CrmbotApplication     : Starting CrmbotApplication v0.0.1-SNAPSHOT using Java 17.0.16 on NGI-4 with PID 22356 (E:\CRMBOT\target\keycloak-0.0.1-SNAPSHOT.jar started by ADM in E:\CRMBOT)
+2026-02-21 16:51:15.043  INFO 22356 --- [           main] com.bothash.crmbot.CrmbotApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-02-21 16:51:16.269  INFO 22356 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-21 16:51:16.594  INFO 22356 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 317 ms. Found 24 JPA repository interfaces.
+2026-02-21 16:51:16.792  INFO 22356 --- [           main] faultConfiguringBeanFactoryPostProcessor : No bean named 'errorChannel' has been explicitly defined. Therefore, a default PublishSubscribeChannel will be created.
+2026-02-21 16:51:16.813  INFO 22356 --- [           main] faultConfiguringBeanFactoryPostProcessor : No bean named 'integrationHeaderChannelRegistry' has been explicitly defined. Therefore, a default DefaultHeaderChannelRegistry will be created.
+2026-02-21 16:51:17.312  INFO 22356 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.integration.config.IntegrationManagementConfiguration' of type [org.springframework.integration.config.IntegrationManagementConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2026-02-21 16:51:17.330  INFO 22356 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'integrationChannelResolver' of type [org.springframework.integration.support.channel.BeanFactoryChannelResolver] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2026-02-21 16:51:18.001  INFO 22356 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 9000 (https) 7001 (http)
+2026-02-21 16:51:18.075  INFO 22356 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-02-21 16:51:18.076  INFO 22356 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.65]
+2026-02-21 16:51:18.144  INFO 22356 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-02-21 16:51:18.144  INFO 22356 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2813 ms
+2026-02-21 16:51:18.472  WARN 22356 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-02-21 16:51:18.608  INFO 22356 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-21 16:51:18.685  INFO 22356 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.10.Final
+2026-02-21 16:51:18.909  INFO 22356 --- [           main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2026-02-21 16:51:19.115  INFO 22356 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-02-21 16:51:19.358  INFO 22356 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-02-21 16:51:19.389  INFO 22356 --- [           main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect
+2026-02-21 16:51:20.458  INFO 22356 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2026-02-21 16:51:20.465  INFO 22356 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/authenticate']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/authenticate']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/swagger-resources/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/swagger-resources/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/swagger-ui/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/swagger-ui/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/swagger-ui/index.html']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/swagger-ui/index.html']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/v3/api-docs/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/v3/api-docs/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/webjars/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/webjars/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/swagger-ui/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/swagger-ui/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/resources/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/resources/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/static/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/static/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/css/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/css/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/js/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/js/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/js/plugin/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/js/plugin/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='/img/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='/img/**']
+2026-02-21 16:51:22.742  WARN 22356 --- [           main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore Ant [pattern='service-worker.js']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+2026-02-21 16:51:22.742  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will not secure Ant [pattern='service-worker.js']
+2026-02-21 16:51:22.779  INFO 22356 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@395a573c, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@379f9555, org.springframework.security.web.context.SecurityContextPersistenceFilter@15d88c10, org.springframework.security.web.header.HeaderWriterFilter@1d2def55, org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter@23468512, org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter@193bb809, org.springframework.security.web.authentication.logout.LogoutFilter@333d44f6, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@54b44879, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@5beb6be2, org.keycloak.adapters.springsecurity.filter.KeycloakSecurityContextRequestFilter@69cd7630, org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticatedActionsFilter@7e8279e5, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@7e3ee128, org.springframework.security.web.session.SessionManagementFilter@6eeb29c0, org.springframework.security.web.access.ExceptionTranslationFilter@3dfe92ef, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@4b691611]
+2026-02-21 16:51:24.722  INFO 22356 --- [           main] o.s.i.endpoint.EventDrivenConsumer       : Adding {logging-channel-adapter:_org.springframework.integration.errorLogger} as a subscriber to the 'errorChannel' channel
+2026-02-21 16:51:24.729  INFO 22356 --- [           main] o.s.i.channel.PublishSubscribeChannel    : Channel 'application.errorChannel' has 1 subscriber(s).
+2026-02-21 16:51:24.729  INFO 22356 --- [           main] o.s.i.endpoint.EventDrivenConsumer       : started bean '_org.springframework.integration.errorLogger'
+2026-02-21 16:51:25.103  INFO 22356 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 9000 (https) 7001 (http) with context path ''
+2026-02-21 16:51:25.122  INFO 22356 --- [           main] com.bothash.crmbot.CrmbotApplication     : Started CrmbotApplication in 10.535 seconds (JVM running for 11.012)
+Checking mails NEW.
+messages.length---0

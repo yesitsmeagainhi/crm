@@ -228,26 +228,32 @@ public class FaceBookLeadsController {
 							event.setUserId("Facebook");
 							event.setEvent("Duplicate task created through Facebook");
 							historyEventsService.save(event);
+							try {
+								PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
+								String payload = "{"
+								        + "\"title\": \"🎉 New Admission Lead!\","
+								        + "\"body\": \"New lead is added with number "+activeTask.getPhoneNumber()+". Tap to review.\","
+								        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+								        + "\"url\": \"https://www.vmedify.com\""
+								        + "}";
+							    try {
+							    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+						    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+						        
+							        HttpResponse notiResponse = push.send(new Notification(sub,payload));
+							        log.info("pushed");
+							    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+							        // 404 / 410 ⇒ subscription no longer valid – prune it
+							    	log.error(ex.getMessage());
+//							        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+//							          subs.delete(s);
+							      }
+							} catch (Exception e) {
+								log.error("uanble to send notification");
+							}
 							
-							PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
-							String payload = "{"
-							        + "\"title\": \"🎉 New Admission Lead!\","
-							        + "\"body\": \"New lead is added with number"+activeTask.getPhoneNumber()+". Tap to review.\","
-							        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
-							        + "\"url\": \"https://www.vmedify.com\""
-							        + "}";
-						    try {
-						    	Keys k = new Keys(s.getP256dh(), s.getAuth());
-					    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
-					        
-						        HttpResponse notiResponse = push.send(new Notification(sub,payload));
-						        log.info("pushed");
-						    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
-						        // 404 / 410 ⇒ subscription no longer valid – prune it
-						        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
-						          subs.delete(s);
-						      }
-				    		return null;
+							
+				    		break;
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -311,11 +317,37 @@ public class FaceBookLeadsController {
 				
 				List<ActiveTask> savedTask=this.activeTaskService.saveAll(taskToSave);
 				
+				
+				
 				for(ActiveTask task:savedTask) {
 					HistoryEvents event =new HistoryEvents();
 					event.setActiveTask(task);
 					event.setEvent("Task created");
 					historyEventsService.save(event);
+					try {
+						PushSubscription s =subs.findByUserName(task.getOwner());
+						String payload = "{"
+						        + "\"title\": \"🎉 New Admission Lead!\","
+						        + "\"body\": \"New lead is added with number "+task.getPhoneNumber()+". Tap to review.\","
+						        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+						        + "\"url\": \"https://www.vmedify.com\""
+						        + "}";
+					    try {
+					    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+				    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+				        
+					        HttpResponse notiResponse = push.send(new Notification(sub,payload));
+					        log.info("pushed");
+					    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+					        // 404 / 410 ⇒ subscription no longer valid – prune it
+					    	log.error(ex.getMessage());
+//					        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+//					          subs.delete(s);
+					      }
+					}catch (Exception e) {
+						log.error("unable to send notification");
+					}
+					
 				}
 				
 				this.facebookLeadConfigService.save(activeConfig);

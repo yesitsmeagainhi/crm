@@ -295,6 +295,14 @@ public class FlowController {
 					}
 				}
 				
+				// Check 500 task cap for manually assigned telecallers
+				if(activeTask.getOwner()!=null && activeTask.getAssignee()!=null
+					&& activeTask.getAssignee().equals("telecaller")
+					&& activeTaskRepository.countByIsActiveAndOwner(true, activeTask.getOwner()) >= 500) {
+					log.info("Manual add blocked: {} has reached 500 active task limit", activeTask.getOwner());
+					return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+				}
+
 				if(activeTask.getAssignee()==null) {
 					activeTask.setAssignee("admin");
 					activeTask.setTaskGroup("admin");
@@ -316,24 +324,29 @@ public class FlowController {
 				
 				activeTask=this.activeTaskService.save(activeTask);
 //				PushSubscription s =subs.findByUserName(userName);
-				PushSubscription s =subs.findByUserName(activeTask.getOwner());
-				String payload = "{"
-				        + "\"title\": \"🎉 New Admission Lead!\","
-				        + "\"body\": \"New lead is added with number"+activeTask.getPhoneNumber()+". Tap to review.\","
-				        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
-				        + "\"url\": \"https://www.vmedify.com\""
-				        + "}";
-			    try {
-			    	Keys k = new Keys(s.getP256dh(), s.getAuth());
-		    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
-		        
-			        HttpResponse response = push.send(new Notification(sub,payload));
-			        log.info("pushed");
-			    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
-			        // 404 / 410 ⇒ subscription no longer valid – prune it
-			        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
-			          subs.delete(s);
-			      }
+				try {
+					PushSubscription s =subs.findByUserName(activeTask.getOwner());
+					String payload = "{"
+					        + "\"title\": \"🎉 New Admission Lead!\","
+					        + "\"body\": \"New lead is added with number "+activeTask.getPhoneNumber()+". Tap to review.\","
+					        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+					        + "\"url\": \"https://www.vmedify.com\""
+					        + "}";
+				    try {
+				    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+			    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+			        
+				        HttpResponse response = push.send(new Notification(sub,payload));
+				        log.info("pushed");
+				    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+				        // 404 / 410 ⇒ subscription no longer valid – prune it
+				        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+				          subs.delete(s);
+				      }
+				} catch (Exception e) {
+					log.error("unable to send noti");
+				}
+				
 //				subs.findAll().forEach(s -> {
 //				      try {
 //				    	  Keys k = new Keys(s.getP256dh(), s.getAuth());
@@ -782,7 +795,7 @@ public class FlowController {
 		String commentString = "";
 		String counsellingDoneBy = counsellingDetails.getCounsellingDoneBy();
 		
-		if(counsellingDetails.getCounsellingDoneBy().equalsIgnoreCase("Other")) {
+		if("Other".equalsIgnoreCase(counsellingDetails.getCounsellingDoneBy())) {
 			counsellingDoneBy = counsellingDetails.getCousellingDoneOthers();
 		}
 		
@@ -915,24 +928,29 @@ public class FlowController {
 					}
 				}
 				this.activeTaskRepository.saveAll(existingTask);
-				PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
-				String payload = "{"
-				        + "\"title\": \"🎉 New Admission Lead!\","
-				        + "\"body\": \"New lead is added with number"+activeTask.getPhoneNumber()+". Tap to review.\","
-				        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
-				        + "\"url\": \"https://www.vmedify.com\""
-				        + "}";
-			    try {
-			    	Keys k = new Keys(s.getP256dh(), s.getAuth());
-		    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
-		        
-			        HttpResponse response = push.send(new Notification(sub,payload));
-			        log.info("pushed");
-			    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
-			        // 404 / 410 ⇒ subscription no longer valid – prune it
-			        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
-			          subs.delete(s);
-			      }
+				try {
+					PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
+					String payload = "{"
+					        + "\"title\": \"🎉 New Admission Lead!\","
+					        + "\"body\": \"New lead is added with number "+activeTask.getPhoneNumber()+". Tap to review.\","
+					        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+					        + "\"url\": \"https://www.vmedify.com\""
+					        + "}";
+				    try {
+				    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+			    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+			        
+				        HttpResponse response = push.send(new Notification(sub,payload));
+				        log.info("pushed");
+				    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+				        // 404 / 410 ⇒ subscription no longer valid – prune it
+				        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+				          subs.delete(s);
+				      }
+				}catch (Exception e) {
+					log.error("error sending notification");
+				}
+				
 	    		return null;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -1031,25 +1049,30 @@ public class FlowController {
 		//}
 		
 		activeTask=this.activeTaskService.save(activeTask);
+		try {
+			PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
+			String payload = "{"
+			        + "\"title\": \"🎉 New Admission Lead!\","
+			        + "\"body\": \"New lead is added with number "+activeTask.getPhoneNumber()+". Tap to review.\","
+			        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
+			        + "\"url\": \"https://www.vmedify.com\""
+			        + "}";
+		    try {
+		    	Keys k = new Keys(s.getP256dh(), s.getAuth());
+	    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
+	        
+		        HttpResponse response = push.send(new Notification(sub,payload));
+		        log.info("pushed");
+		    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
+		        // 404 / 410 ⇒ subscription no longer valid – prune it
+		        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
+		          subs.delete(s);
+		      }
+		} catch (Exception e) {
+			log.error("uable to send notification");
+		}
 		
-		PushSubscription s =subs.findByUserName(existingTask.get(0).getOwner());
-		String payload = "{"
-		        + "\"title\": \"🎉 New Admission Lead!\","
-		        + "\"body\": \"New lead is added with number"+activeTask.getPhoneNumber()+". Tap to review.\","
-		        + "\"icon\": \"https://www.vmedify.com/img/logos/crmb-logo.jpg\","
-		        + "\"url\": \"https://www.vmedify.com\""
-		        + "}";
-	    try {
-	    	Keys k = new Keys(s.getP256dh(), s.getAuth());
-    	  	Subscription sub = new Subscription(s.getEndpoint(), k);
-        
-	        HttpResponse response = push.send(new Notification(sub,payload));
-	        log.info("pushed");
-	    } catch ( IOException | GeneralSecurityException | JoseException | ExecutionException | InterruptedException ex) {
-	        // 404 / 410 ⇒ subscription no longer valid – prune it
-	        if (ex.getMessage().contains("410") || ex.getMessage().contains("404"))
-	          subs.delete(s);
-	      }
+		
 //		if(activeTask.getLeadName().toLowerCase().contains("naresh")) {
 //			try {
 //				twilioWhatsAppService.sendWhatsAppMessage(activeTask.getPhoneNumber(),"lead_creation");

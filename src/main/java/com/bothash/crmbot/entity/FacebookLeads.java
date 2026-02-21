@@ -45,7 +45,7 @@ private static final long serialVersionUID = 1L;
 	
 	private String formId;
 	
-	@Column(length=500)
+	@Column(columnDefinition = "TEXT")
 	private String fieldData;
 	
 	private String leadId;

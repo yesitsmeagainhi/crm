@@ -1,0 +1,55 @@
+<th:block layout:replace="fragments/htmlhead"></th:block>
+<link href="/css/access-management.css" rel="stylesheet" />
+<body class="g-sidenav-show  bg-gray-200">
+  <th:block layout:replace="fragments/sidebar"></th:block>	
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    <th:block layout:replace="fragments/header"></th:block>
+  <div class="rbac-container">
+    <h2 class="rbac-title">Role-Based Access Control</h2>
+
+    <div class="rbac-role-select">
+      <label for="rbac-role-dropdown">
+        <strong>Select Role:</strong>
+        <select id="rbac-role-dropdown" autocomplete="off">
+          <option th:each="role,iStat:${roles}" th:value="${role}" th:text="${role}">Admin</option>
+        </select>
+      </label>
+ 
+    </div>
+
+    <table class="rbac-table">
+      <thead>
+        <tr>
+          <th class="rbac-th">Module</th>
+          <th class="rbac-th">View</th>
+          <th class="rbac-th">Edit</th>
+		  <th class="rbac-th">Admin Level Data</th>
+        </tr>
+      </thead>
+	  <tbody id="rbac-access-table">
+	    <tr th:each="module : ${modules}" th:attr="data-module-id=${module.id},data-module-name=${module.name}">
+	      <td class="rbac-td" th:text="${module.name}">Dashboard</td>
+	      <td class="rbac-td text-center">
+	        <input th:if="${module.name !='COUNSELLING INPUT' && module.name !='CLOSING INPUT FULL' && module.name !='ADD TASK' 
+			&& module.name !='CLOSING INPUT PARTIAL' && module.name !='MOVE TASK'  
+			&& module.name !='LEAD TRANSFER' && module.name !='ACCESS MANAGEMENT' && module.name !='TASKS' && module.name !='COMPLETED TASK' } " type="checkbox" class="view-access"  autocomplete="off"/>
+	      </td>
+	      <td class="rbac-td text-center">
+	        <input th:if="${module.name !='DASHBORAD' && module.name !='LEAD SUMMARY' && module.name !='TASKS' } " type="checkbox" class="edit-access" autocomplete="off"/>
+	      </td>
+		  <td class="rbac-td text-center" >
+  	        <input th:if="${module.name =='LEAD SUMMARY' || module.name =='TASKS' } " type="checkbox" class="admin-level-data" autocomplete="off"/>
+  	      </td>
+	    </tr>
+	  </tbody>
+    </table>
+
+    <div class="rbac-actions">
+      <button class="btn-primary btn srbac-btn-save">Save</button>
+    </div>
+  </div>
+</main>
+</body>
+<script src="/js/custom-sidebar.js"></script>
+<script src="/js/access-management.js"></script>

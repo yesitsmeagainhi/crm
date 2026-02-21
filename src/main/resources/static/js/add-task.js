@@ -142,6 +142,9 @@ $(document).ready(function(){
 				error:function(err){
 					console.log(err)
 					$(".save-lead").removeAttr("disabled")
+					if(err.status==400){
+						alert("This telecaller has reached the 500 active task limit. Please assign to someone else.")
+					}
 				}
 			})
 		}else{
