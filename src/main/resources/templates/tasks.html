@@ -459,7 +459,79 @@
 	
 	
   </script>
-  
+
+<!-- Notification Popup Dialog on Login -->
+<div class="modal fade" id="notifPopupModal" tabindex="-1" aria-labelledby="notifPopupLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-gradient-primary">
+        <h5 class="modal-title text-white" id="notifPopupLabel">
+          <i class="material-icons align-middle me-1">notifications_active</i> Updates on Your Leads
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="notif-popup-body" style="max-height: 350px; overflow-y: auto;">
+        <!-- Notifications loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Dismiss</button>
+        <button type="button" class="btn btn-sm btn-primary" id="popup-mark-read-btn">Mark All as Read</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Show notification popup on page load
+$(document).ready(function() {
+	$.ajax({
+		url: '/api/notifications/unread',
+		type: 'GET',
+		success: function(data) {
+			if (data && data.length > 0) {
+				var html = '<div class="list-group list-group-flush">';
+				for (var i = 0; i < data.length; i++) {
+					var n = data[i];
+					var icon = n.type === 'COUNSELLED' ? 'record_voice_over' : (n.type === 'CLOSED' ? 'lock' : 'task_alt');
+					var color = n.type === 'COUNSELLED' ? 'text-info' : (n.type === 'CLOSED' ? 'text-warning' : 'text-success');
+					var typeBadge = n.type === 'COUNSELLED'
+						? '<span class="badge bg-info badge-sm ms-2">Counselled</span>'
+						: (n.type === 'CLOSED' ? '<span class="badge bg-warning badge-sm ms-2">Closed</span>'
+						: '<span class="badge bg-success badge-sm ms-2">Completed</span>');
+					html += '<div class="list-group-item px-0 py-2">' +
+						'<div class="d-flex align-items-start">' +
+						'<i class="material-icons ' + color + ' me-2 mt-1" style="font-size:22px;">' + icon + '</i>' +
+						'<div>' +
+						'<p class="mb-0 text-sm fw-bold">' + (n.leadName || 'Unknown Lead') + typeBadge + '</p>' +
+						'<p class="mb-0 text-xs text-muted">' + n.message + '</p>' +
+						'</div>' +
+						'</div></div>';
+				}
+				html += '</div>';
+				$('#notif-popup-body').html(html);
+				$('#notifPopupModal').modal('show');
+			}
+		}
+	});
+
+	$('#popup-mark-read-btn').on('click', function() {
+		$.ajax({
+			url: '/api/notifications/mark-read',
+			type: 'PUT',
+			success: function() {
+				$('#notif-badge').addClass('d-none');
+				$('#notifPopupModal').modal('hide');
+			}
+		});
+	});
+
+	// Also mark as read when modal is dismissed
+	$('#notifPopupModal').on('hidden.bs.modal', function() {
+		// Don't auto-mark as read on dismiss - let them stay for the bell icon
+	});
+});
+</script>
+
 </body>
 
 </html>

@@ -325,7 +325,7 @@ public class AdminController {
 		facebookLeadConfigs.setTimestamp(LocalDateTime.now().minusDays(100));
 		facebookLeadConfigs.setSizeLimit(100000l);
 		if(facebookLeadConfigs.getPlatform().equalsIgnoreCase(Constants.facebook)) {
-			facebookLeadConfigs.setUrl("https://graph.facebook.com/v16.0/{lead_id}/leads");
+			facebookLeadConfigs.setUrl("https://graph.facebook.com/v18.0/{lead_id}/leads");
 			facebookLeadConfigs.setAccessToken(facebookAccessToken);
 		}
 		FacebookLeadConfigs existing=this.facebookLeadConfigService.getByCampaignName(facebookLeadConfigs.getCampaignName());

@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Sensitive files ###
+src/main/resources/application.properties
+src/main/resources/config.properties
+src/main/resources/serviceAccountKey.json
+src/main/resources/keystore.p12
+src/main/resources/surematch.jks
+src/main/resources/tomcat.p12
+
+### Logs ###
+*.log
+hs_err_pid*

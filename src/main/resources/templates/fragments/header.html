@@ -23,6 +23,28 @@
 .automated{
 	color:green;
 }
+/* Notification dropdown */
+#notif-dropdown {
+	display: none;
+	position: absolute;
+	right: 0;
+	top: 100%;
+	min-width: 340px;
+	max-height: 400px;
+	overflow-y: auto;
+	background: #fff;
+	border-radius: 8px;
+	box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+	z-index: 9999;
+	padding: 10px 0;
+	list-style: none;
+}
+#notif-dropdown.show {
+	display: block;
+}
+#notif-bell-container {
+	position: relative;
+}
 </style>
 <script>
 
@@ -100,7 +122,25 @@
        	 </div>
           </div>
           <ul class="navbar-nav  justify-content-end">
-            
+
+            <!-- Notification Bell -->
+            <li class="nav-item dropdown pe-2 d-flex align-items-center" id="notif-bell-container">
+              <a href="javascript:;" class="nav-link text-body p-0 position-relative" id="notifBellDropdown">
+                <i class="material-icons opacity-10">notifications</i>
+                <span class="badge bg-danger badge-sm position-absolute top-0 start-100 translate-middle rounded-pill d-none" id="notif-badge">0</span>
+              </a>
+              <ul class="px-2 py-3" id="notif-dropdown">
+                <li class="mb-2 px-2 d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0">Notifications</h6>
+                  <a href="javascript:;" class="text-xs text-primary" id="mark-all-read-btn">Mark all read</a>
+                </li>
+                <li><hr class="dropdown-divider my-1"></li>
+                <div id="notif-list">
+                  <li class="px-2 py-2 text-center text-xs text-muted">No new notifications</li>
+                </div>
+              </ul>
+            </li>
+
             <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
               <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">
                 <div class="sidenav-toggler-inner">
@@ -134,3 +174,101 @@
 	</div> <!-- cd-popup-container -->
 </div>
     </nav>
+
+<script>
+// Notification Bell Logic
+function loadNotificationCount() {
+	$.ajax({
+		url: '/api/notifications/count',
+		type: 'GET',
+		success: function(data) {
+			var count = data.count || 0;
+			if (count > 0) {
+				$('#notif-badge').text(count).removeClass('d-none');
+			} else {
+				$('#notif-badge').addClass('d-none');
+			}
+		}
+	});
+}
+
+function loadNotifications() {
+	$.ajax({
+		url: '/api/notifications/unread',
+		type: 'GET',
+		success: function(data) {
+			var html = '';
+			if (data && data.length > 0) {
+				for (var i = 0; i < data.length; i++) {
+					var n = data[i];
+					var icon = n.type === 'COUNSELLED' ? 'record_voice_over' : (n.type === 'CLOSED' ? 'lock' : 'task_alt');
+					var color = n.type === 'COUNSELLED' ? 'text-info' : (n.type === 'CLOSED' ? 'text-warning' : 'text-success');
+					var timeAgo = formatTimeAgo(n.createdOn);
+					html += '<li class="px-2 py-2 border-bottom">' +
+						'<div class="d-flex align-items-start">' +
+						'<i class="material-icons ' + color + ' me-2 mt-1" style="font-size:18px;">' + icon + '</i>' +
+						'<div>' +
+						'<p class="mb-0 text-sm">' + n.message + '</p>' +
+						'<span class="text-xs text-muted">' + timeAgo + '</span>' +
+						'</div>' +
+						'</div></li>';
+				}
+			} else {
+				html = '<li class="px-2 py-2 text-center text-xs text-muted">No new notifications</li>';
+			}
+			$('#notif-list').html(html);
+		}
+	});
+}
+
+function formatTimeAgo(dateStr) {
+	if (!dateStr) return '';
+	var date = new Date(dateStr);
+	var now = new Date();
+	var diff = Math.floor((now - date) / 1000);
+	if (diff < 60) return 'Just now';
+	if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+	if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+	return Math.floor(diff / 86400) + 'd ago';
+}
+
+$(document).ready(function() {
+	loadNotificationCount();
+	// Refresh count every 30 seconds
+	setInterval(loadNotificationCount, 30000);
+
+	// Toggle dropdown when bell is clicked
+	$('body').on('click', '#notifBellDropdown', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		var dropdown = $('#notif-dropdown');
+		if (dropdown.hasClass('show')) {
+			dropdown.removeClass('show');
+		} else {
+			loadNotifications();
+			dropdown.addClass('show');
+		}
+	});
+
+	// Close dropdown when clicking outside
+	$(document).on('click', function(e) {
+		if (!$(e.target).closest('#notif-bell-container').length) {
+			$('#notif-dropdown').removeClass('show');
+		}
+	});
+
+	// Mark all as read
+	$('body').on('click', '#mark-all-read-btn', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$.ajax({
+			url: '/api/notifications/mark-read',
+			type: 'PUT',
+			success: function() {
+				$('#notif-badge').addClass('d-none');
+				$('#notif-list').html('<li class="px-2 py-2 text-center text-xs text-muted">No new notifications</li>');
+			}
+		});
+	});
+});
+</script>

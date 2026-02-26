@@ -44,6 +44,7 @@ import com.bothash.crmbot.service.DuplicateDetailsService;
 import com.bothash.crmbot.service.FacebookLeadConfigService;
 import com.bothash.crmbot.service.FacebookLeadsService;
 import com.bothash.crmbot.service.HistoryEventsService;
+import com.bothash.crmbot.service.LeadScoringService;
 import com.bothash.crmbot.service.impl.TaskListener;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -91,32 +92,36 @@ public class FaceBookLeadsController {
 	
 	@Autowired
 	private  SubscriptionRepository subs;
-	
+
 	@Autowired
 	private  PushService push;
+
+	@Autowired
+	private LeadScoringService leadScoringService;
 	
 	
 	@Value("${facebook.access.token}")
 	private String facebookAccessToken;
 	
 	@GetMapping("/leads")
-	@RolesAllowed("user")
 	@Scheduled(fixedRate = 120000)
 	public ResponseEntity<List<FacebookLeads>> getLeads(){
-		
-		
+
+
 		List<FacebookLeadConfigs> activeConfigs=facebookLeadConfigService.getAllActiveCongifs("Facebook");
+		log.info("Facebook scheduler fired. Active configs found: {}", activeConfigs.size());
 		String url="";
 		List<FacebookLeads> response=new ArrayList<>();
 		for(FacebookLeadConfigs activeConfig:activeConfigs) {
 			try {
-				long timeInSeconds = activeConfig.getTimestamp().toEpochSecond(ZoneOffset.UTC);
+				long timeInSeconds = activeConfig.getTimestamp().atZone(java.time.ZoneId.systemDefault()).toEpochSecond();
+				log.info("Config '{}': DB timestamp={}, epoch filter={}", activeConfig.getCampaignName(), activeConfig.getTimestamp(), timeInSeconds);
 				List<FacebookLeads> leadsToSave=new ArrayList<>();
 				url=activeConfig.getUrl().replace("{lead_id}", activeConfig.getLeadId());
-				
+
 				String qrey="[{\"field\": \"time_created\",\"operator\": \"GREATER_THAN_OR_EQUAL\", \"value\": "+timeInSeconds+"  }]";
-				
-				url+="?access_token="+activeConfig.getAccessToken()+"&fields=created_time,id,ad_id,form_id,field_data&filtering={qrey}&limit=1000000";
+
+				url+="?access_token="+facebookAccessToken+"&fields=created_time,id,ad_id,form_id,field_data&filtering={qrey}&limit=1000000";
 			
 				@SuppressWarnings("unchecked")
 				LinkedHashMap<String, Object> res=this.restTemplate.getForObject(url,LinkedHashMap.class,qrey);
@@ -125,7 +130,8 @@ public class FaceBookLeadsController {
 				
 				@SuppressWarnings("unchecked")
 				List<LinkedHashMap<String, Object>> leadsResponses=(List<LinkedHashMap<String, Object>>) res.get("data");
-				
+				log.info("Facebook API returned {} leads for config: {}", leadsResponses != null ? leadsResponses.size() : 0, activeConfig.getCampaignName());
+
 				for(int i=0;i<leadsResponses.size();i++) {
 					try {
 						LinkedHashMap<String, Object> leadResponse=leadsResponses.get(i);
@@ -211,8 +217,10 @@ public class FaceBookLeadsController {
 						}
 					}
 					activeTask.setLeadName(name);
+					boolean isDuplicate = false;
 					List<ActiveTask> existingTask =this.activeTaskService.getTaskByPhoneNumber(activeTask.getPhoneNumber());
 					if(existingTask!=null && existingTask.size()>0 && activeTask.getPhoneNumber()!=null && !activeTask.getPhoneNumber().isEmpty()) {
+						isDuplicate = true;
 						activeTask.setIsDuplicate(true);
 						try {
 							DuplicateDetails duplicateDetails = new DuplicateDetails();
@@ -268,6 +276,10 @@ public class FaceBookLeadsController {
 			    			e.printStackTrace();
 			    		}
 					}
+					// Auto-classify lead type using scoring engine
+					String autoLeadType = leadScoringService.classifyLead(name, phoneNumber, email, isDuplicate);
+					activeTask.setLeadType(autoLeadType);
+
 					if(activeTask.getAssignee()==null || activeTask.getAssignee().equals("admin")) {
 						List<Automation> automationList=automationService.getByIsActive(true);
 						if(automationList.size()>0) {

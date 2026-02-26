@@ -58,12 +58,14 @@ import com.bothash.crmbot.entity.AutomationBySource;
 import com.bothash.crmbot.entity.CloseTask;
 import com.bothash.crmbot.entity.Comments;
 import com.bothash.crmbot.entity.CounsellingDetails;
+import com.bothash.crmbot.entity.CrmNotification;
 import com.bothash.crmbot.entity.DuplicateDetails;
 import com.bothash.crmbot.entity.FacebookLeads;
 import com.bothash.crmbot.entity.HistoryEvents;
 import com.bothash.crmbot.entity.NotificationToken;
 import com.bothash.crmbot.entity.PushSubscription;
 import com.bothash.crmbot.repository.ActiveTaskRepository;
+import com.bothash.crmbot.repository.CrmNotificationRepository;
 import com.bothash.crmbot.repository.NotificationTokenRepository;
 import com.bothash.crmbot.repository.SubscriptionRepository;
 import com.bothash.crmbot.service.ActiveTaskService;
@@ -150,6 +152,9 @@ public class FlowController {
 	
 	@Autowired
     private NotificationTokenRepository notificationTokenRepository;
+
+	@Autowired
+	private CrmNotificationRepository crmNotificationRepository;
 	
 	@Autowired
 	private  SubscriptionRepository subs;
@@ -736,8 +741,26 @@ public class FlowController {
 			this.closeTaskService.save(closeTask);
 			
 			hisEvents.setEvent("Task closed by "+closeRequest.getUserName());
-			
+
 			historyEventsService.save(hisEvents);
+
+			// Notify telecaller when Admission Done OR Seat Confirmed
+			boolean isAdmissionDone = closeRequest.getIsConverted() != null && closeRequest.getIsConverted();
+			boolean isSeatConfirmed = closeRequest.getIsSeatConfirmed() != null && closeRequest.getIsSeatConfirmed();
+			if((isAdmissionDone || isSeatConfirmed)
+					&& activeTask.getTelecallerName() != null && !activeTask.getTelecallerName().isEmpty()) {
+				CrmNotification notification = new CrmNotification();
+				notification.setRecipientUserName(activeTask.getTelecallerName());
+				String detail = isAdmissionDone && isSeatConfirmed ? "Admission Done, Seat Confirmed"
+						: isAdmissionDone ? "Admission Done" : "Seat Confirmed";
+				notification.setMessage("Lead closed (" + detail + ") : " + (activeTask.getLeadName() != null ? activeTask.getLeadName() : "Unknown"));
+				notification.setTaskId(activeTask.getId());
+				notification.setType("CLOSED");
+				notification.setLeadName(activeTask.getLeadName());
+				notification.setIsRead(false);
+				crmNotificationRepository.save(notification);
+			}
+
 			if(closeRequest.getIsConverted())
 				return new ResponseEntity<String>("Ticket closed with id : CONV_ID_"+closeTask.getId(),HttpStatus.OK);
 			else {
@@ -774,9 +797,21 @@ public class FlowController {
 		
 		
 		hisEvents.setEvent("Task completed by "+closeRequest.getUserName());
-		
+
 		historyEventsService.save(hisEvents);
-		
+
+		// Notify telecaller about task completion
+		if(activeTask.getTelecallerName() != null && !activeTask.getTelecallerName().isEmpty()) {
+			CrmNotification notification = new CrmNotification();
+			notification.setRecipientUserName(activeTask.getTelecallerName());
+			notification.setMessage("Task completed for lead: " + (activeTask.getLeadName() != null ? activeTask.getLeadName() : "Unknown"));
+			notification.setTaskId(activeTask.getId());
+			notification.setType("COMPLETED");
+			notification.setLeadName(activeTask.getLeadName());
+			notification.setIsRead(false);
+			crmNotificationRepository.save(notification);
+		}
+
 		return new ResponseEntity<String>("Ticket Completed",HttpStatus.OK);
 		
 		
@@ -828,7 +863,19 @@ public class FlowController {
 		comments.setComment(commentString);
 		comments.setActiveTask(activeTask);
 		Comments saveComment=commentsService.save(comments);
-		
+
+		// Notify telecaller about counselling status
+		if(counsellingDetails.getIsCounselled() && activeTask.getTelecallerName() != null && !activeTask.getTelecallerName().isEmpty()) {
+			CrmNotification notification = new CrmNotification();
+			notification.setRecipientUserName(activeTask.getTelecallerName());
+			notification.setMessage("Counselling done for lead: " + (activeTask.getLeadName() != null ? activeTask.getLeadName() : "Unknown") + " by " + counsellingDoneBy);
+			notification.setTaskId(activeTask.getId());
+			notification.setType("COUNSELLED");
+			notification.setLeadName(activeTask.getLeadName());
+			notification.setIsRead(false);
+			crmNotificationRepository.save(notification);
+		}
+
 		return new ResponseEntity<CounsellingDetails>(saveCounsellingDetails,HttpStatus.OK);
 	}
 	
