@@ -40,6 +40,14 @@ src/main/resources/keystore.p12
 src/main/resources/surematch.jks
 src/main/resources/tomcat.p12
 
+### Keys ###
+key.priv
+key.pub
+
+### Misc ###
+.DS_Store
+app.pid
+
 ### Logs ###
 *.log
 hs_err_pid*

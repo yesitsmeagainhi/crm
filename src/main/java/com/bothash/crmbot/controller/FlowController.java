@@ -759,6 +759,7 @@ public class FlowController {
 				notification.setLeadName(activeTask.getLeadName());
 				notification.setIsRead(false);
 				crmNotificationRepository.save(notification);
+				sendPushNotification(notification);
 			}
 
 			if(closeRequest.getIsConverted())
@@ -810,6 +811,7 @@ public class FlowController {
 			notification.setLeadName(activeTask.getLeadName());
 			notification.setIsRead(false);
 			crmNotificationRepository.save(notification);
+			sendPushNotification(notification);
 		}
 
 		return new ResponseEntity<String>("Ticket Completed",HttpStatus.OK);
@@ -874,6 +876,7 @@ public class FlowController {
 			notification.setLeadName(activeTask.getLeadName());
 			notification.setIsRead(false);
 			crmNotificationRepository.save(notification);
+			sendPushNotification(notification);
 		}
 
 		return new ResponseEntity<CounsellingDetails>(saveCounsellingDetails,HttpStatus.OK);
@@ -1229,5 +1232,27 @@ public class FlowController {
 		//List<ActiveTask> response = this.activeTaskRepository.findAll(FilterSpecification.filter(filterRequests));
 //		List<ActiveTask> response = this.activeTaskRepository.findAll(filterRequests.getRole(), filterRequests.getUserName(),filterRequests.getCourseName(),filterRequests.getLeadPlatform(),filterRequests.getLeadType());
 		return new ResponseEntity<Integer>(count,HttpStatus.OK);
+	}
+
+	/**
+	 * Send a Web Push notification to a user when a CrmNotification is created.
+	 */
+	private void sendPushNotification(CrmNotification notification) {
+		try {
+			PushSubscription pushSub = subs.findByUserName(notification.getRecipientUserName());
+			if (pushSub != null) {
+				String payload = "{"
+					+ "\"title\": \"" + notification.getType() + "\","
+					+ "\"body\": \"" + notification.getMessage().replace("\"", "'") + "\","
+					+ "\"url\": \"/crmbot/tasks\""
+					+ "}";
+				Keys k = new Keys(pushSub.getP256dh(), pushSub.getAuth());
+				Subscription sub = new Subscription(pushSub.getEndpoint(), k);
+				push.send(new Notification(sub, payload));
+				log.info("Push notification sent to {}", notification.getRecipientUserName());
+			}
+		} catch (Exception e) {
+			log.error("Failed to send push notification to {}: {}", notification.getRecipientUserName(), e.getMessage());
+		}
 	}
 }
